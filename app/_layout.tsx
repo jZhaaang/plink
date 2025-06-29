@@ -10,29 +10,37 @@ export default function RootLayout() {
   console.log('Rendering _layout.tsx');
 
   useEffect(() => {
-    const init = async () => {
+    const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       const session = data.session;
 
       if (session?.user) {
-        const { error: upsertError } = await supabase.from('users').insert({});
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-        if (upsertError) {
-          console.error('Upsert user error:', upsertError.message);
+        if (user) {
+          const { error: upsertError } = await supabase
+            .from('users')
+            .upsert({ id: user.id }, { onConflict: 'id' });
+
+          if (upsertError) {
+            console.error('Upsert user error:', upsertError.message);
+          }
         }
       }
-
-      const target = session ? '/' : '/auth';
-      if (pathname !== target) router.replace(target);
 
       setChecking(false);
     };
 
-    init();
+    checkSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const target = session ? '/' : '/auth';
-      if (pathname !== target) router.replace(target);
+      if (session && pathname.startsWith('/auth')) {
+        router.replace('/');
+      } else if (!session && !pathname.startsWith('/auth')) {
+        router.replace('/auth');
+      }
     });
 
     return () => listener.subscription.unsubscribe();
