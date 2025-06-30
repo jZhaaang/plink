@@ -3,6 +3,45 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      links: {
+        Row: {
+          created_at: string | null;
+          created_by: string | null;
+          id: string;
+          is_active: boolean | null;
+          party_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          party_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          party_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'links_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'links_party_id_fkey';
+            columns: ['party_id'];
+            isOneToOne: false;
+            referencedRelation: 'parties';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       parties: {
         Row: {
           created_at: string | null;
