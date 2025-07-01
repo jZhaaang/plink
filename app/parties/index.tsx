@@ -12,9 +12,8 @@ export default function PartyList() {
 
   useEffect(() => {
     const loadParties = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
       if (!user) return;
 
       const { data: parties } = await supabase
