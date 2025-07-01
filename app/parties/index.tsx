@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type Party = Database['public']['Tables']['parties']['Row'];
 
@@ -18,7 +19,7 @@ export default function PartyList() {
 
       const { data: parties } = await supabase
         .from('party_members')
-        .select('party_id')
+        .select('party_id, parties (id, name)')
         .eq('user_id', user.id);
 
       const partyIds = parties?.map((party) => party.party_id) ?? [];
@@ -66,11 +67,20 @@ export default function PartyList() {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Your Parties</Text>
-      <FlatList
-        data={parties}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <Text style={styles.item}>{item.name}</Text>}
-      />
+      {parties.map((party) => (
+        <Pressable
+          key={party.id}
+          onPress={() =>
+            router.push({
+              pathname: '/parties/[id]' as any,
+              params: { id: party.id },
+            })
+          }
+          style={styles.item}
+        >
+          <Text>{party.name}</Text>
+        </Pressable>
+      ))}
       <TextInput
         placeholder="New party name"
         value={newName}
