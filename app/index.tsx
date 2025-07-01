@@ -11,6 +11,7 @@ export default function Index() {
     <View style={{ padding: 20 }}>
       <Text>pLink</Text>
       <Button title="Go to Profile" onPress={() => router.push('/profile')} />
+      <Button title="Go to Parties" onPress={() => router.push('/parties')} />
       <Button title="Log out" onPress={logout} />
     </View>
   );
