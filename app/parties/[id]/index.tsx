@@ -1,12 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Link = Database['public']['Tables']['links']['Row'];
 
-export default function LinkScreen() {
+export default function PartyScreen() {
   const { id } = useLocalSearchParams();
   const partyId = Array.isArray(id) ? id[0] : id;
   const [links, setLinks] = useState<Link[]>([]);
@@ -63,16 +63,32 @@ export default function LinkScreen() {
         <>
           <Text style={styles.title}>Active Links</Text>
           {links.map((link) => (
-            <View key={link.id}>
-              <Text>Started by: {link.created_by}</Text>
-              {link.created_at && <Text>{new Date(link.created_at).toLocaleString()}</Text>}
-            </View>
+            <Pressable
+              key={link.id}
+              onPress={() =>
+                router.push({
+                  pathname: '/parties/[id]/link/[linkId]' as any,
+                  params: { id: partyId, linkId: link.id },
+                })
+              }
+              style={styles.item}
+            >
+              <Text>{link.name}</Text>
+            </Pressable>
           ))}
         </>
       ) : (
         <Text>No active links</Text>
       )}
-      <Button title="Start Link" onPress={startLink} />
+      <Button
+        title="Start Link"
+        onPress={() =>
+          router.push({
+            pathname: '/parties/[id]/link/new',
+            params: { id: partyId },
+          })
+        }
+      />
     </View>
   );
 }
@@ -80,4 +96,6 @@ export default function LinkScreen() {
 const styles = StyleSheet.create({
   container: { padding: 20, gap: 12 },
   title: { fontSize: 18, fontWeight: 'bold' },
+  header: { fontSize: 18, fontWeight: 'bold' },
+  item: { padding: 10, backgroundColor: '#f1f1f1', borderRadius: 6, marginVertical: 4 },
 });
