@@ -36,34 +36,6 @@ export default function PartyList() {
     loadParties();
   }, []);
 
-  const createParty = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
-    if (!user || !newName) return;
-    console.log('user.id:', user?.id);
-    console.log('auth.uid():', session?.user.id);
-
-    console.log('Creating party with user ID:', user.id);
-
-    const { data: party, error } = await supabase
-      .from('parties')
-      .insert({ name: newName, created_by: user.id })
-      .select()
-      .single();
-
-    if (error || !party) {
-      console.error('Error inserting party:', error.message);
-      return;
-    }
-
-    await supabase.from('party_members').insert({ party_id: party.id, user_id: user.id });
-
-    setParties((prev) => [...prev, party]);
-    setNewName('');
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Your Parties</Text>
@@ -87,7 +59,7 @@ export default function PartyList() {
         onChangeText={setNewName}
         style={styles.input}
       />
-      <Button title="Create Party" onPress={createParty} />
+      <Button title="Create Party" onPress={() => router.push('/parties/new')} />
     </View>
   );
 }
