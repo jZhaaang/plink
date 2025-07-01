@@ -3,12 +3,88 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      link_members: {
+        Row: {
+          joined_at: string | null;
+          link_id: string;
+          user_id: string;
+        };
+        Insert: {
+          joined_at?: string | null;
+          link_id?: string;
+          user_id: string;
+        };
+        Update: {
+          joined_at?: string | null;
+          link_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'link_members_link_id_fkey';
+            columns: ['link_id'];
+            isOneToOne: false;
+            referencedRelation: 'links';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'link_members_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      link_posts: {
+        Row: {
+          content: string | null;
+          created_at: string | null;
+          id: string;
+          image_url: string | null;
+          link_id: string;
+          user_id: string | null;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string | null;
+          id?: string;
+          image_url?: string | null;
+          link_id: string;
+          user_id?: string | null;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string | null;
+          id?: string;
+          image_url?: string | null;
+          link_id?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'link_posts_link_id_fkey';
+            columns: ['link_id'];
+            isOneToOne: false;
+            referencedRelation: 'links';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'link_posts_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       links: {
         Row: {
           created_at: string | null;
           created_by: string | null;
           id: string;
           is_active: boolean | null;
+          name: string | null;
           party_id: string;
         };
         Insert: {
@@ -16,6 +92,7 @@ export type Database = {
           created_by?: string | null;
           id?: string;
           is_active?: boolean | null;
+          name?: string | null;
           party_id: string;
         };
         Update: {
@@ -23,6 +100,7 @@ export type Database = {
           created_by?: string | null;
           id?: string;
           is_active?: boolean | null;
+          name?: string | null;
           party_id?: string;
         };
         Relationships: [
