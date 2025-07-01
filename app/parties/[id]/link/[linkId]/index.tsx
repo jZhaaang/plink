@@ -21,8 +21,7 @@ type LinkPost = Database['public']['Tables']['link_posts']['Row'] & {
 };
 
 export default function LinkScreen() {
-  let { id, linkId } = useLocalSearchParams();
-  const partyId = Array.isArray(id) ? id[0] : id;
+  let { linkId } = useLocalSearchParams();
   linkId = Array.isArray(linkId) ? linkId[0] : linkId;
 
   const [link, setLink] = useState<Link | null>(null);
@@ -56,7 +55,6 @@ export default function LinkScreen() {
     };
 
     load();
-    console.log(members);
   }, [linkId]);
 
   const submitPost = async () => {
