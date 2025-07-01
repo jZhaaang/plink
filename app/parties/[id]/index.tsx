@@ -31,29 +31,6 @@ export default function PartyScreen() {
 
   fetchLinks();
 
-  const startLink = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('links')
-      .insert({
-        party_id: partyId,
-        created_by: user.id,
-        is_active: true,
-      })
-      .select();
-
-    if (!error) {
-      setLinks((prev) => [...data, ...prev]);
-    } else {
-      console.error('Error inserting link:', error.message);
-    }
-  };
-
   if (loading) return <ActivityIndicator />;
 
   return (
