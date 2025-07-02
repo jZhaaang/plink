@@ -48,5 +48,5 @@ export default function RootLayout() {
 
   if (checking) return <Text>Checking auth...</Text>;
 
-  return <Stack />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
