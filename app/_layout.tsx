@@ -7,8 +7,6 @@ export default function RootLayout() {
   const [checking, setChecking] = useState(true);
   const pathname = usePathname();
 
-  console.log('Rendering _layout.tsx');
-
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
