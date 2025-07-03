@@ -1,14 +1,14 @@
+import '@/global.css';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Pressable, Text, View } from 'react-native';
 
 type Party = Database['public']['Tables']['parties']['Row'];
 
 export default function PartyList() {
   const [parties, setParties] = useState<Party[]>([]);
-  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     const loadParties = async () => {
@@ -36,8 +36,8 @@ export default function PartyList() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Your Parties</Text>
+    <View className="bg-white p-4 rounded-xl">
+      <Text className="text-xl font-bold text-blue-500">Your Parties</Text>
       {parties.map((party) => (
         <Pressable
           key={party.id}
@@ -47,25 +47,12 @@ export default function PartyList() {
               params: { id: party.id },
             })
           }
-          style={styles.item}
+          className="bg-gray-100 p-3 rounded-lg mb-2"
         >
-          <Text>{party.name}</Text>
+          <Text className="text-base">{party.name}</Text>
         </Pressable>
       ))}
-      <TextInput
-        placeholder="New party name"
-        value={newName}
-        onChangeText={setNewName}
-        style={styles.input}
-      />
       <Button title="Create Party" onPress={() => router.push('/parties/new')} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  header: { fontSize: 18, fontWeight: 'bold' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 6 },
-  item: { padding: 10, backgroundColor: '#f1f1f1', borderRadius: 6, marginVertical: 4 },
-});

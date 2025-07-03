@@ -1,6 +1,9 @@
+import Button from '@/components/Button';
+import Container from '@/components/Container';
+import Input from '@/components/Input';
 import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text } from 'react-native';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
@@ -18,28 +21,20 @@ export default function AuthScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Enter your email and password to sign in or sign up</Text>
-      <TextInput
+    <Container>
+      <Text className="text-lg font-semibold m-4 text-center">Enter your email and password</Text>
+      <Input
         placeholder="Email"
         onChangeText={setEmail}
         keyboardType="email-address"
-        style={styles.input}
+        className="mb-4"
       />
-      <TextInput
-        placeholder="Password"
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
+      <Input placeholder="Password" onChangeText={setPassword} secureTextEntry className="mb-4" />
+
       <Button title="Sign Up" onPress={handleSignUp} />
-      <Button title="Sign In" onPress={handleSignIn} />
-      <Text>{message}</Text>
-    </View>
+      <Button title="Sign In" intent="secondary" onPress={handleSignIn} />
+
+      {!!message && <Text className="text-center text-sm text-red-500 mt-2">{message}</Text>}
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 6 },
-});
