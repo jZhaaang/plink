@@ -1,7 +1,7 @@
 import { tv } from 'tailwind-variants';
 
 export const input = tv({
-  base: 'rounded-lg px-4 py-3 border bg-white text-black dark dark:bg-neutral-900 dark:text-white',
+  base: 'rounded-lg px-4 py-3 border bg-white text-black',
   variants: {
     error: {
       true: 'border-red-500',
