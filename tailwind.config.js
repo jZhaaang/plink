@@ -1,14 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    './ui/**/*.{js,ts,jsx,tsx}',
+    './App.{js,jsx,ts,tsx}',
+    './screens/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './ui/**/*.{js,jsx,ts,tsx}',
+    './navigation/**/*.{js,jsx,ts,tsx}',
   ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
   presets: [require('nativewind/preset')],
-  darkMode: 'media',
+  theme: { extend: {} },
 };

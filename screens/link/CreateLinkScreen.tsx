@@ -1,11 +1,17 @@
 import { supabase } from '@/lib/supabase';
-import { router, useLocalSearchParams } from 'expo-router';
+import { RootStackParamList } from '@/navigation/AppNavigator';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
-export default function NewLinkScreen() {
-  const { id } = useLocalSearchParams();
-  const partyId = Array.isArray(id) ? id[0] : id;
+type Route = RouteProp<RootStackParamList, 'CreateLink'>;
+type Nav = NativeStackNavigationProp<RootStackParamList, 'LinkDetail'>;
+
+export default function CreateLinkScreen() {
+  const { params } = useRoute<Route>();
+  const partyId = params.partyId;
+  const navigation = useNavigation<Nav>();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -39,9 +45,9 @@ export default function NewLinkScreen() {
       user_id: user.id,
     });
 
-    router.replace({
-      pathname: '/parties/[id]/link/[linkId]',
-      params: { id: partyId, linkId: link.id },
+    navigation.navigate('LinkDetail', {
+      partyId: partyId,
+      linkId: link.id,
     });
   };
 

@@ -1,13 +1,16 @@
-import '@/global.css';
 import { supabase } from '@/lib/supabase';
+import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { Button, Pressable, Text, View } from 'react-native';
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Party = Database['public']['Tables']['parties']['Row'];
 
-export default function PartyList() {
+export default function PartyListScreen() {
+  const navigation = useNavigation<Nav>();
   const [parties, setParties] = useState<Party[]>([]);
 
   useEffect(() => {
@@ -42,9 +45,8 @@ export default function PartyList() {
         <Pressable
           key={party.id}
           onPress={() =>
-            router.push({
-              pathname: '/parties/[id]' as any,
-              params: { id: party.id },
+            navigation.navigate('PartyDetail', {
+              partyId: party.id,
             })
           }
           className="bg-gray-100 p-3 rounded-lg mb-2"
@@ -52,7 +54,7 @@ export default function PartyList() {
           <Text className="text-base">{party.name}</Text>
         </Pressable>
       ))}
-      <Button title="Create Party" onPress={() => router.push('/parties/new')} />
+      <Button title="Create Party" onPress={() => navigation.navigate('CreateParty')} />
     </View>
   );
 }

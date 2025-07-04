@@ -1,9 +1,14 @@
 import { supabase } from '@/lib/supabase';
-import { router } from 'expo-router';
+import { RootStackParamList } from '@/navigation/AppNavigator';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
-export default function NewPartyScreen() {
+type Nav = NativeStackNavigationProp<RootStackParamList, 'PartyDetail'>;
+
+export default function CreatePartyScreen() {
+  const navigation = useNavigation<Nav>();
   const [partyName, setPartyName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +35,9 @@ export default function NewPartyScreen() {
       user_id: user.id,
     });
 
-    router.replace('/parties');
+    navigation.navigate('PartyDetail', {
+      partyId: party.id,
+    });
   };
 
   return (

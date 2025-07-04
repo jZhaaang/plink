@@ -1,14 +1,19 @@
 import { supabase } from '@/lib/supabase';
+import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { router, useLocalSearchParams } from 'expo-router';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View } from 'react-native';
 
+type Route = RouteProp<RootStackParamList, 'PartyDetail'>;
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Link = Database['public']['Tables']['links']['Row'];
 
-export default function PartyScreen() {
-  const { id } = useLocalSearchParams();
-  const partyId = Array.isArray(id) ? id[0] : id;
+export default function PartyDetailScreen() {
+  const { params } = useRoute<Route>();
+  const partyId = params.partyId;
+  const navigation = useNavigation<Nav>();
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,9 +48,9 @@ export default function PartyScreen() {
             <Pressable
               key={link.id}
               onPress={() =>
-                router.push({
-                  pathname: '/parties/[id]/link/[linkId]' as any,
-                  params: { id: partyId, linkId: link.id },
+                navigation.navigate('LinkDetail', {
+                  partyId: partyId,
+                  linkId: link.id,
                 })
               }
               style={styles.item}
@@ -60,9 +65,8 @@ export default function PartyScreen() {
       <Button
         title="Start Link"
         onPress={() =>
-          router.push({
-            pathname: '/parties/[id]/link/new',
-            params: { id: partyId },
+          navigation.navigate('CreateLink', {
+            partyId: partyId,
           })
         }
       />

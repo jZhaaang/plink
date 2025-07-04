@@ -1,7 +1,7 @@
-import Button from '@/components/Button';
-import Container from '@/components/Container';
-import Input from '@/components/Input';
 import { supabase } from '@/lib/supabase';
+import Button from '@/ui/Button';
+import Container from '@/ui/Container';
+import Input from '@/ui/Input';
 import { useState } from 'react';
 import { Text } from 'react-native';
 

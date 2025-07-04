@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
+import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { useLocalSearchParams } from 'expo-router';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,6 +13,7 @@ import {
   View,
 } from 'react-native';
 
+type Route = RouteProp<RootStackParamList, 'LinkDetail'>;
 type Link = Database['public']['Tables']['links']['Row'];
 type LinkMember = Database['public']['Tables']['link_members']['Row'] & {
   users: { name: string | null };
@@ -20,9 +22,9 @@ type LinkPost = Database['public']['Tables']['link_posts']['Row'] & {
   users: { name: string | null };
 };
 
-export default function LinkScreen() {
-  let { linkId } = useLocalSearchParams();
-  linkId = Array.isArray(linkId) ? linkId[0] : linkId;
+export default function LinkDetailScreen() {
+  const { params } = useRoute<Route>();
+  const linkId = params.linkId;
 
   const [link, setLink] = useState<Link | null>(null);
   const [members, setMembers] = useState<LinkMember[]>([]);

@@ -1,10 +1,15 @@
-import Button from '@/components/Button';
-import Container from '@/components/Container';
 import { supabase } from '@/lib/supabase';
-import { router } from 'expo-router';
+import { RootStackParamList } from '@/navigation/AppNavigator';
+import Button from '@/ui/Button';
+import Container from '@/ui/Container';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text, View } from 'react-native';
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 export default function Index() {
+  const navigation = useNavigation<Nav>();
   const logout = async () => {
     await supabase.auth.signOut();
   };
@@ -16,8 +21,8 @@ export default function Index() {
         <Text className="text-base text-gray-600 text-center">Start linking with your friends</Text>
 
         <View className="mt-6 w-full gap-4">
-          <Button title="Go to Profile" onPress={() => router.push('/profile')} />
-          <Button title="Go to Parties" onPress={() => router.push('/parties')} />
+          <Button title="Go to Profile" onPress={() => navigation.navigate('Profile')} />
+          <Button title="Go to Parties" onPress={() => navigation.navigate('PartyList')} />
           <Button title="Log out" intent="secondary" onPress={logout} />
         </View>
       </View>
