@@ -16,10 +16,10 @@ export async function getUserById(id: string): Promise<User | null> {
   return data;
 }
 
-export async function upsertUser(userId: string): Promise<User | null> {
+export async function upsertUser(user: UserInsert): Promise<User | null> {
   const { data, error } = await supabase
     .from('users')
-    .upsert({ id: userId } satisfies UserInsert, { onConflict: 'id' })
+    .upsert(user, { onConflict: 'id' })
     .select()
     .single();
 
