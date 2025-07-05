@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, upsertUser } from '@/lib/supabase';
 import AppNavigator from '@/navigation/AppNavigator';
 import { NavigationContainer } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
@@ -20,7 +20,7 @@ export default function AuthGate() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          await supabase.from('users').upsert({ id: user.id }, { onConflict: 'id' });
+          await upsertUser({ id: user.id });
         }
         setAuthenticated(true);
       }

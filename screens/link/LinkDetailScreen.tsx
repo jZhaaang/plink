@@ -1,17 +1,16 @@
-import { supabase } from '@/lib/supabase';
+import {
+  createLinkPost,
+  getLinkById,
+  getLinkMembers,
+  getLinkPosts,
+  supabase,
+} from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
+import { Button, Card, Container, Input } from '@/ui';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
 type Route = RouteProp<RootStackParamList, 'LinkDetail'>;
 type Link = Database['public']['Tables']['links']['Row'];
@@ -23,8 +22,7 @@ type LinkPost = Database['public']['Tables']['link_posts']['Row'] & {
 };
 
 export default function LinkDetailScreen() {
-  const { params } = useRoute<Route>();
-  const linkId = params.linkId;
+  const { linkId } = useRoute<Route>().params;
 
   const [link, setLink] = useState<Link | null>(null);
   const [members, setMembers] = useState<LinkMember[]>([]);
@@ -34,29 +32,21 @@ export default function LinkDetailScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
+    const fetchData = async () => {
       setLoading(true);
 
-      const { data: linkData } = await supabase.from('links').select('*').eq('id', linkId).single();
+      const link = await getLinkById(linkId);
+      const members = await getLinkMembers(linkId);
+      const posts = await getLinkPosts(linkId);
 
-      const { data: memberData } = await supabase
-        .from('link_members')
-        .select('user_id, link_id, joined_at, users(name)')
-        .eq('link_id', linkId);
+      if (link) setLink(link);
+      if (members) setMembers(members);
+      if (posts) setPosts(posts);
 
-      const { data: postData } = await supabase
-        .from('link_posts')
-        .select('id, user_id, link_id, content, image_url, created_at, users (name)')
-        .eq('link_id', linkId)
-        .order('created_at', { ascending: true });
-
-      setLink(linkData);
-      setMembers(memberData || []);
-      setPosts(postData || []);
       setLoading(false);
     };
 
-    load();
+    fetchData();
   }, [linkId]);
 
   const submitPost = async () => {
@@ -66,17 +56,9 @@ export default function LinkDetailScreen() {
     const user = sessionData.session?.user;
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('link_posts')
-      .insert({
-        content: newPost,
-        link_id: linkId,
-        user_id: user.id,
-      })
-      .select('id, user_id, link_id, content, image_url, created_at, users(name)')
-      .single();
+    const data = await createLinkPost({ content: newPost, link_id: linkId, user_id: user.id });
 
-    if (!error) {
+    if (data) {
       setPosts((prev) => [...prev, data]);
       setNewPost('');
     }
@@ -85,64 +67,42 @@ export default function LinkDetailScreen() {
   if (loading) return <ActivityIndicator />;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{link?.name}</Text>
-      <Text style={styles.subtext}>
+    <Container>
+      <Text className="text-xl font-bold mt-4">{link?.name}</Text>
+      <Text className="text-sm text-gray-500">
         Started at {new Date(link?.created_at ?? '').toLocaleString()}
       </Text>
 
-      <Text style={styles.section}>Members</Text>
-      <View style={styles.memberList}>
-        {members.map((m) => (
-          <Text key={m.user_id}>• {m.users.name}</Text>
+      <Text className="text-base font-semibold mt-4">Members</Text>
+      <View className="mb-2">
+        {members.map((member) => (
+          <Text key={member.user_id}>• {member.users.name}</Text>
         ))}
       </View>
 
-      <Text style={styles.section}>Posts</Text>
+      <Text className="text-base font-semibold mt-2">Posts</Text>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.post}>
-            <Text style={styles.postAuthor}>{item.users.name}</Text>
+          <Card className="mb-2">
+            <Text className="font-semibold">{item.users.name}</Text>
             <Text>{item.content}</Text>
-            <Text style={styles.postTime}>
+            <Text className="text-xs text-gray-500">
               {new Date(item.created_at ?? '').toLocaleTimeString()}
             </Text>
-          </View>
+          </Card>
         )}
       />
 
-      <TextInput
+      <Input
         placeholder="Write a post..."
         value={newPost}
         onChangeText={setNewPost}
-        style={styles.input}
+        className="mt-4"
       />
-      <Button title="Post" onPress={submitPost} />
-    </View>
+
+      <Button title="Post" onPress={submitPost} className="mt-2" />
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  header: { fontSize: 22, fontWeight: 'bold' },
-  subtext: { color: '#666' },
-  section: { fontSize: 16, fontWeight: 'bold', marginTop: 10 },
-  memberList: { marginBottom: 10 },
-  post: {
-    backgroundColor: '#f1f1f1',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 6,
-  },
-  postAuthor: { fontWeight: 'bold' },
-  postTime: { fontSize: 10, color: '#666' },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 8,
-  },
-});

@@ -1,17 +1,18 @@
-import { supabase } from '@/lib/supabase';
+import { addLinkMember, createLink as createLinkHelper, supabase } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
+import { Button, Container, Input } from '@/ui';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text } from 'react-native';
 
 type Route = RouteProp<RootStackParamList, 'CreateLink'>;
 type Nav = NativeStackNavigationProp<RootStackParamList, 'LinkDetail'>;
 
 export default function CreateLinkScreen() {
-  const { params } = useRoute<Route>();
-  const partyId = params.partyId;
+  const { partyId } = useRoute<Route>().params;
   const navigation = useNavigation<Nav>();
+
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,55 +23,39 @@ export default function CreateLinkScreen() {
     const user = sessionData.session?.user;
     if (!user || !name) return;
 
-    const { data: link, error } = await supabase
-      .from('links')
-      .insert({
-        name,
-        party_id: partyId,
-        created_by: user.id,
-        is_active: true,
-      })
-      .select()
-      .single();
+    const link = await createLinkHelper({
+      name,
+      party_id: partyId,
+      created_by: user.id,
+      is_active: true,
+    });
 
-    setLoading(false);
+    if (link) {
+      await addLinkMember({ link_id: link?.id, user_id: user.id });
 
-    if (error) {
-      console.error('Failed to create link:', error.message);
-      return;
+      navigation.navigate('LinkDetail', {
+        partyId: partyId,
+        linkId: link.id,
+      });
     }
 
-    await supabase.from('link_members').insert({
-      link_id: link.id,
-      user_id: user.id,
-    });
-
-    navigation.navigate('LinkDetail', {
-      partyId: partyId,
-      linkId: link.id,
-    });
+    setLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Link Name</Text>
-      <TextInput
-        placeholder="What’s this link about?"
+    <Container>
+      <Text className="text-lg font-semibold my-4">Link Name</Text>
+      <Input
+        placeholder="What's this link about?"
         value={name}
         onChangeText={setName}
-        style={styles.input}
+        className="mb-2"
       />
       <Button
         title={loading ? 'Creating...' : 'Create Link'}
         onPress={createLink}
         disabled={loading}
       />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  label: { fontWeight: 'bold' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 6 },
-});

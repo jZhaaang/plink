@@ -1,82 +1,71 @@
-import { supabase } from '@/lib/supabase';
+import { getLinksByPartyId, getPartyById } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
+import { Button, Container, PressableCard } from '@/ui';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
-import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Text } from 'react-native';
 
 type Route = RouteProp<RootStackParamList, 'PartyDetail'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+type Party = Database['public']['Tables']['parties']['Row'];
 type Link = Database['public']['Tables']['links']['Row'];
 
 export default function PartyDetailScreen() {
-  const { params } = useRoute<Route>();
-  const partyId = params.partyId;
+  const { partyId } = useRoute<Route>().params;
   const navigation = useNavigation<Nav>();
+
+  const [party, setParty] = useState<Party | null>(null);
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchLinks = async () => {
-    const { data, error } = await supabase
-      .from('links')
-      .select('*')
-      .eq('party_id', partyId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
 
-    if (!error && data) {
-      setLinks(data);
-    } else {
-      console.error('Error getting links:', error.message);
-    }
+      const party = await getPartyById(partyId);
+      const links = await getLinksByPartyId(partyId);
 
-    setLoading(false);
-  };
+      setParty(party);
+      setLinks(links);
 
-  fetchLinks();
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [partyId]);
 
   if (loading) return <ActivityIndicator />;
 
   return (
-    <View style={styles.container}>
-      <Text style={{ fontWeight: 'bold' }}>Party ID: {partyId}</Text>
+    <Container>
+      <Text className="text-xl font-bold mb-1">{party?.name ?? 'Unnamed Party'}</Text>
+      <Text className="text-sm text-gray-500 mb-4">Party ID: {partyId}</Text>
+
       {links.length > 0 ? (
         <>
-          <Text style={styles.title}>Active Links</Text>
+          <Text className="text-base font-semibold mb-2">Active Links</Text>
           {links.map((link) => (
-            <Pressable
+            <PressableCard
               key={link.id}
               onPress={() =>
-                navigation.navigate('LinkDetail', {
-                  partyId: partyId,
-                  linkId: link.id,
-                })
+                navigation.navigate('LinkDetail', { partyId: partyId, linkId: link.id })
               }
-              style={styles.item}
             >
-              <Text>{link.name}</Text>
-            </Pressable>
+              <Text className="text-base font-medium">{link.name}</Text>
+            </PressableCard>
           ))}
         </>
       ) : (
-        <Text>No active links</Text>
+        <Text className="text-gray-500">No Active Links</Text>
       )}
+
       <Button
-        title="Start Link"
-        onPress={() =>
-          navigation.navigate('CreateLink', {
-            partyId: partyId,
-          })
-        }
+        title="Start a Link"
+        onPress={() => navigation.navigate('CreateLink', { partyId })}
+        className="my-4"
       />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  title: { fontSize: 18, fontWeight: 'bold' },
-  header: { fontSize: 18, fontWeight: 'bold' },
-  item: { padding: 10, backgroundColor: '#f1f1f1', borderRadius: 6, marginVertical: 4 },
-});

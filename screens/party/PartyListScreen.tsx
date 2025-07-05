@@ -1,10 +1,11 @@
-import { supabase } from '@/lib/supabase';
+import { getUserParties, supabase } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
+import { Button, Container, PressableCard } from '@/ui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { Button, Pressable, Text, View } from 'react-native';
+import { Text } from 'react-native';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Party = Database['public']['Tables']['parties']['Row'];
@@ -19,42 +20,33 @@ export default function PartyListScreen() {
       const user = sessionData.session?.user;
       if (!user) return;
 
-      const { data: parties } = await supabase
-        .from('party_members')
-        .select('party_id, parties (id, name)')
-        .eq('user_id', user.id);
+      const parties = await getUserParties(user.id);
 
-      const partyIds = parties?.map((party) => party.party_id) ?? [];
-
-      const { data, error } = await supabase.from('parties').select('*').in('id', partyIds);
-
-      if (!error && data) {
-        setParties(data);
-      } else {
-        console.error('Error getting parties:', error.message);
-      }
+      setParties(parties);
     };
 
     loadParties();
   }, []);
 
   return (
-    <View className="bg-white p-4 rounded-xl">
-      <Text className="text-xl font-bold text-blue-500">Your Parties</Text>
+    <Container>
+      <Text className="text-xl font-bold text-blue-500 my-4">Your Parties</Text>
+
       {parties.map((party) => (
-        <Pressable
+        <PressableCard
           key={party.id}
-          onPress={() =>
-            navigation.navigate('PartyDetail', {
-              partyId: party.id,
-            })
-          }
-          className="bg-gray-100 p-3 rounded-lg mb-2"
+          elevated
+          onPress={() => navigation.navigate('PartyDetail', { partyId: party.id })}
+          className="mb-2"
         >
-          <Text className="text-base">{party.name}</Text>
-        </Pressable>
+          <Text className="text-base font-medium">{party.name}</Text>
+        </PressableCard>
       ))}
-      <Button title="Create Party" onPress={() => navigation.navigate('CreateParty')} />
-    </View>
+      <Button
+        title="Create Party"
+        onPress={() => navigation.navigate('CreateParty')}
+        className="mt-8"
+      />
+    </Container>
   );
 }

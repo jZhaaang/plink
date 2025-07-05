@@ -10,6 +10,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function Index() {
   const navigation = useNavigation<Nav>();
+
   const logout = async () => {
     await supabase.auth.signOut();
   };

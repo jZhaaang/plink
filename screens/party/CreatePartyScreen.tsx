@@ -1,14 +1,16 @@
-import { supabase } from '@/lib/supabase';
+import { addPartyMember, createParty as createPartyHelper, supabase } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
+import { Button, Container, Input } from '@/ui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text } from 'react-native';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'PartyDetail'>;
 
 export default function CreatePartyScreen() {
   const navigation = useNavigation<Nav>();
+
   const [partyName, setPartyName] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,47 +21,36 @@ export default function CreatePartyScreen() {
     const user = sessionData.session?.user;
     if (!user || !partyName) return;
 
-    const { data: party, error } = await supabase
-      .from('parties')
-      .insert({ name: partyName, created_by: user.id })
-      .select()
-      .single();
+    const party = await createPartyHelper({ name: partyName, created_by: user.id });
+    if (party) {
+      await addPartyMember({ party_id: party?.id, user_id: user.id });
 
-    if (error) {
-      console.error('Error creating party: ', error.message);
-      return;
+      navigation.navigate('PartyDetail', {
+        partyId: party.id,
+      });
     }
 
-    await supabase.from('party_members').insert({
-      party_id: party.id,
-      user_id: user.id,
-    });
-
-    navigation.navigate('PartyDetail', {
-      partyId: party.id,
-    });
+    setLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Party Name</Text>
-      <TextInput
+    <Container className="flex-1 justify-center px-6">
+      <Text className="text-lg font-semibold mb-4 text-center text-gray-800">
+        Create a New Party
+      </Text>
+
+      <Input
         placeholder="Enter party name"
         value={partyName}
         onChangeText={setPartyName}
-        style={styles.input}
+        className="mb-4"
       />
+
       <Button
         title={loading ? 'Creating...' : 'Create Party'}
         onPress={createParty}
         disabled={loading}
       />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  label: { fontWeight: 'bold' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 6 },
-});

@@ -1,6 +1,7 @@
-import { supabase } from '@/lib/supabase';
+import { getUserById, supabase, updateUser } from '@/lib/supabase';
+import { Button, Container, Input } from '@/ui';
 import { useEffect, useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Text } from 'react-native';
 
 export default function ProfileScreen() {
   const [name, setName] = useState('');
@@ -8,22 +9,13 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('name')
-        .eq('id', user.id)
-        .single();
+      const userData = await getUserById(user.id);
 
-      if (error) {
-        console.error('Error fetching profile:', error.message);
-      } else {
-        setName(data?.name || '');
-      }
+      setName(userData?.name || '');
 
       setLoading(false);
     };
@@ -32,39 +24,21 @@ export default function ProfileScreen() {
   }, []);
 
   const saveProfile = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
     if (!user) return;
 
-    const { error } = await supabase
-      .from('users')
-      .update({ name: name })
-      .eq('id', user.id)
-      .select()
-      .single();
+    await updateUser(user.id, { name: name });
 
-    if (error) {
-      Alert.alert('Update failed', error.message);
-      console.log('Update failed', error.message);
-    } else {
-      Alert.alert('Profile updated');
-      console.log('Profile updated');
-    }
+    Alert.alert('Profile updated');
   };
 
   if (loading) return <Text>Loading profile...</Text>;
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Name</Text>
-      <TextInput value={name} onChangeText={setName} style={styles.input} placeholder="Your name" />
+    <Container>
+      <Text className="text-lg font-semibold my-4">Name</Text>
+      <Input placeholder="Your Name" value={name} onChangeText={setName} className="my-2" />
       <Button title="Save" onPress={saveProfile} />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12 },
-  label: { fontSize: 16 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 6 },
-});
