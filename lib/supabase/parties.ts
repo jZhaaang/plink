@@ -29,12 +29,8 @@ export async function getPartyById(partyId: string): Promise<Party | null> {
   return data;
 }
 
-export async function createParty(name: string, createdBy: string): Promise<Party | null> {
-  const { data, error } = await supabase
-    .from('parties')
-    .insert({ name, created_by: createdBy } satisfies PartyInsert)
-    .select()
-    .single();
+export async function createParty(party: PartyInsert): Promise<Party | null> {
+  const { data, error } = await supabase.from('parties').insert(party).select().single();
 
   if (error) {
     console.error('Error creating party:', error.message);

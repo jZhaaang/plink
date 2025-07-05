@@ -16,10 +16,10 @@ export async function getUserById(id: string): Promise<User | null> {
   return data;
 }
 
-export async function upsertUser(user: UserInsert): Promise<User | null> {
+export async function upsertUser(userId: string): Promise<User | null> {
   const { data, error } = await supabase
     .from('users')
-    .upsert(user, { onConflict: 'id' })
+    .upsert({ id: userId } satisfies UserInsert, { onConflict: 'id' })
     .select()
     .single();
 
@@ -31,11 +31,11 @@ export async function upsertUser(user: UserInsert): Promise<User | null> {
   return data;
 }
 
-export async function updateUser(id: string, updates: UserUpdate): Promise<User | null> {
+export async function updateUser(userId: string, updates: UserUpdate): Promise<User | null> {
   const { data, error } = await supabase
     .from('users')
     .update(updates)
-    .eq('id', id)
+    .eq('id', userId)
     .select()
     .single();
 

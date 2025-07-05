@@ -2,8 +2,8 @@ import { Database } from '@/types/supabase';
 import { supabase } from './supabase';
 
 type Link = Database['public']['Tables']['links']['Row'];
-type Insert = Database['public']['Tables']['links']['Insert'];
-type Update = Database['public']['Tables']['links']['Update'];
+type LinkInsert = Database['public']['Tables']['links']['Insert'];
+type LinkUpdate = Database['public']['Tables']['links']['Update'];
 
 export async function getLinksByPartyId(
   partyId: string,
@@ -40,16 +40,8 @@ export async function getLinkById(linkId: string): Promise<Link | null> {
   return data;
 }
 
-export async function createLink(
-  partyId: string,
-  name: string,
-  createdBy: string,
-): Promise<Link | null> {
-  const { data, error } = await supabase
-    .from('links')
-    .insert({ party_id: partyId, name, created_by: createdBy, is_active: true } as Insert)
-    .select()
-    .single();
+export async function createLink(link: LinkInsert): Promise<Link | null> {
+  const { data, error } = await supabase.from('links').insert(link).select().single();
 
   if (error) {
     console.error('Error creating link:', error.message);
@@ -59,10 +51,10 @@ export async function createLink(
   return data;
 }
 
-export async function endLink(linkId: string): Promise<Link | null> {
+export async function endLink(linkId: string, link: LinkUpdate): Promise<Link | null> {
   const { data, error } = await supabase
     .from('links')
-    .update({ is_active: false } as Update)
+    .update(link)
     .eq('id', linkId)
     .select()
     .single();
