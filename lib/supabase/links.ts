@@ -5,7 +5,7 @@ type Link = Database['public']['Tables']['links']['Row'];
 type Insert = Database['public']['Tables']['links']['Insert'];
 type Update = Database['public']['Tables']['links']['Update'];
 
-export async function getLinksByParty(
+export async function getLinksByPartyId(
   partyId: string,
   activeOnly: boolean = false,
 ): Promise<Link[]> {

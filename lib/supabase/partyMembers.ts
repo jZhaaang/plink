@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/supabase';
 import { Database } from '@/types/supabase';
 
 type PartyMember = Database['public']['Tables']['party_members']['Row'];
