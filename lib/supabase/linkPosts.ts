@@ -2,9 +2,12 @@ import { supabase } from '@/lib/supabase/supabase';
 import { Database } from '@/types/supabase';
 
 type LinkPost = Database['public']['Tables']['link_posts']['Row'];
+type LinkPostWithUser = LinkPost & {
+  users: { name: string | null };
+};
 type LinkPostInsert = Database['public']['Tables']['link_posts']['Insert'];
 
-export async function getLinkPosts(linkId: string): Promise<LinkPost[] | null> {
+export async function getLinkPosts(linkId: string): Promise<LinkPostWithUser[] | null> {
   const { data, error } = await supabase
     .from('link_posts')
     .select('*, users(name)')
@@ -19,7 +22,7 @@ export async function getLinkPosts(linkId: string): Promise<LinkPost[] | null> {
   return data;
 }
 
-export async function createLinkPost(post: LinkPostInsert): Promise<LinkPost | null> {
+export async function createLinkPost(post: LinkPostInsert): Promise<LinkPostWithUser | null> {
   const { data, error } = await supabase
     .from('link_posts')
     .insert(post)

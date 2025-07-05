@@ -2,9 +2,12 @@ import { supabase } from '@/lib/supabase/supabase';
 import { Database } from '@/types/supabase';
 
 type LinkMember = Database['public']['Tables']['link_members']['Row'];
+type LinkMemberWithUser = LinkMember & {
+  users: { name: string | null };
+};
 type LinkMemberInsert = Database['public']['Tables']['link_members']['Insert'];
 
-export async function getLinkMembers(linkId: string): Promise<LinkMember[] | null> {
+export async function getLinkMembers(linkId: string): Promise<LinkMemberWithUser[] | null> {
   const { data, error } = await supabase
     .from('link_members')
     .select('*, users(name)')

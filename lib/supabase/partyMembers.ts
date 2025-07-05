@@ -2,12 +2,15 @@ import { supabase } from '@/lib/supabase/supabase';
 import { Database } from '@/types/supabase';
 
 type PartyMember = Database['public']['Tables']['party_members']['Row'];
+type PartyMemberWithUser = PartyMember & {
+  users: { name: string | null };
+};
 type PartyMemberInsert = Database['public']['Tables']['party_members']['Insert'];
 
-export async function getPartyMembers(partyId: string): Promise<PartyMember[] | null> {
+export async function getPartyMembers(partyId: string): Promise<PartyMemberWithUser[] | null> {
   const { data, error } = await supabase
     .from('party_members')
-    .select('*, users(id, name)')
+    .select('*, users(name)')
     .eq('party_id', partyId);
 
   if (error) {
