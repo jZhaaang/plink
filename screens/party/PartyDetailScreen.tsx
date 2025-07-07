@@ -5,6 +5,8 @@ import {
   getPartyMembers,
   getUserByEmail,
   getUserById,
+  removePartyMember,
+  supabase,
 } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
@@ -29,6 +31,7 @@ export default function PartyDetailScreen() {
   const [party, setParty] = useState<Party | null>(null);
   const [members, setMembers] = useState<PartyMember[]>([]);
   const [links, setLinks] = useState<Link[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [loading, setLoading] = useState(true);
@@ -39,10 +42,13 @@ export default function PartyDetailScreen() {
     const { data: party } = await getPartyById(partyId);
     const { data: members } = await getPartyMembers(partyId);
     const { data: links } = await getLinksByPartyId(partyId);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
 
     if (party) setParty(party);
     if (members) setMembers(members);
     if (links) setLinks(links);
+    if (user) setCurrentUserId(user.id);
 
     setLoading(false);
   }, [partyId]);
@@ -78,6 +84,26 @@ export default function PartyDetailScreen() {
     }
   };
 
+  const removeMember = async (member: PartyMember) => {
+    Alert.alert('Remove Member', `Are you sure you want to remove ${member.users.name}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: async () => {
+          const { error } = await removePartyMember(partyId, member.user_id);
+
+          if (error) {
+            Alert.alert('Error', 'Could not remove user');
+          } else {
+            Alert.alert('Removed', `${member.users.name} has been removed`);
+            fetchData();
+          }
+        },
+      },
+    ]);
+  };
+
   if (loading) return <ActivityIndicator />;
 
   return (
@@ -88,7 +114,17 @@ export default function PartyDetailScreen() {
       <Text className="text-base font-semibold mt-4">Members</Text>
       <View className="mb-2">
         {members.map((member) => (
-          <Text key={member.user_id}>• {member.users.name}</Text>
+          <View key={member.user_id} className="flex-row justify-between items-center mb-1">
+            <Text>• {member.users.name}</Text>
+            {member.user_id !== currentUserId && (
+              <Button
+                title="Remove"
+                intent="warning"
+                size="sm"
+                onPress={() => removeMember(member)}
+              />
+            )}
+          </View>
         ))}
       </View>
 
