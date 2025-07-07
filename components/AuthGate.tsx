@@ -20,7 +20,7 @@ export default function AuthGate() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          await upsertUser({ id: user.id });
+          await upsertUser({ id: user.id, email: user.email });
         }
         setAuthenticated(true);
       }
