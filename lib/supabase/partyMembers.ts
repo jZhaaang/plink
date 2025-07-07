@@ -7,7 +7,9 @@ type PartyMemberWithUser = PartyMember & {
 };
 type PartyMemberInsert = Database['public']['Tables']['party_members']['Insert'];
 
-export async function getPartyMembers(partyId: string): Promise<PartyMemberWithUser[] | null> {
+export async function getPartyMembers(
+  partyId: string,
+): Promise<{ data: PartyMemberWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('party_members')
     .select('*, users(name)')
@@ -15,33 +17,38 @@ export async function getPartyMembers(partyId: string): Promise<PartyMemberWithU
 
   if (error) {
     console.error('Error fetching party members:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error: null };
 }
 
-export async function addPartyMember(member: PartyMemberInsert): Promise<PartyMember | null> {
+export async function addPartyMember(
+  member: PartyMemberInsert,
+): Promise<{ data: PartyMember | null; error: Error | null }> {
   const { data, error } = await supabase.from('party_members').insert(member).select().single();
 
   if (error) {
     console.error('Error adding party member:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error: null };
 }
 
-export async function removePartyMember(partyId: string, userId: string): Promise<boolean> {
-  const { error } = await supabase
+export async function removePartyMember(
+  partyId: string,
+  userId: string,
+): Promise<{ data: PartyMember | null; error: Error | null }> {
+  const { data, error } = await supabase
     .from('party_members')
     .delete()
     .match({ party_id: partyId, user_id: userId });
 
   if (error) {
     console.error('Error removing party member:', error.message);
-    return false;
+    return { data: null, error };
   }
 
-  return true;
+  return { data, error: null };
 }

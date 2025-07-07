@@ -4,13 +4,14 @@ import {
   getLinkMembers,
   getLinkPosts,
   supabase,
+  updateLink,
 } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
 import { Button, Card, Container, Input } from '@/ui';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Text, View } from 'react-native';
 
 type Route = RouteProp<RootStackParamList, 'LinkDetail'>;
 type Link = Database['public']['Tables']['links']['Row'];
@@ -35,9 +36,9 @@ export default function LinkDetailScreen() {
     const fetchData = async () => {
       setLoading(true);
 
-      const link = await getLinkById(linkId);
-      const members = await getLinkMembers(linkId);
-      const posts = await getLinkPosts(linkId);
+      const { data: link } = await getLinkById(linkId);
+      const { data: members } = await getLinkMembers(linkId);
+      const { data: posts } = await getLinkPosts(linkId);
 
       if (link) setLink(link);
       if (members) setMembers(members);
@@ -56,12 +57,22 @@ export default function LinkDetailScreen() {
     const user = sessionData.session?.user;
     if (!user) return;
 
-    const data = await createLinkPost({ content: newPost, link_id: linkId, user_id: user.id });
+    const { data } = await createLinkPost({ content: newPost, link_id: linkId, user_id: user.id });
 
     if (data) {
       setPosts((prev) => [...prev, data]);
       setNewPost('');
     }
+  };
+
+  const endLink = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
+    if (!user) return;
+
+    await updateLink(linkId, { is_active: false });
+
+    Alert.alert('Link ended');
   };
 
   if (loading) return <ActivityIndicator />;
@@ -72,6 +83,8 @@ export default function LinkDetailScreen() {
       <Text className="text-sm text-gray-500">
         Started at {new Date(link?.created_at ?? '').toLocaleString()}
       </Text>
+
+      <Button title="End Link" onPress={endLink} className="mt-2" />
 
       <Text className="text-base font-semibold mt-4">Members</Text>
       <View className="mb-2">

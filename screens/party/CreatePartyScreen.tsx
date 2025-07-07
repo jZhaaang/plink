@@ -21,7 +21,7 @@ export default function CreatePartyScreen() {
     const user = sessionData.session?.user;
     if (!user || !partyName) return;
 
-    const party = await createPartyHelper({ name: partyName, created_by: user.id });
+    const { data: party } = await createPartyHelper({ name: partyName, created_by: user.id });
     if (party) {
       await addPartyMember({ party_id: party?.id, user_id: user.id });
 

@@ -4,7 +4,9 @@ import { supabase } from './supabase';
 type Party = Database['public']['Tables']['parties']['Row'];
 type PartyInsert = Database['public']['Tables']['parties']['Insert'];
 
-export async function getUserParties(userId: string): Promise<Party[]> {
+export async function getUserParties(
+  userId: string,
+): Promise<{ data: Party[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('party_members')
     .select('parties (id, name, created_by, created_at)')
@@ -12,35 +14,41 @@ export async function getUserParties(userId: string): Promise<Party[]> {
 
   if (error) {
     console.error('Error fetching user parties:', error.message);
-    return [];
+    return { data: null, error };
   }
 
-  return data?.map((userParties) => userParties.parties) ?? [];
+  return { data: data?.map((userParties) => userParties.parties), error: null };
 }
 
-export async function getPartyById(partyId: string): Promise<Party | null> {
+export async function getPartyById(
+  partyId: string,
+): Promise<{ data: Party | null; error: Error | null }> {
   const { data, error } = await supabase.from('parties').select('*').eq('id', partyId).single();
 
   if (error) {
     console.error('Error fetching party:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error: null };
 }
 
-export async function createParty(party: PartyInsert): Promise<Party | null> {
+export async function createParty(
+  party: PartyInsert,
+): Promise<{ data: Party | null; error: Error | null }> {
   const { data, error } = await supabase.from('parties').insert(party).select().single();
 
   if (error) {
     console.error('Error creating party:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error };
 }
 
-export async function deleteParty(partyId: string): Promise<Party | null> {
+export async function deleteParty(
+  partyId: string,
+): Promise<{ data: Party | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('parties')
     .delete()
@@ -50,8 +58,8 @@ export async function deleteParty(partyId: string): Promise<Party | null> {
 
   if (error) {
     console.error('Error delting party:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error: null };
 }

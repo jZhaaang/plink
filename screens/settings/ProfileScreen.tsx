@@ -13,7 +13,7 @@ export default function ProfileScreen() {
       const user = sessionData.session?.user;
       if (!user) return;
 
-      const userData = await getUserById(user.id);
+      const { data: userData } = await getUserById(user.id);
 
       setName(userData?.name || '');
 

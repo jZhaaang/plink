@@ -23,7 +23,7 @@ export default function CreateLinkScreen() {
     const user = sessionData.session?.user;
     if (!user || !name) return;
 
-    const link = await createLinkHelper({
+    const { data: link } = await createLinkHelper({
       name,
       party_id: partyId,
       created_by: user.id,

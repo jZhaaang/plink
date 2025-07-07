@@ -20,9 +20,9 @@ export default function PartyListScreen() {
       const user = sessionData.session?.user;
       if (!user) return;
 
-      const parties = await getUserParties(user.id);
+      const { data: parties } = await getUserParties(user.id);
 
-      setParties(parties);
+      if (parties) setParties(parties);
     };
 
     loadParties();

@@ -7,7 +7,9 @@ type LinkPostWithUser = LinkPost & {
 };
 type LinkPostInsert = Database['public']['Tables']['link_posts']['Insert'];
 
-export async function getLinkPosts(linkId: string): Promise<LinkPostWithUser[] | null> {
+export async function getLinkPosts(
+  linkId: string,
+): Promise<{ data: LinkPostWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('link_posts')
     .select('*, users(name)')
@@ -16,13 +18,15 @@ export async function getLinkPosts(linkId: string): Promise<LinkPostWithUser[] |
 
   if (error) {
     console.error('Error fetching link posts:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error: null };
 }
 
-export async function createLinkPost(post: LinkPostInsert): Promise<LinkPostWithUser | null> {
+export async function createLinkPost(
+  post: LinkPostInsert,
+): Promise<{ data: LinkPostWithUser | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('link_posts')
     .insert(post)
@@ -31,8 +35,21 @@ export async function createLinkPost(post: LinkPostInsert): Promise<LinkPostWith
 
   if (error) {
     console.error('Error creating post:', error.message);
-    return null;
+    return { data: null, error };
   }
 
-  return data;
+  return { data, error: null };
+}
+
+export async function deleteLinkPost(
+  postId: string,
+): Promise<{ data: LinkPost | null; error: Error | null }> {
+  const { data, error } = await supabase.from('link_posts').delete().match({ id: postId });
+
+  if (error) {
+    console.error('Error deleting post:', error.message);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
 }
