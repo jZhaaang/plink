@@ -1,3 +1,5 @@
+export * from './hooks/useLinkDetail';
+export * from './hooks/useUserId';
 export * from './queries/linkMembers';
 export * from './queries/linkPosts';
 export * from './queries/links';
