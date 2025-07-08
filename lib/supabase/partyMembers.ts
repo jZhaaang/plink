@@ -3,7 +3,7 @@ import { Database } from '@/types/supabase';
 
 type PartyMember = Database['public']['Tables']['party_members']['Row'];
 type PartyMemberWithUser = PartyMember & {
-  users: { name: string | null };
+  users: { name: string; avatar_url: string };
 };
 type PartyMemberInsert = Database['public']['Tables']['party_members']['Insert'];
 
@@ -12,7 +12,7 @@ export async function getPartyMembers(
 ): Promise<{ data: PartyMemberWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('party_members')
-    .select('*, users(name)')
+    .select('*, users(name, avatar_url)')
     .eq('party_id', partyId);
 
   if (error) {

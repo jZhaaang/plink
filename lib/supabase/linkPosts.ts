@@ -3,7 +3,7 @@ import { Database } from '@/types/supabase';
 
 type LinkPost = Database['public']['Tables']['link_posts']['Row'];
 type LinkPostWithUser = LinkPost & {
-  users: { name: string | null };
+  users: { name: string; avatar_url: string };
 };
 type LinkPostInsert = Database['public']['Tables']['link_posts']['Insert'];
 
@@ -12,7 +12,7 @@ export async function getLinkPosts(
 ): Promise<{ data: LinkPostWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('link_posts')
-    .select('*, users(name)')
+    .select('*, users(name, avatar_url)')
     .eq('link_id', linkId)
     .order('created_at', { ascending: true });
 
@@ -30,7 +30,7 @@ export async function createLinkPost(
   const { data, error } = await supabase
     .from('link_posts')
     .insert(post)
-    .select('*, users(name)')
+    .select('*, users(name, avatar_url)')
     .single();
 
   if (error) {

@@ -3,28 +3,31 @@ import {
   getLinkById,
   getLinkMembers,
   getLinkPosts,
+  getPartyById,
   supabase,
   updateLink,
 } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { Button, Card, Container, Input } from '@/ui/components';
+import { LinkHeader } from '@/ui/components';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView } from 'react-native';
 
 type Route = RouteProp<RootStackParamList, 'LinkDetail'>;
+type Party = Database['public']['Tables']['parties']['Row'];
 type Link = Database['public']['Tables']['links']['Row'];
 type LinkMember = Database['public']['Tables']['link_members']['Row'] & {
-  users: { name: string | null };
+  users: { name: string; avatar_url: string };
 };
 type LinkPost = Database['public']['Tables']['link_posts']['Row'] & {
-  users: { name: string | null };
+  users: { name: string };
 };
 
 export default function LinkDetailScreen() {
-  const { linkId } = useRoute<Route>().params;
+  const { partyId, linkId } = useRoute<Route>().params;
 
+  const [party, setParty] = useState<Party | null>(null);
   const [link, setLink] = useState<Link | null>(null);
   const [members, setMembers] = useState<LinkMember[]>([]);
   const [posts, setPosts] = useState<LinkPost[]>([]);
@@ -36,10 +39,12 @@ export default function LinkDetailScreen() {
     const fetchData = async () => {
       setLoading(true);
 
+      const { data: party } = await getPartyById(partyId);
       const { data: link } = await getLinkById(linkId);
       const { data: members } = await getLinkMembers(linkId);
       const { data: posts } = await getLinkPosts(linkId);
 
+      if (party) setParty(party);
       if (link) setLink(link);
       if (members) setMembers(members);
       if (posts) setPosts(posts);
@@ -48,7 +53,7 @@ export default function LinkDetailScreen() {
     };
 
     fetchData();
-  }, [linkId]);
+  }, [linkId, partyId]);
 
   const submitPost = async () => {
     if (!newPost.trim()) return;
@@ -75,47 +80,18 @@ export default function LinkDetailScreen() {
     Alert.alert('Link ended');
   };
 
-  if (loading) return <ActivityIndicator />;
+  if (loading || !link || !party) return <ActivityIndicator />;
 
   return (
-    <Container>
-      <Text className="text-xl font-bold mt-4">{link?.name}</Text>
-      <Text className="text-sm text-gray-500">
-        Started at {new Date(link?.created_at ?? '').toLocaleString()}
-      </Text>
-
-      {link?.is_active && <Button title="End Link" onPress={endLink} className="mt-2" />}
-
-      <Text className="text-base font-semibold mt-4">Members</Text>
-      <View className="mb-2">
-        {members.map((member) => (
-          <Text key={member.user_id}>• {member.users.name}</Text>
-        ))}
-      </View>
-
-      <Text className="text-base font-semibold mt-2">Posts</Text>
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Card className="mb-2">
-            <Text className="font-semibold">{item.users.name}</Text>
-            <Text>{item.content}</Text>
-            <Text className="text-xs text-gray-500">
-              {new Date(item.created_at ?? '').toLocaleTimeString()}
-            </Text>
-          </Card>
-        )}
+    <ScrollView className="flex-1 bg-white">
+      <LinkHeader
+        linkName={link.name}
+        partyName={party.name}
+        partyAvatar=""
+        createdAt={link.created_at}
+        location="test"
+        members={members.map((m) => m.users)}
       />
-
-      <Input
-        placeholder="Write a post..."
-        value={newPost}
-        onChangeText={setNewPost}
-        className="mt-4"
-      />
-
-      <Button title="Post" onPress={submitPost} className="mt-2" />
-    </Container>
+    </ScrollView>
   );
 }

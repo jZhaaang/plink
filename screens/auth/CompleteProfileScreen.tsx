@@ -1,4 +1,4 @@
-import { supabase, updateUser } from '@/lib/supabase';
+import { supabase, upsertUser } from '@/lib/supabase';
 import { Button, Input } from '@/ui/components';
 import * as ImagePicker from 'expo-image-picker';
 import { useMemo, useRef, useState } from 'react';
@@ -16,7 +16,7 @@ export default function CompleteProfileScreen({ onComplete }: { onComplete: () =
   const [step, setStep] = useState(0);
 
   const [name, setName] = useState('');
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarUri, setAvatarUri] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   const defaultAvatarUri = useMemo(() => {
@@ -58,7 +58,12 @@ export default function CompleteProfileScreen({ onComplete }: { onComplete: () =
       const { data: publicUrl } = supabase.storage.from('avatars').getPublicUrl(fileName);
       if (publicUrl?.publicUrl) finalAvatarUrl = publicUrl?.publicUrl;
 
-      await updateUser(user.id, { name: name.trim(), avatar_url: finalAvatarUrl });
+      await upsertUser({
+        id: user.id,
+        email: user.email,
+        name: name.trim(),
+        avatar_url: finalAvatarUrl,
+      });
       scrollToStep(2);
     } else {
       console.log('Error uploading avatar:', uploadError.message);
@@ -99,7 +104,7 @@ export default function CompleteProfileScreen({ onComplete }: { onComplete: () =
             className="w-24 h-24 rounded-full self-center mb-4"
           />
           <Button title="Pick Image" onPress={pickImage} />
-          {avatarUri && <Button title="Remove Image" onPress={() => setAvatarUri(null)} />}
+          {avatarUri && <Button title="Remove Image" onPress={() => setAvatarUri('')} />}
           <View className="mt-4">
             <Button title="Back" onPress={() => scrollToStep(0)} intent="secondary" />
             <Button

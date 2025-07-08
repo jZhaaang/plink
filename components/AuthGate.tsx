@@ -1,4 +1,4 @@
-import { getUserById, supabase, upsertUser } from '@/lib/supabase';
+import { getUserById, supabase } from '@/lib/supabase';
 import AppNavigator from '@/navigation/AppNavigator';
 import { getNavLinkingConfig } from '@/navigation/linking';
 import { NavigationContainer } from '@react-navigation/native';
@@ -34,9 +34,13 @@ export default function AuthGate() {
       setAuthenticated(!!user);
 
       if (user) {
-        await upsertUser({ id: user.id, email: user.email });
-        const { data: profile } = await getUserById(user.id);
-        setNeedsProfile(!profile?.name);
+        const { data: profile, error } = await getUserById(user.id);
+
+        if (!profile || error) {
+          setNeedsProfile(true);
+        } else {
+          setNeedsProfile(!profile?.name);
+        }
       }
     });
 

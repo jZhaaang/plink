@@ -3,7 +3,7 @@ import { Database } from '@/types/supabase';
 
 type LinkMember = Database['public']['Tables']['link_members']['Row'];
 type LinkMemberWithUser = LinkMember & {
-  users: { name: string | null };
+  users: { name: string; avatar_url: string };
 };
 type LinkMemberInsert = Database['public']['Tables']['link_members']['Insert'];
 
@@ -12,7 +12,7 @@ export async function getLinkMembers(
 ): Promise<{ data: LinkMemberWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('link_members')
-    .select('*, users(name)')
+    .select('*, users(name, avatar_url)')
     .eq('link_id', linkId);
 
   if (error) {
