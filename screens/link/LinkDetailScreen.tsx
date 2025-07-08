@@ -1,75 +1,42 @@
 import {
   createLinkPost,
   deleteLinkPost,
-  getLinkById,
-  getLinkMembers,
-  getLinkPosts,
-  getPartyById,
   supabase,
   updateLinkPost,
+  useLinkDetail,
+  useUserId,
 } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
-import { Database } from '@/types/supabase';
-import { LinkHeader, LinkPostItem } from '@/ui/components';
-import PhotoPreviewGrid from '@/ui/components/PhotoPreviewGrid';
-import PostComposer from '@/ui/components/PostComposer';
+import { LinkPost } from '@/types/models';
+import { LinkHeader, LinkPostItem, PhotoPreviewGrid, PostComposer } from '@/ui/components';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView } from 'react-native';
 import uuid from 'react-native-uuid';
 
 type Route = RouteProp<RootStackParamList, 'LinkDetail'>;
-type Party = Database['public']['Tables']['parties']['Row'];
-type Link = Database['public']['Tables']['links']['Row'];
-type LinkMember = Database['public']['Tables']['link_members']['Row'] & {
-  users: { name: string; avatar_url: string };
-};
-type LinkPost = Database['public']['Tables']['link_posts']['Row'] & {
-  users: { name: string; avatar_url: string };
-};
 
 export default function LinkDetailScreen() {
   const { partyId, linkId } = useRoute<Route>().params;
-  const [userId, setUserId] = useState<string | null>(null);
 
-  const [party, setParty] = useState<Party | null>(null);
-  const [link, setLink] = useState<Link | null>(null);
-  const [members, setMembers] = useState<LinkMember[]>([]);
-  const [posts, setPosts] = useState<LinkPost[]>([]);
+  const { userId, loading: userLoading } = useUserId();
+  const {
+    party,
+    link,
+    members,
+    posts,
+    loading: dataLoading,
+    error,
+    refetch,
+  } = useLinkDetail(partyId, linkId);
 
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData.session?.user;
-    const { data: party } = await getPartyById(partyId);
-    const { data: link } = await getLinkById(linkId);
-    const { data: members } = await getLinkMembers(linkId);
-    const { data: posts } = await getLinkPosts(linkId);
-
-    if (user) setUserId(user.id);
-    if (party) setParty(party);
-    if (link) setLink(link);
-    if (members) setMembers(members);
-    if (posts) setPosts(posts);
-
-    setLoading(false);
-  }, [partyId, linkId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const loading = userLoading || dataLoading;
 
   const submitPost = async (comment: string, imageUris: string[]) => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData.session?.user;
-    if (!user) return;
+    if (!userId) return;
 
     const { data: newPost, error: insertError } = await createLinkPost({
       link_id: linkId,
-      user_id: user.id,
+      user_id: userId,
       comment,
     });
 
@@ -82,7 +49,7 @@ export default function LinkDetailScreen() {
     const uploadedUrls: string[] = [];
 
     for (const uri of imageUris) {
-      const fileName = `${partyId}/${linkId}/${user.id}/${uuid.v4()}.jpg`;
+      const fileName = `${partyId}/${linkId}/${userId}/${uuid.v4()}.jpg`;
       const response = await fetch(uri);
       const blob = await response.blob();
       const arrayBuffer = await new Response(blob).arrayBuffer();
@@ -92,7 +59,7 @@ export default function LinkDetailScreen() {
         .upload(fileName, arrayBuffer, {
           contentType: 'image/jpeg',
           upsert: false,
-          metadata: { link_id: linkId },
+          metadata: { party_id: partyId, link_id: linkId, user_id: userId },
         });
 
       if (uploadError) {
@@ -113,12 +80,11 @@ export default function LinkDetailScreen() {
 
     if (uploadedUrls.length > 0) {
       const { error } = await updateLinkPost(postId, { image_urls: uploadedUrls });
-      console.log(uploadedUrls);
 
       if (error) console.error('Error updating post with image URLs:', error.message);
     }
 
-    fetchData();
+    await refetch();
   };
 
   const deletePost = async (post: LinkPost) => {
@@ -149,7 +115,7 @@ export default function LinkDetailScreen() {
 
     const { error } = await deleteLinkPost(post.id);
 
-    if (!error) await fetchData();
+    if (!error) await refetch();
   };
 
   if (loading || !link || !party) return <ActivityIndicator />;
