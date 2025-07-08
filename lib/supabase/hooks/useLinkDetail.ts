@@ -1,6 +1,6 @@
 import type { Link, LinkMemberWithUser, LinkPostWithUser, Party } from '@/types/models';
 import { useCallback, useEffect, useState } from 'react';
-import { getLinkById, getLinkMembers, getLinkPosts, getPartyById } from '../';
+import { getLinkById, getLinkMembers, getLinkPosts, getPartyById } from '../queries';
 
 export function useLinkDetail(partyId: string, linkId: string) {
   const [party, setParty] = useState<Party | null>(null);

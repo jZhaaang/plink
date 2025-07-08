@@ -7,7 +7,7 @@ import {
   getUserById,
   removePartyMember,
   supabase,
-} from '@/lib/supabase';
+} from '@/lib/supabase/queries/';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
 import { Button, Container, Input, PressableCard } from '@/ui/components';

@@ -1,4 +1,4 @@
-import { getUserById, supabase, updateUser } from '@/lib/supabase';
+import { getUserById, supabase, updateUser } from '@/lib/supabase/queries/';
 import { Button, Container, Input } from '@/ui/components';
 import { useEffect, useState } from 'react';
 import { Alert, Text } from 'react-native';

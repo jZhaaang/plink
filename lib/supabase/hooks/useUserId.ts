@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../';
+import { supabase } from '../queries/supabase';
 
 export function useUserId() {
   const [userId, setUserId] = useState<string | null>(null);

@@ -1,4 +1,8 @@
-import { addPartyMember, createParty as createPartyHelper, supabase } from '@/lib/supabase';
+import {
+  addPartyMember,
+  createParty as createPartyHelper,
+  supabase,
+} from '@/lib/supabase/queries/';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Button, Container, Input } from '@/ui/components';
 import { useNavigation } from '@react-navigation/native';

@@ -1,11 +1,5 @@
-import {
-  createLinkPost,
-  deleteLinkPost,
-  supabase,
-  updateLinkPost,
-  useLinkDetail,
-  useUserId,
-} from '@/lib/supabase';
+import { useLinkDetail, useUserId } from '@/lib/supabase/hooks/';
+import { createLinkPost, deleteLinkPost, supabase, updateLinkPost } from '@/lib/supabase/queries/';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { LinkPost } from '@/types/models';
 import { LinkHeader, LinkPostItem, PhotoPreviewGrid, PostComposer } from '@/ui/components';

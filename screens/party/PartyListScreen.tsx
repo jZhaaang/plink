@@ -1,4 +1,4 @@
-import { getUserParties, supabase } from '@/lib/supabase';
+import { getUserParties, supabase } from '@/lib/supabase/queries/';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
 import { Button, Container, PressableCard } from '@/ui/components';

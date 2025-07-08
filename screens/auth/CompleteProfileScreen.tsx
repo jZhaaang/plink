@@ -1,4 +1,4 @@
-import { supabase, upsertUser } from '@/lib/supabase';
+import { supabase, upsertUser } from '@/lib/supabase/queries/';
 import { Button, Input } from '@/ui/components';
 import * as ImagePicker from 'expo-image-picker';
 import { useMemo, useRef, useState } from 'react';

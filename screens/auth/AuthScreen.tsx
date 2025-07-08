@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/queries/';
 import Button from '@/ui/components/Button';
 import Container from '@/ui/components/Container';
 import Input from '@/ui/components/Input';

@@ -1,4 +1,4 @@
-import { getUserById, supabase } from '@/lib/supabase';
+import { getUserById, supabase } from '@/lib/supabase/queries/';
 import AppNavigator from '@/navigation/AppNavigator';
 import { getNavLinkingConfig } from '@/navigation/linking';
 import { NavigationContainer } from '@react-navigation/native';
