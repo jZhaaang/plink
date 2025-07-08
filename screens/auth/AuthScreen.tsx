@@ -11,13 +11,19 @@ export default function AuthScreen() {
   const [message, setMessage] = useState('');
 
   const handleSignUp = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: 'plink://complete-profile' },
+    });
     setMessage(error ? error.message : 'Check your email to confirm');
   };
 
   const handleSignIn = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setMessage(error ? error.message : 'Signed in');
+    if (error) {
+      setMessage(error.message);
+    }
   };
 
   return (

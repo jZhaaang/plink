@@ -8,6 +8,7 @@ export default {
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: 'plink',
+    deepLinking: true,
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
     ios: {

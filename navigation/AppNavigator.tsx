@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import AuthScreen from '@/screens/auth/AuthScreen';
+import CompleteProfileScreen from '@/screens/auth/CompleteProfileScreen';
 import HomeScreen from '@/screens/home/HomeScreen';
 import CreateLinkScreen from '@/screens/link/CreateLinkScreen';
 import LinkDetailScreen from '@/screens/link/LinkDetailScreen';
@@ -10,6 +11,7 @@ import PartyListScreen from '@/screens/party/PartyListScreen';
 import ProfileScreen from '@/screens/settings/ProfileScreen';
 
 export type RootStackParamList = {
+  CompleteProfile: undefined;
   Home: undefined;
   Auth: undefined;
   CreateLink: { partyId: string };
@@ -21,15 +23,23 @@ export type RootStackParamList = {
 };
 
 type Props = {
-  isAuthenticated: boolean | null;
+  isAuthenticated: boolean;
+  needsProfile: boolean;
+  onProfileComplete: () => void;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function AppNavigator({ isAuthenticated }: Props) {
+export default function AppNavigator({ isAuthenticated, needsProfile, onProfileComplete }: Props) {
   return (
     <Stack.Navigator>
-      {isAuthenticated ? (
+      {!isAuthenticated ? (
+        <Stack.Screen name="Auth" component={AuthScreen} />
+      ) : needsProfile ? (
+        <Stack.Screen name="CompleteProfile">
+          {() => <CompleteProfileScreen onComplete={onProfileComplete} />}
+        </Stack.Screen>
+      ) : (
         <>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="CreateLink" component={CreateLinkScreen} />
@@ -39,8 +49,6 @@ export default function AppNavigator({ isAuthenticated }: Props) {
           <Stack.Screen name="PartyDetail" component={PartyDetailScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
         </>
-      ) : (
-        <Stack.Screen name="Auth" component={AuthScreen} />
       )}
     </Stack.Navigator>
   );
