@@ -1,12 +1,5 @@
 import { supabase } from '@/lib/supabase/queries/supabase';
-import { Database } from '@/types/supabase';
-
-type LinkPost = Database['public']['Tables']['link_posts']['Row'];
-type LinkPostWithUser = LinkPost & {
-  users: { name: string; avatar_url: string };
-};
-type LinkPostInsert = Database['public']['Tables']['link_posts']['Insert'];
-type LinkPostUpdate = Database['public']['Tables']['link_posts']['Update'];
+import { LinkPost, LinkPostInsert, LinkPostUpdate, LinkPostWithUser } from '@/types/models';
 
 export async function getLinkPosts(
   linkId: string,

@@ -1,11 +1,5 @@
 import { supabase } from '@/lib/supabase/queries/supabase';
-import { Database } from '@/types/supabase';
-
-type PartyMember = Database['public']['Tables']['party_members']['Row'];
-type PartyMemberWithUser = PartyMember & {
-  users: { name: string; avatar_url: string };
-};
-type PartyMemberInsert = Database['public']['Tables']['party_members']['Insert'];
+import { PartyMember, PartyMemberInsert, PartyMemberWithUser } from '@/types/models';
 
 export async function getPartyMembers(
   partyId: string,

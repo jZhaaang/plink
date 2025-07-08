@@ -1,9 +1,5 @@
 import { supabase } from '@/lib/supabase/queries/supabase';
-import { Database } from '@/types/supabase';
-
-type User = Database['public']['Tables']['users']['Row'];
-type UserInsert = Database['public']['Tables']['users']['Insert'];
-type UserUpdate = Database['public']['Tables']['users']['Update'];
+import { User, UserInsert, UserUpdate } from '@/types/models';
 
 export async function getUserById(id: string): Promise<{ data: User | null; error: Error | null }> {
   const { data, error } = await supabase.from('users').select('*').eq('id', id).single();

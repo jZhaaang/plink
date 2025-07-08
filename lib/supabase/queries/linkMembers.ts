@@ -1,11 +1,5 @@
 import { supabase } from '@/lib/supabase/queries/supabase';
-import { Database } from '@/types/supabase';
-
-type LinkMember = Database['public']['Tables']['link_members']['Row'];
-type LinkMemberWithUser = LinkMember & {
-  users: { name: string; avatar_url: string };
-};
-type LinkMemberInsert = Database['public']['Tables']['link_members']['Insert'];
+import { LinkMember, LinkMemberInsert, LinkMemberWithUser } from '@/types/models';
 
 export async function getLinkMembers(
   linkId: string,

@@ -1,9 +1,5 @@
-import { Database } from '@/types/supabase';
+import { Link, LinkInsert, LinkUpdate } from '@/types/models';
 import { supabase } from './supabase';
-
-type Link = Database['public']['Tables']['links']['Row'];
-type LinkInsert = Database['public']['Tables']['links']['Insert'];
-type LinkUpdate = Database['public']['Tables']['links']['Update'];
 
 export async function getLinksByPartyId(
   partyId: string,

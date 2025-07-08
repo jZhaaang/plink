@@ -1,8 +1,5 @@
-import { Database } from '@/types/supabase';
+import { Party, PartyInsert } from '@/types/models';
 import { supabase } from './supabase';
-
-type Party = Database['public']['Tables']['parties']['Row'];
-type PartyInsert = Database['public']['Tables']['parties']['Insert'];
 
 export async function getUserParties(
   userId: string,
