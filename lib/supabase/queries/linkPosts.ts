@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/supabase';
+import { supabase } from '@/lib/supabase/queries/supabase';
 import { Database } from '@/types/supabase';
 
 type LinkPost = Database['public']['Tables']['link_posts']['Row'];

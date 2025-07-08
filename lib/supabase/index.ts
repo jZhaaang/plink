@@ -1,8 +1,8 @@
-export * from './linkMembers';
-export * from './linkPosts';
-export * from './links';
-export * from './parties';
-export * from './partyMembers';
-export * from './supabase';
-export * from './users';
+export * from './queries/linkMembers';
+export * from './queries/linkPosts';
+export * from './queries/links';
+export * from './queries/parties';
+export * from './queries/partyMembers';
+export * from './queries/supabase';
+export * from './queries/users';
 
