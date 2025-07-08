@@ -1,7 +1,7 @@
 import { getUserParties, supabase } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { Button, Container, PressableCard } from '@/ui';
+import { Button, Container, PressableCard } from '@/ui/components';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';

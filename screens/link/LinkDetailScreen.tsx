@@ -8,7 +8,7 @@ import {
 } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { Button, Card, Container, Input } from '@/ui';
+import { Button, Card, Container, Input } from '@/ui/components';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, View } from 'react-native';
@@ -84,7 +84,7 @@ export default function LinkDetailScreen() {
         Started at {new Date(link?.created_at ?? '').toLocaleString()}
       </Text>
 
-      <Button title="End Link" onPress={endLink} className="mt-2" />
+      {link?.is_active && <Button title="End Link" onPress={endLink} className="mt-2" />}
 
       <Text className="text-base font-semibold mt-4">Members</Text>
       <View className="mb-2">

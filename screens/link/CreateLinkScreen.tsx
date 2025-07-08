@@ -1,6 +1,6 @@
 import { addLinkMember, createLink as createLinkHelper, supabase } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
-import { Button, Container, Input } from '@/ui';
+import { Button, Container, Input } from '@/ui/components';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';

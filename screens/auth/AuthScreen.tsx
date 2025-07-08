@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import Button from '@/ui/Button';
-import Container from '@/ui/Container';
-import Input from '@/ui/Input';
+import Button from '@/ui/components/Button';
+import Container from '@/ui/components/Container';
+import Input from '@/ui/components/Input';
 import { useState } from 'react';
 import { Text } from 'react-native';
 

@@ -10,7 +10,7 @@ import {
 } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { Database } from '@/types/supabase';
-import { Button, Container, Input, PressableCard } from '@/ui';
+import { Button, Container, Input, PressableCard } from '@/ui/components';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';

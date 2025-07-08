@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { RootStackParamList } from '@/navigation/AppNavigator';
-import Button from '@/ui/Button';
-import Container from '@/ui/Container';
+import Button from '@/ui/components/Button';
+import Container from '@/ui/components/Container';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text, View } from 'react-native';
