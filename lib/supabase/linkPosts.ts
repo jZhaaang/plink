@@ -6,6 +6,7 @@ type LinkPostWithUser = LinkPost & {
   users: { name: string; avatar_url: string };
 };
 type LinkPostInsert = Database['public']['Tables']['link_posts']['Insert'];
+type LinkPostUpdate = Database['public']['Tables']['link_posts']['Update'];
 
 export async function getLinkPosts(
   linkId: string,
@@ -35,6 +36,25 @@ export async function createLinkPost(
 
   if (error) {
     console.error('Error creating post:', error.message);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+}
+
+export async function updateLinkPost(
+  postId: string,
+  updates: LinkPostUpdate,
+): Promise<{ data: LinkPost | null; error: Error | null }> {
+  const { data, error } = await supabase
+    .from('link_posts')
+    .update(updates)
+    .eq('id', postId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating post:', error.message);
     return { data: null, error };
   }
 
