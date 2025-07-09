@@ -6,7 +6,7 @@ export async function getUserParties(
 ): Promise<{ data: Party[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('party_members')
-    .select('parties (id, name, created_by, created_at)')
+    .select('parties (*)')
     .eq('user_id', userId);
 
   if (error) {
