@@ -1,52 +1,44 @@
-import { getUserParties, supabase } from '@/lib/supabase/queries/';
+import { usePartiesWithRecentLink } from '@/lib/supabase/hooks/usePartiesWithRecentLink';
 import { RootStackParamList } from '@/navigation/AppNavigator';
-import { Database } from '@/types/supabase';
-import { Button, Container, PressableCard } from '@/ui/components';
+import { PartyCard } from '@/ui/components/PartyCard';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
-import { Text } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-type Party = Database['public']['Tables']['parties']['Row'];
 
 export default function PartyListScreen() {
   const navigation = useNavigation<Nav>();
-  const [parties, setParties] = useState<Party[]>([]);
 
-  useEffect(() => {
-    const loadParties = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData.session?.user;
-      if (!user) return;
+  const { parties, loading, error } = usePartiesWithRecentLink();
 
-      const { data: parties } = await getUserParties(user.id);
-
-      if (parties) setParties(parties);
-    };
-
-    loadParties();
-  }, []);
+  if (loading || !parties) return <ActivityIndicator />;
 
   return (
-    <Container>
-      <Text className="text-xl font-bold text-blue-500 my-4">Your Parties</Text>
-
-      {parties.map((party) => (
-        <PressableCard
-          key={party.id}
-          elevated
-          onPress={() => navigation.navigate('PartyDetail', { partyId: party.id })}
-          className="mb-2"
-        >
-          <Text className="text-base font-medium">{party.name}</Text>
-        </PressableCard>
-      ))}
-      <Button
-        title="Create Party"
-        onPress={() => navigation.navigate('CreateParty')}
-        className="mt-8"
+    <View className="flex-1 bg-white px-4 pt-4">
+      <FlatList
+        data={parties}
+        keyExtractor={(item) => item.party.id}
+        renderItem={({ item }) => (
+          <PartyCard
+            partyName={item.party.name}
+            avatarUrl="https://ui-avatars.com/api/?background=0D8ABC&color=fff"
+            bannerUrl="https://ui-avatars.com/api/?background=0D8ABC&color=fff"
+            recentLinkName={item.link?.name ?? ''}
+            recentLinkCreatedAt={item.link?.created_at ?? ''}
+            isActive={item.link?.is_active ?? false}
+            onPress={() => navigation.navigate('PartyDetail', { partyId: item.party.id })}
+          />
+        )}
+        ListFooterComponent={
+          <Pressable
+            onPress={() => navigation.navigate('CreateParty')}
+            className="mt-4 p-4 rounded-xl items-center bg-purple-100"
+          >
+            <Text className="text-lg text-purple-800 font-semibold">+ Create a Party</Text>
+          </Pressable>
+        }
       />
-    </Container>
+    </View>
   );
 }
