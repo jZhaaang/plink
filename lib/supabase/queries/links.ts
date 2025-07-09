@@ -3,7 +3,8 @@ import { supabase } from './supabase';
 
 export async function getLinksByPartyId(
   partyId: string,
-  activeOnly: boolean = false,
+  activeOnly?: boolean,
+  limit?: number,
 ): Promise<{ data: Link[] | null; error: Error | null }> {
   let query = supabase
     .from('links')
@@ -13,6 +14,9 @@ export async function getLinksByPartyId(
 
   if (activeOnly) {
     query = query.eq('is_active', true);
+  }
+  if (limit) {
+    query = query.limit(limit);
   }
 
   const { data, error } = await query;
