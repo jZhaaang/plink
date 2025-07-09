@@ -74,6 +74,7 @@ export default function CreatePartyScreen() {
       console.error('Error creating party:', err);
     } finally {
       setLoading(false);
+      navigation.navigate('PartyList');
     }
   };
 
