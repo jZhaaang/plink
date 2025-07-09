@@ -8,7 +8,7 @@ import { Text, View } from 'react-native';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-export default function Index() {
+export default function HomeScreen() {
   const navigation = useNavigation<Nav>();
 
   const logout = async () => {
