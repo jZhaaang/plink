@@ -22,8 +22,9 @@ export default function PartyListScreen() {
         renderItem={({ item }) => (
           <PartyCard
             partyName={item.party.name}
-            avatarUrl="https://ui-avatars.com/api/?background=0D8ABC&color=fff"
-            bannerUrl="https://ui-avatars.com/api/?background=0D8ABC&color=fff"
+            avatarUrl={item.party.avatar_url}
+            bannerUrl={item.party.banner_url ?? ''}
+            memberAvatars={item.memberAvatars}
             recentLinkName={item.link?.name ?? ''}
             recentLinkCreatedAt={item.link?.created_at ?? ''}
             isActive={item.link?.is_active ?? false}

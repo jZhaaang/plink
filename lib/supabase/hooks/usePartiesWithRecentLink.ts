@@ -1,11 +1,11 @@
-import { PartyWithRecentLink } from '@/types/models';
+import { PartyWithAvatarsAndRecentLink } from '@/types/models';
 import { useEffect, useState } from 'react';
-import { getLinksByPartyId, getUserParties } from '../queries';
+import { getLinksByPartyId, getPartyMembers, getUserParties } from '../queries';
 import { useUserId } from './useUserId';
 
 export function usePartiesWithRecentLink() {
   const { userId, loading: userLoading } = useUserId();
-  const [parties, setParties] = useState<PartyWithRecentLink[]>([]);
+  const [parties, setParties] = useState<PartyWithAvatarsAndRecentLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -18,10 +18,17 @@ export function usePartiesWithRecentLink() {
         if (!parties || partiesError) throw partiesError;
 
         const promises = parties.map(async (party) => {
+          const { data: members, error: membersError } = await getPartyMembers(party.id);
           const { data: links, error: linkError } = await getLinksByPartyId(party.id, false, 1);
+
+          if (!members || membersError) throw membersError;
           if (linkError) throw linkError;
+
+          const memberAvatars = members.map((member) => member.users.avatar_url);
+
           return {
             party,
+            memberAvatars,
             link: links?.[0] ?? null,
           };
         });
