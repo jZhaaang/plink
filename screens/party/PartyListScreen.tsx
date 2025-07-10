@@ -18,11 +18,11 @@ export default function PartyListScreen() {
     <View className="flex-1 bg-white px-4 pt-4">
       <FlatList
         data={partyOverviews}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.party.id}
         renderItem={({ item }) => (
           <PartyOverviewCard
             partyOverview={item}
-            onPress={() => navigation.navigate('PartyDetail', { partyId: item.id })}
+            onPress={() => navigation.navigate('PartyDetail', { partyId: item.party.id })}
           />
         )}
         ListFooterComponent={

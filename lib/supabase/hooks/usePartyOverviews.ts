@@ -20,14 +20,14 @@ export function usePartyOverviews() {
           const { data: links, error: linksError } = await getLinksByPartyId(party.id, false, 1);
           if (!links || linksError) throw linksError;
 
-          const { data: partyMembers, error: partyMembersError } = await getPartyMembers(party.id);
-          if (!partyMembers || partyMembersError) throw partyMembersError;
+          const { data: members, error: membersError } = await getPartyMembers(party.id);
+          if (!members || membersError) throw membersError;
 
-          const members = partyMembers.map((member) => member.users);
+          const partyMembers = members.map((member) => member.users);
 
           return {
-            ...party,
-            members,
+            party,
+            partyMembers,
             recentLink: links[0],
           };
         });

@@ -8,29 +8,23 @@ type Props = {
 };
 
 export function PartyOverviewCard({ partyOverview, onPress }: Props) {
-  const {
-    name: partyName,
-    avatar_url: avatarUrl,
-    banner_url: bannerUrl,
-    members,
-    recentLink,
-  } = partyOverview;
-  const memberAvatars = members.map((member) => member.avatar_url);
+  const { party, partyMembers, recentLink } = partyOverview;
+  const memberAvatars = partyMembers.map((member) => member.avatar_url);
 
   return (
     <Pressable onPress={onPress} className="rounded-xl overflow-hidden border border-gray-300 mb-4">
       <View className="relative bg-gray-100">
-        {bannerUrl && (
+        {party.banner_url && (
           <Image
-            source={{ uri: bannerUrl }}
+            source={{ uri: party.banner_url }}
             className="absolute inset-0 w-full h-full opacity-25"
             resizeMode="cover"
           />
         )}
         <View className="flex-row items-center p-4">
-          <Image source={{ uri: avatarUrl }} className="w-16 h-16 rounded-full mr-3" />
+          <Image source={{ uri: party.avatar_url }} className="w-16 h-16 rounded-full mr-3" />
           <View>
-            <Text className="text-xl font-semibold text-base">{partyName}</Text>
+            <Text className="text-xl font-semibold text-base">{party.name}</Text>
             <Text className="text-md text-gray-600">
               {recentLink
                 ? `${recentLink.name} ${recentLink.is_active ? ' is happening now!' : ` happened ${formatDistanceToNow(new Date(recentLink.created_at))} ago`}`
