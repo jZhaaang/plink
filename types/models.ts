@@ -25,18 +25,22 @@ export type PartyMemberUpdate = Database['public']['Tables']['party_members']['U
 export type UserUpdate = Database['public']['Tables']['users']['Update'];
 
 // Joined types for UI
-export type PartyWithAvatarsAndRecentLink = {
+export type LinkOverview = Link & {
+  members: User[];
   party: Party;
-  memberAvatars: string[];
-  link: Link | null;
+};
+
+export type PartyOverview = Party & {
+  members: User[];
+  recentLink: Link;
 };
 
 export type PartyMemberWithUser = PartyMember & {
-  users: { name: string; avatar_url: string };
+  users: User;
 };
 
 export type LinkMemberWithUser = LinkMember & {
-  users: { name: string; avatar_url: string };
+  users: User;
 };
 
 export type LinkPostWithUser = LinkPost & {

@@ -6,7 +6,7 @@ export async function getLinkMembers(
 ): Promise<{ data: LinkMemberWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('link_members')
-    .select('*, users(name, avatar_url)')
+    .select('*, users(*)')
     .eq('link_id', linkId);
 
   if (error) {

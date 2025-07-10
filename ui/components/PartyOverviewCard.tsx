@@ -1,27 +1,22 @@
+import { PartyOverview } from '@/types/models';
 import { formatDistanceToNow } from 'date-fns';
 import { Image, Pressable, Text, View } from 'react-native';
 
 type Props = {
-  partyName: string;
-  avatarUrl: string;
-  bannerUrl?: string;
-  memberAvatars: string[];
-  recentLinkName?: string;
-  recentLinkCreatedAt?: string;
-  isActive?: boolean;
+  partyOverview: PartyOverview;
   onPress: () => void;
 };
 
-export function PartyCard({
-  partyName,
-  avatarUrl,
-  bannerUrl,
-  memberAvatars,
-  recentLinkName,
-  recentLinkCreatedAt,
-  isActive,
-  onPress,
-}: Props) {
+export function PartyOverviewCard({ partyOverview, onPress }: Props) {
+  const {
+    name: partyName,
+    avatar_url: avatarUrl,
+    banner_url: bannerUrl,
+    members,
+    recentLink,
+  } = partyOverview;
+  const memberAvatars = members.map((member) => member.avatar_url);
+
   return (
     <Pressable onPress={onPress} className="rounded-xl overflow-hidden border border-gray-300 mb-4">
       <View className="relative bg-gray-100">
@@ -37,8 +32,8 @@ export function PartyCard({
           <View>
             <Text className="text-xl font-semibold text-base">{partyName}</Text>
             <Text className="text-md text-gray-600">
-              {recentLinkName && recentLinkCreatedAt
-                ? `${recentLinkName} ${isActive ? ' is happening now!' : ` happened ${formatDistanceToNow(new Date(recentLinkCreatedAt))} ago`}`
+              {recentLink
+                ? `${recentLink.name} ${recentLink.is_active ? ' is happening now!' : ` happened ${formatDistanceToNow(new Date(recentLink.created_at))} ago`}`
                 : 'No links yet'}
             </Text>
             <View className="flex-row mt-2">
