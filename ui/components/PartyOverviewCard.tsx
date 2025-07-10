@@ -27,7 +27,7 @@ export function PartyOverviewCard({ partyOverview, onPress }: Props) {
             <Text className="text-xl font-semibold text-base">{party.name}</Text>
             <Text className="text-md text-gray-600">
               {recentLink
-                ? `${recentLink.name} ${recentLink.is_active ? ' is happening now!' : ` happened ${formatDistanceToNow(new Date(recentLink.created_at))} ago`}`
+                ? `${recentLink.name} ${recentLink.is_active ? 'is happening now!' : `happened ${formatDistanceToNow(new Date(recentLink.created_at))} ago`}`
                 : 'No links yet'}
             </Text>
             <View className="flex-row mt-2">
