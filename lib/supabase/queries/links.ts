@@ -29,6 +29,34 @@ export async function getLinksByPartyId(
   return { data, error: null };
 }
 
+export async function getLinksByUserId(
+  userId: string,
+  activeOnly?: boolean,
+  limit?: number,
+): Promise<{ data: Link[] | null; error: Error | null }> {
+  let query = supabase
+    .from('links')
+    .select('*')
+    .eq('created_by', userId)
+    .order('created_at', { ascending: false });
+
+  if (activeOnly) {
+    query = query.eq('is_active', true);
+  }
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching links:', error.message);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+}
+
 export async function getLinkById(
   linkId: string,
 ): Promise<{ data: Link | null; error: Error | null }> {
