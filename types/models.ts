@@ -38,6 +38,16 @@ export type PartyOverview = {
   partyMembers: User[];
 };
 
+export type PartyDetail = {
+  party: Party & {
+    members: User[];
+  };
+  links: (Link & {
+    members: User[];
+    posts: LinkPostWithUser[];
+  })[];
+};
+
 export type PartyMemberWithUser = PartyMember & {
   users: User;
 };
