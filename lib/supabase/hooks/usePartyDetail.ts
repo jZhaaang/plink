@@ -7,6 +7,7 @@ import {
   getPartyById,
   getPartyMembers,
 } from '../queries';
+import { resolveSignedUrlsForPosts } from '../utils/resolveSignedUrlsForPosts';
 
 export function usePartyDetail(partyId: string) {
   const [partyDetail, setPartyDetail] = useState<PartyDetail | null>(null);
@@ -32,6 +33,8 @@ export function usePartyDetail(partyId: string) {
           const { data: posts, error: postsError } = await getLinkPosts(link.id);
           if (!posts || postsError) throw postsError;
 
+          const resolvedPosts = await resolveSignedUrlsForPosts(posts);
+
           const { data: linkMembersData, error: linkMembersError } = await getLinkMembers(link.id);
           if (!linkMembersData || linkMembersError) throw linkMembersError;
 
@@ -40,7 +43,7 @@ export function usePartyDetail(partyId: string) {
           return {
             ...link,
             members: linkMembers,
-            posts,
+            posts: resolvedPosts,
           };
         });
 

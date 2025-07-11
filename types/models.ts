@@ -29,7 +29,7 @@ export type LinkOverview = {
   link: Link;
   party: Party;
   linkMembers: User[];
-  posts: LinkPost[];
+  posts: LinkPostWithUrls[];
 };
 
 export type PartyOverview = {
@@ -44,7 +44,7 @@ export type PartyDetail = {
   };
   links: (Link & {
     members: User[];
-    posts: LinkPostWithUser[];
+    posts: LinkPostWithUrls[];
   })[];
 };
 
@@ -57,5 +57,9 @@ export type LinkMemberWithUser = LinkMember & {
 };
 
 export type LinkPostWithUser = LinkPost & {
-  users: { name: string; avatar_url: string };
+  users: User;
+};
+
+export type LinkPostWithUrls = LinkPostWithUser & {
+  signed_image_urls: string[];
 };

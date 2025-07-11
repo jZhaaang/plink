@@ -10,7 +10,7 @@ type Props = {
 export function LinkCard({ link, onPress }: Props) {
   const { name, created_at: createdAt, is_active: isActive, members, posts } = link;
   const memberAvatars = members.map((member) => member.avatar_url);
-  const photos = posts.flatMap((post) => post.image_urls).slice(0, 3);
+  const photos = posts.flatMap((post) => post.signed_image_urls).slice(0, 3);
 
   return (
     <Pressable onPress={onPress} className="border border-gray-300 rounded-xl mb-4 p-3 bg-white">

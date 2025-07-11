@@ -1,6 +1,7 @@
 import { LinkOverview } from '@/types/models';
 import { useEffect, useState } from 'react';
 import { getLinkMembers, getLinkPosts, getLinksByUserId, getPartyById } from '../queries';
+import { resolveSignedUrlsForPosts } from '../utils/resolveSignedUrlsForPosts';
 import { useUserId } from './useUserId';
 
 export function useLinkOverviews(options?: { offset?: number; limit?: number }) {
@@ -24,6 +25,8 @@ export function useLinkOverviews(options?: { offset?: number; limit?: number }) 
           const { data: posts, error: postsError } = await getLinkPosts(link.id);
           if (!posts || postsError) throw postsError;
 
+          const resolvedPosts = await resolveSignedUrlsForPosts(posts);
+
           const { data: members, error: membersError } = await getLinkMembers(link.id);
           if (!members || membersError) throw membersError;
 
@@ -32,7 +35,7 @@ export function useLinkOverviews(options?: { offset?: number; limit?: number }) 
           return {
             link,
             party,
-            posts,
+            posts: resolvedPosts,
             linkMembers,
           };
         });

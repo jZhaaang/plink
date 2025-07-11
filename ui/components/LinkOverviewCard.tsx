@@ -13,7 +13,7 @@ export function LinkOverviewCard({ linkOverview, onPress }: Props) {
   const displayedAvatars = memberAvatars.slice(0, 3);
   const extraCount = memberAvatars.length - 3;
 
-  const photoUrls = posts.flatMap((post) => post.image_urls).slice(0, 3);
+  const photoUrls = posts.flatMap((post) => post.signed_image_urls).slice(0, 3);
 
   return (
     <Pressable

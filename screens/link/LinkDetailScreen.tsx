@@ -1,4 +1,5 @@
 import { useLinkDetail, useUserId } from '@/lib/supabase/hooks/';
+import { useResolvedPostsWithUrls } from '@/lib/supabase/hooks/useResolvedPostsWithUrls';
 import { createLinkPost, deleteLinkPost, supabase, updateLinkPost } from '@/lib/supabase/queries/';
 import { RootStackParamList } from '@/navigation/AppNavigator';
 import { LinkPost } from '@/types/models';
@@ -22,8 +23,9 @@ export default function LinkDetailScreen() {
     error,
     refetch,
   } = useLinkDetail(partyId, linkId);
+  const { resolvedPosts, loading: postsLoading } = useResolvedPostsWithUrls(posts);
 
-  const loading = userLoading || dataLoading;
+  const loading = userLoading || dataLoading || postsLoading;
 
   const submitPost = async (comment: string, imageUris: string[]) => {
     if (!userId) return;
@@ -40,7 +42,7 @@ export default function LinkDetailScreen() {
     }
 
     const postId = newPost.id;
-    const uploadedUrls: string[] = [];
+    const uploadedPaths: string[] = [];
 
     for (const uri of imageUris) {
       const fileName = `${partyId}/${linkId}/${userId}/${uuid.v4()}.jpg`;
@@ -61,21 +63,13 @@ export default function LinkDetailScreen() {
         continue;
       }
 
-      const { data, error } = await supabase.storage
-        .from('link-posts')
-        .createSignedUrl(fileName, 60 * 60 * 24);
-
-      if (error) console.error('Error getting signed URL:', error.message);
-
-      if (data?.signedUrl) {
-        uploadedUrls.push(data.signedUrl);
-      }
+      uploadedPaths.push(fileName);
     }
 
-    if (uploadedUrls.length > 0) {
-      const { error } = await updateLinkPost(postId, { image_urls: uploadedUrls });
+    if (uploadedPaths.length > 0) {
+      const { error } = await updateLinkPost(postId, { image_paths: uploadedPaths });
 
-      if (error) console.error('Error updating post with image URLs:', error.message);
+      if (error) console.error('Error updating post with image paths:', error.message);
     }
 
     await refetch();
@@ -95,13 +89,10 @@ export default function LinkDetailScreen() {
 
     if (!confirm) return;
 
-    const objectPaths = post.image_urls.map((url) => {
-      const path = url.split('/').slice(-2).join('/');
-      return path;
-    });
-
-    if (objectPaths.length > 0) {
-      const { error: deleteError } = await supabase.storage.from('link-posts').remove(objectPaths);
+    if (post.image_paths.length > 0) {
+      const { error: deleteError } = await supabase.storage
+        .from('link-posts')
+        .remove(post.image_paths);
       if (deleteError) {
         console.error('Error deleting image:', deleteError.message);
       }
@@ -114,9 +105,9 @@ export default function LinkDetailScreen() {
 
   if (loading || !link || !party) return <ActivityIndicator />;
 
-  const photoUrls = posts
-    .flatMap((p) => p.image_urls)
-    .filter((url) => url !== null)
+  const photoUrls = resolvedPosts
+    .flatMap((p) => p.image_paths)
+    .filter((path) => path !== null)
     .slice(0, 3);
 
   return (
@@ -130,14 +121,14 @@ export default function LinkDetailScreen() {
         members={members.map((m) => m.users)}
       />
       <PhotoPreviewGrid imageUrls={photoUrls} />
-      {posts.map((post, i) => (
+      {resolvedPosts.map((post, i) => (
         <LinkPostItem
           key={i}
           name={post.users.name}
           avatarUrl={post.users.avatar_url}
           createdAt={post.created_at}
           comment={post.comment}
-          imageUrls={post.image_urls}
+          imageUrls={post.signed_image_urls}
           canDelete={post.user_id === userId}
           onDelete={() => deletePost(post)}
         />
