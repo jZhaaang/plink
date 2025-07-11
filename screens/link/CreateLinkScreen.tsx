@@ -1,61 +1,85 @@
-import { addLinkMember, createLink as createLinkHelper, supabase } from '@/lib/supabase/queries/';
-import { RootStackParamList } from '@/navigation/AppNavigator';
-import { Button, Container, Input } from '@/ui/components';
+import { useUserId } from '@/lib/supabase/hooks';
+import useParties from '@/lib/supabase/hooks/useParties';
+import { addLinkMember, createLink } from '@/lib/supabase/queries';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { Picker } from '@react-native-picker/picker';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
-import { Text } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 type Route = RouteProp<RootStackParamList, 'CreateLink'>;
-type Nav = NativeStackNavigationProp<RootStackParamList, 'LinkDetail'>;
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function CreateLinkScreen() {
-  const { partyId } = useRoute<Route>().params;
   const navigation = useNavigation<Nav>();
+  const route = useRoute<Route>();
+  const prefilledPartyId = route.params?.partyId ?? null;
+  const { userId } = useUserId();
 
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { parties, loading } = useParties();
+  const [partyId, setPartyId] = useState(prefilledPartyId ?? '');
+  const [linkName, setLinkName] = useState('');
+  const [location, setLocation] = useState('');
 
-  const createLink = async () => {
-    setLoading(true);
+  useEffect(() => {
+    if (prefilledPartyId) setPartyId(prefilledPartyId);
+  }, [prefilledPartyId]);
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData.session?.user;
-    if (!user || !name) return;
+  const handleSubmit = async () => {
+    if (!userId || !partyId || !linkName) return;
 
-    const { data: link } = await createLinkHelper({
-      name,
+    const { data: link, error: linkError } = await createLink({
       party_id: partyId,
-      created_by: user.id,
-      is_active: true,
+      created_by: userId,
+      name: linkName,
+      location,
     });
 
-    if (link) {
-      await addLinkMember({ link_id: link?.id, user_id: user.id });
+    if (!link || linkError) return;
 
-      navigation.navigate('LinkDetail', {
-        partyId: partyId,
-        linkId: link.id,
-      });
-    }
+    const { error } = await addLinkMember({ user_id: userId, link_id: link.id });
 
-    setLoading(false);
+    if (error) return;
+
+    navigation.navigate('LinkDetail', { partyId: partyId, linkId: link.id });
   };
 
   return (
-    <Container>
-      <Text className="text-lg font-semibold my-4">Link Name</Text>
-      <Input
-        placeholder="What's this link about?"
-        value={name}
-        onChangeText={setName}
-        className="mb-2"
-      />
-      <Button
-        title={loading ? 'Creating...' : 'Create Link'}
-        onPress={createLink}
-        disabled={loading}
-      />
-    </Container>
+    <ScrollView className="flex-1 bg-white px-6 pt-6">
+      <View className="rounded-xl border border-gray-300 p-4 space-y-6 bg-white">
+        <Text className="text-lg font-semibold">Party</Text>
+        <View className="border rounded-md border-gray-300">
+          <Picker selectedValue={partyId} onValueChange={(itemValue) => setPartyId(itemValue)}>
+            {parties.map((p) => (
+              <Picker.Item key={p.id} label={p.name} value={p.id} />
+            ))}
+          </Picker>
+        </View>
+
+        <Text className="text-lg font-semibold">Link Name</Text>
+        <TextInput
+          className="border border-gray-300 rounded-md p-3"
+          placeholder="Enter a name"
+          value={linkName}
+          onChangeText={setLinkName}
+        />
+
+        <Text className="text-lg font-semibold">Location</Text>
+        <TextInput
+          className="border border-gray-300 rounded-md p-3"
+          placeholder="Where are you?"
+          value={location}
+          onChangeText={setLocation}
+        />
+
+        <Pressable
+          onPress={handleSubmit}
+          className="bg-purple-200 py-4 rounded-xl items-center shadow-md"
+        >
+          <Text className="text-purple-800 font-bold text-lg">+ Start a Link</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }

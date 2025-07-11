@@ -117,7 +117,7 @@ export default function LinkDetailScreen() {
         partyName={party.name}
         partyAvatar=""
         createdAt={link.created_at}
-        location="test"
+        location={link.location}
         members={members.map((m) => m.users)}
       />
       <PhotoPreviewGrid imageUrls={photoUrls} />
