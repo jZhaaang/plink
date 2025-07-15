@@ -1,6 +1,6 @@
 import { PartyOverview } from '@/types/models';
 import { useEffect, useState } from 'react';
-import { getLinksByPartyId, getPartyMembers, getUserParties } from '../queries';
+import { getPartyMembers, getUserParties } from '../queries';
 import { useUserId } from './useUserId';
 
 export function usePartyOverviews() {
@@ -17,9 +17,6 @@ export function usePartyOverviews() {
         if (!parties || partiesError) throw partiesError;
 
         const promises = parties.map(async (party) => {
-          const { data: links, error: linksError } = await getLinksByPartyId(party.id, false, 1);
-          if (!links || linksError) throw linksError;
-
           const { data: members, error: membersError } = await getPartyMembers(party.id);
           if (!members || membersError) throw membersError;
 
@@ -28,7 +25,6 @@ export function usePartyOverviews() {
           return {
             party,
             partyMembers,
-            recentLink: links[0],
           };
         });
 

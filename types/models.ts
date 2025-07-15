@@ -34,7 +34,6 @@ export type LinkOverview = {
 
 export type PartyOverview = {
   party: Party;
-  recentLink: Link;
   partyMembers: User[];
 };
 
