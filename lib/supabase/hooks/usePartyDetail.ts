@@ -33,7 +33,7 @@ export function usePartyDetail(partyId: string) {
           const { data: posts, error: postsError } = await getLinkPosts(link.id);
           if (!posts || postsError) throw postsError;
 
-          const resolvedPosts = await resolveSignedUrlsForPosts(posts);
+          const resolvedPosts = posts.length !== 0 ? await resolveSignedUrlsForPosts(posts) : [];
 
           const { data: linkMembersData, error: linkMembersError } = await getLinkMembers(link.id);
           if (!linkMembersData || linkMembersError) throw linkMembersError;
