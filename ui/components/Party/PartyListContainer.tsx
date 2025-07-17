@@ -17,7 +17,7 @@ export function PartyListContainer({
   title = 'Your Parties',
 }: Props) {
   return (
-    <View className="my-4 px-4">
+    <View className="p-4">
       <Text className="text-xl font-bold text-gray-900 mb-4">{title}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {parties.map((party) => (
