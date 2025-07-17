@@ -15,8 +15,6 @@ export function LinkListContainer({
   title = 'Recent Links',
   showPartyInfo = false,
 }: Props) {
-  if (linkOverviews.length === 0) return null;
-
   const sorted = [...linkOverviews].sort((a, b) => {
     if (a.link.is_active !== b.link.is_active) return a.link.is_active ? -1 : 1;
     return new Date(b.link.created_at).getTime() - new Date(a.link.created_at).getTime();

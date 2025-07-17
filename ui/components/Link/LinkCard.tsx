@@ -10,7 +10,7 @@ import { PhotoGrid } from '../PhotoGrid';
 
 type Props = {
   linkOverview: LinkOverview;
-  onPress: () => void;
+  onPress: (partyId: string, linkId: string) => void;
   showPartyInfo?: boolean;
 };
 
@@ -42,7 +42,11 @@ export function LinkCard({ linkOverview, onPress, showPartyInfo }: Props) {
           )}
           <View>
             {showPartyInfo && <Text className="font-semibold text-gray-900">{party.name}</Text>}
-            <Text className="text-sm text-gray-600">{link.name}</Text>
+            <Text
+              className={`text-gray-600 ${!showPartyInfo ? 'font-semibold text-gray-900 ml-2' : 'text-sm'}`}
+            >
+              {link.name}
+            </Text>
           </View>
         </View>
 
@@ -80,7 +84,10 @@ export function LinkCard({ linkOverview, onPress, showPartyInfo }: Props) {
   );
 
   return (
-    <Pressable onPress={onPress} className="mb-4 rounded-xl overflow-hidden">
+    <Pressable
+      onPress={() => onPress(party.id, link.id)}
+      className="mb-4 rounded-xl overflow-hidden"
+    >
       {isActive ? (
         <LinearGradient
           colors={['#d1fae5', '#abe1c8']}

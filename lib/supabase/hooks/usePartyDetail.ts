@@ -41,14 +41,18 @@ export function usePartyDetail(partyId: string) {
           const linkMembers = linkMembersData.map((member) => member.users);
 
           return {
-            ...link,
-            members: linkMembers,
+            link,
+            party,
+            linkMembers,
             posts: resolvedPosts,
           };
         });
 
-        const linkDetails = await Promise.all(promises);
-        setPartyDetail({ party: { ...party, members: partyMembers }, links: linkDetails });
+        const linkOverviews = await Promise.all(promises);
+        setPartyDetail({
+          partyOverview: { party, partyMembers: partyMembers },
+          linkOverviews,
+        });
       } catch (err) {
         setError(err as Error);
       } finally {

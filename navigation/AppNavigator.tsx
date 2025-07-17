@@ -33,7 +33,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator({ isAuthenticated, needsProfile, onProfileComplete }: Props) {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerTitleAlign: 'center' }}>
       {!isAuthenticated ? (
         <Stack.Screen name="Auth" component={AuthScreen} />
       ) : needsProfile ? (
@@ -51,7 +51,11 @@ export default function AppNavigator({ isAuthenticated, needsProfile, onProfileC
           <Stack.Screen name="LinkDetail" component={LinkDetailScreen} />
           <Stack.Screen name="CreateParty" component={CreatePartyScreen} />
           <Stack.Screen name="PartyList" component={PartyListScreen} />
-          <Stack.Screen name="PartyDetail" component={PartyDetailScreen} />
+          <Stack.Screen
+            name="PartyDetail"
+            component={PartyDetailScreen}
+            options={{ title: 'View Party' }}
+          />
           <Stack.Screen name="Profile" component={ProfileScreen} />
         </>
       )}

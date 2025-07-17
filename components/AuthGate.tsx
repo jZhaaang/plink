@@ -4,6 +4,7 @@ import { getNavLinkingConfig } from '@/navigation/linking';
 import { NavigationContainer } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
+import { Provider } from 'react-native-paper';
 
 export default function AuthGate() {
   const [checking, setChecking] = useState(true);
@@ -56,12 +57,14 @@ export default function AuthGate() {
   }
 
   return (
-    <NavigationContainer linking={getNavLinkingConfig()}>
-      <AppNavigator
-        isAuthenticated={authenticated}
-        needsProfile={needsProfile}
-        onProfileComplete={() => setNeedsProfile(false)}
-      />
-    </NavigationContainer>
+    <Provider>
+      <NavigationContainer linking={getNavLinkingConfig()}>
+        <AppNavigator
+          isAuthenticated={authenticated}
+          needsProfile={needsProfile}
+          onProfileComplete={() => setNeedsProfile(false)}
+        />
+      </NavigationContainer>
+    </Provider>
   );
 }

@@ -38,13 +38,8 @@ export type PartyOverview = {
 };
 
 export type PartyDetail = {
-  party: Party & {
-    members: User[];
-  };
-  links: (Link & {
-    members: User[];
-    posts: LinkPostWithUrls[];
-  })[];
+  partyOverview: PartyOverview;
+  linkOverviews: LinkOverview[];
 };
 
 export type PartyMemberWithUser = PartyMember & {
