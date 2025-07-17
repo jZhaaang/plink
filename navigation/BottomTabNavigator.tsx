@@ -20,11 +20,12 @@ export default function BottomTabNavigator() {
         tabBarIcon: ({ color, size }) => {
           return <Ionicons name={icons[route.name as TabName]} size={size} color={color} />;
         },
-        headerShown: false,
+        headerShown: true,
+        headerTitleAlign: 'center',
         tabBarShowLabel: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
       <Tab.Screen name="Link" component={CreateLinkScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

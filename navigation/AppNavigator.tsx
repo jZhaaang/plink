@@ -42,7 +42,11 @@ export default function AppNavigator({ isAuthenticated, needsProfile, onProfileC
         </Stack.Screen>
       ) : (
         <>
-          <Stack.Screen name="Main" component={BottomTabNavigator} />
+          <Stack.Screen
+            name="Main"
+            component={BottomTabNavigator}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen name="CreateLink" component={CreateLinkScreen} />
           <Stack.Screen name="LinkDetail" component={LinkDetailScreen} />
           <Stack.Screen name="CreateParty" component={CreatePartyScreen} />
