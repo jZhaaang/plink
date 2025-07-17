@@ -10,7 +10,10 @@ export async function resolveSignedUrlsForPosts(
     .from('link-posts')
     .createSignedUrls(allPaths, 60 * 60);
 
-  if (!data || error) throw error;
+  if (!data || error) {
+    console.error(error.message);
+    throw error;
+  }
 
   const urls = data.map((item) => item.signedUrl);
 

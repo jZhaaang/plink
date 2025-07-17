@@ -6,7 +6,7 @@ export async function getLinkPosts(
 ): Promise<{ data: LinkPostWithUser[] | null; error: Error | null }> {
   const { data, error } = await supabase
     .from('link_posts')
-    .select('*, users(name, avatar_url)')
+    .select('*, users(*)')
     .eq('link_id', linkId)
     .order('created_at', { ascending: true });
 
@@ -24,7 +24,7 @@ export async function createLinkPost(
   const { data, error } = await supabase
     .from('link_posts')
     .insert(post)
-    .select('*, users(name, avatar_url)')
+    .select('*, users(*)')
     .single();
 
   if (error) {
