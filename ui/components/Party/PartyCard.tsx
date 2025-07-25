@@ -1,6 +1,6 @@
 import { Party } from '@/types/models';
 import { Pressable, Text, View } from 'react-native';
-import { PartyAvatar } from './PartyAvatar';
+import { Avatar } from '../Avatar';
 import { PartyBanner } from './PartyBanner';
 
 type Props = {
@@ -17,7 +17,7 @@ export function PartyCard({ party, onPress }: Props) {
       <PartyBanner uri={party.banner_url} />
 
       <View className="relative px-4 pt-6 pb-4">
-        <PartyAvatar
+        <Avatar
           uri={party.avatar_url}
           size={60}
           style={{

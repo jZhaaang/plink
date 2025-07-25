@@ -3,7 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Menu } from 'react-native-paper';
-import { PartyAvatar } from './PartyAvatar';
+import { Avatar } from '../Avatar';
 import { PartyBanner } from './PartyBanner';
 
 type Props = {
@@ -34,7 +34,7 @@ export function PartyHeader({ partyOverview }: Props) {
       </View>
 
       <View className="relative px-4 pt-6 pb-4">
-        <PartyAvatar
+        <Avatar
           uri={partyOverview.party.avatar_url}
           size={60}
           style={{
@@ -54,7 +54,7 @@ export function PartyHeader({ partyOverview }: Props) {
         <View className="mt-2 space-y-2">
           {partyOverview.partyMembers.map((member) => (
             <View key={member.id} className="flex-row items-center">
-              <PartyAvatar uri={member.avatar_url} size={24} border={1} />
+              <Avatar uri={member.avatar_url} size={24} border={1} />
               <Text className="ml-2 text-gray-800 text-base">{member.name}</Text>
             </View>
           ))}

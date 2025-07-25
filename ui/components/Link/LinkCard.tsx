@@ -3,8 +3,8 @@ import { LinkOverview } from '@/types/models';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, Text, View } from 'react-native';
+import { Avatar } from '../Avatar';
 import { MemberAvatarStack } from '../MemberAvatarStack';
-import { PartyAvatar } from '../Party/PartyAvatar';
 import { PhotoGrid } from '../PhotoGrid';
 
 type Props = {
@@ -31,7 +31,7 @@ export function LinkCard({ linkOverview, onPress, showPartyInfo }: Props) {
       <View className="flex-row items-center justify-between p-4">
         <View className="flex-row items-center">
           {showPartyInfo && (
-            <PartyAvatar uri={party.avatar_url} size={48} border={2} style={{ marginRight: 8 }} />
+            <Avatar uri={party.avatar_url} size={48} border={2} style={{ marginRight: 8 }} />
           )}
           <View>
             {showPartyInfo && <Text className="font-semibold text-gray-900">{party.name}</Text>}

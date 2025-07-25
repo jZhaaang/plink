@@ -8,7 +8,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function PartyAvatar({ uri, size = 64, border = 4, style }: Props) {
+export function Avatar({ uri, size = 64, border = 4, style }: Props) {
   return (
     <View
       style={[
