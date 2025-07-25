@@ -1,9 +1,7 @@
 import { usePartyDetail } from '@/lib/supabase/hooks/usePartyDetail';
 import { RootStackParamList } from '@/navigation/AppNavigator';
-import { CreateLinkCard } from '@/ui/components/Link/CreateLinkCard';
-import { LinkCard } from '@/ui/components/Link/LinkCard';
-import { LinkListContainer } from '@/ui/components/Link/LinkListContainer';
-import { PartyHeader } from '@/ui/components/Party/PartyHeader';
+import { CreateLinkCard, LinkCard, LinkListContainer } from '@/ui/components/Link';
+import { PartyHeader } from '@/ui/components/Party';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';

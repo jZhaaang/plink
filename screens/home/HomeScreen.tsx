@@ -1,8 +1,8 @@
 import { useLinkOverviews } from '@/lib/supabase/hooks/useLinkOverviews';
 import useParties from '@/lib/supabase/hooks/useParties';
 import { RootStackParamList } from '@/navigation/AppNavigator';
-import { LinkListContainer } from '@/ui/components/Link/LinkListContainer';
-import { PartyListContainer } from '@/ui/components/Party/PartyListContainer';
+import { LinkListContainer } from '@/ui/components/Link';
+import { PartyListContainer } from '@/ui/components/Party';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ActivityIndicator, ScrollView } from 'react-native';
