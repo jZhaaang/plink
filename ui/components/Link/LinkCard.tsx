@@ -1,7 +1,6 @@
+import { formatTimestamp } from '@/lib/utils';
 import { LinkOverview } from '@/types/models';
 import { Feather } from '@expo/vector-icons';
-import { differenceInHours, format, formatDistanceToNow } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, Text, View } from 'react-native';
 import { MemberAvatarStack } from '../MemberAvatarStack';
@@ -23,13 +22,7 @@ export function LinkCard({ linkOverview, onPress, showPartyInfo }: Props) {
   const photoCount = posts.reduce((acc, p) => acc + p.signed_image_urls.length, 0);
   const commentCount = posts.length;
 
-  const utcDate = new Date(link.created_at + 'Z');
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = toZonedTime(utcDate, timezone);
-  const timestamp =
-    differenceInHours(new Date(), localDate) < 24
-      ? formatDistanceToNow(localDate, { addSuffix: true })
-      : format(localDate, 'dd/MM/yyyy');
+  const timestamp = formatTimestamp(link.created_at);
 
   const isActive = link.is_active;
 
