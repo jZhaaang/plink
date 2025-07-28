@@ -46,7 +46,11 @@ export default function AppNavigator({ isAuthenticated, needsProfile, onProfileC
             options={{ headerShown: false }}
           />
           <Stack.Screen name="CreateLink" component={CreateLinkScreen} />
-          <Stack.Screen name="LinkDetail" component={LinkDetailScreen} />
+          <Stack.Screen
+            name="LinkDetail"
+            component={LinkDetailScreen}
+            options={{ title: 'View Link' }}
+          />
           <Stack.Screen name="CreateParty" component={CreatePartyScreen} />
           <Stack.Screen
             name="PartyDetail"
