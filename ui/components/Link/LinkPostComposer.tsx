@@ -14,7 +14,7 @@ type Props = {
   onSubmit: (comment: string, images: string[]) => void;
 };
 
-export default function PostComposer({ onSubmit }: Props) {
+export function LinkPostComposer({ onSubmit }: Props) {
   const [comment, setComment] = useState('');
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
