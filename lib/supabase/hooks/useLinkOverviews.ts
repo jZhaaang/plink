@@ -1,10 +1,24 @@
 import { LinkOverview } from '@/types/models';
 import { useEffect, useState } from 'react';
-import { getLinkMembers, getLinkPosts, getLinksByUserId, getPartyById } from '../queries';
+import {
+  getLinkById,
+  getLinkMembers,
+  getLinkPosts,
+  getLinksByUserId,
+  getPartyById,
+} from '../queries';
 import { resolveSignedUrlsForPosts } from '../utils/resolveSignedUrlsForPosts';
 import { useUserId } from './useUserId';
 
-export function useLinkOverviews(options?: { offset?: number; limit?: number }) {
+type Result =
+  | { linkOverview: LinkOverview | null; linkOverviews?: never }
+  | { linkOverviews: LinkOverview[]; linkOverview?: never };
+
+export function useLinkOverviews(options?: {
+  offset?: number;
+  limit?: number;
+  linkId?: string;
+}): Result & { loading: boolean; error: Error | null } {
   const { userId, loading: userLoading } = useUserId();
   const [linkOverviews, setLinkOverviews] = useState<LinkOverview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,8 +29,13 @@ export function useLinkOverviews(options?: { offset?: number; limit?: number }) 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const { data: links, error: linksError } = await getLinksByUserId(userId);
-        if (!links || linksError) throw linksError;
+        const { data, error: linksError } = options?.linkId
+          ? await getLinkById(options.linkId)
+          : await getLinksByUserId(userId);
+
+        if (!data || linksError) throw linksError;
+
+        const links = Array.isArray(data) ? data : [data];
 
         const promises = links.map(async (link) => {
           const { data: party, error: partyError } = await getPartyById(link.party_id);
@@ -50,7 +69,9 @@ export function useLinkOverviews(options?: { offset?: number; limit?: number }) 
     };
 
     fetchData();
-  }, [userId, userLoading]);
+  }, [options?.linkId, userId, userLoading]);
 
-  return { linkOverviews, loading, error };
+  const result = options?.linkId ? { linkOverview: linkOverviews[0] ?? null } : { linkOverviews };
+
+  return { ...result, loading, error };
 }
