@@ -8,9 +8,19 @@ import { Avatar } from '../Avatar';
 
 type Props = {
   linkOverview: LinkOverview;
+  onPressInviteMembers?: () => void;
+  onPressEditLink?: () => void;
+  onPressEndLink?: () => void;
+  onPressDeleteLink?: () => void;
 };
 
-export function LinkMetaCard({ linkOverview }: Props) {
+export function LinkMetaCard({
+  linkOverview,
+  onPressInviteMembers,
+  onPressEditLink,
+  onPressEndLink,
+  onPressDeleteLink,
+}: Props) {
   const [visible, setVisible] = useState(false);
   const { link, party, linkMembers } = linkOverview;
 
@@ -58,10 +68,14 @@ export function LinkMetaCard({ linkOverview }: Props) {
             </Pressable>
           }
         >
-          <Menu.Item onPress={() => {}} title="Invite Members" />
-          <Menu.Item onPress={() => {}} title="Edit Link" />
-          <Menu.Item onPress={() => {}} title="End Link" />
-          <Menu.Item onPress={() => {}} title="Delete Link" titleStyle={{ color: 'red' }} />
+          <Menu.Item onPress={onPressInviteMembers} title="Invite Members" />
+          {link.is_active && <Menu.Item onPress={onPressEditLink} title="Edit Link" />}
+          <Menu.Item onPress={onPressEndLink} title="End Link" />
+          <Menu.Item
+            onPress={onPressDeleteLink}
+            title="Delete Link"
+            titleStyle={{ color: 'red' }}
+          />
         </Menu>
       </View>
     </View>
