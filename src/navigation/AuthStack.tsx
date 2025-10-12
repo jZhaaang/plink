@@ -1,0 +1,38 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LandingScreen from '../features/auth/screens/LandingScreen';
+import SignInScreen from '../features/auth/screens/SignInScreen';
+import SignUpScreen from '../features/auth/screens/SignUpScreen';
+
+export type AuthStackParamList = {
+  Landing: undefined;
+  SignIn: undefined;
+  SignUp: undefined;
+  CompleteProfile: undefined;
+};
+
+const Stack = createNativeStackNavigator<AuthStackParamList>();
+
+export default function AuthStack() {
+  return (
+    <Stack.Navigator
+      id={undefined}
+      screenOptions={{ headerTitleAlign: 'center' }}
+    >
+      <Stack.Screen
+        name="Landing"
+        component={LandingScreen}
+        options={{ title: '' }}
+      />
+      <Stack.Screen
+        name="SignIn"
+        component={SignInScreen}
+        options={{ title: '' }}
+      />
+      <Stack.Screen
+        name="SignUp"
+        component={SignUpScreen}
+        options={{ title: '' }}
+      />
+    </Stack.Navigator>
+  );
+}

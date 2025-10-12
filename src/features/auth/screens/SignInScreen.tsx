@@ -1,0 +1,139 @@
+import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { AuthStackParamList } from '../../../navigation/types';
+import { supabase } from '../../../lib/supabase/client';
+import { Button, Dialog, DialogProps, TextField } from '../../../components';
+
+type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
+
+export default function SignInScreen({ navigation }: Props) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [secure, setSecure] = useState(true);
+  const [dialog, setDialog] = useState<Omit<DialogProps, 'onClose'>>({
+    visible: false,
+    variant: 'info',
+  });
+  const [loading, setLoading] = useState(false);
+
+  const hideDialog = () => setDialog((d) => ({ ...d, visible: false }));
+
+  const showDialog = (next: Omit<DialogProps, 'onClose' | 'visible'>) =>
+    setDialog((d) => ({ ...d, visible: true, ...next }));
+
+  async function onSignIn() {
+    if (!email || !password) {
+      showDialog({
+        variant: 'error',
+        title: 'Missing info',
+        message: 'Enter your email and password',
+        onPrimary: hideDialog,
+      });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+    if (error)
+      showDialog({
+        variant: 'error',
+        title: 'Login failed',
+        onPrimary: hideDialog,
+      });
+  }
+
+  return (
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
+      <View className="flex-1 gap-8 px-6">
+        <View className="pt-2">
+          <Text className="text-2xl font-extrabold tracking-tight text-slate-900">
+            plink
+          </Text>
+        </View>
+
+        <View className="gap-2">
+          <Text className="text-3xl font-bold text-slate-900">
+            Welcome back
+          </Text>
+          <Text className="text-slate-600">Log in to continue</Text>
+        </View>
+
+        <View className="mt-2 gap-4">
+          <View className="gap-1">
+            <Text className="text-xs font-medium text-slate-600">Email</Text>
+            <TextField
+              left={<Ionicons name="mail-outline" size={18} color="#64748b" />}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              value={email}
+              onChangeText={setEmail}
+              returnKeyType="next"
+            />
+          </View>
+
+          <View className="gap-1">
+            <Text className="text-xs font-medium text-slate-600">Password</Text>
+            <TextField
+              left={
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={18}
+                  color="#64748b"
+                />
+              }
+              placeholder="Password"
+              secureTextEntry={secure}
+              textContentType="newPassword"
+              value={password}
+              onChangeText={setPassword}
+              returnKeyType="done"
+              onSubmitEditing={onSignIn}
+              right={
+                <Pressable hitSlop={8} onPress={() => setSecure((s) => !s)}>
+                  <Ionicons
+                    name={secure ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#64748b"
+                  />
+                </Pressable>
+              }
+            />
+          </View>
+
+          <Button
+            title="Log In"
+            size="lg"
+            disabled={loading}
+            onPress={onSignIn}
+          />
+        </View>
+
+        <View className="mt-auto mb-6 flex-row justify-center gap-1">
+          <Text className="text-slate-600">No account?</Text>
+          <Pressable onPress={() => navigation.navigate('SignUp')}>
+            <Text className="font-semibold text-slate-900">Create one</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <Dialog
+        visible={dialog.visible}
+        onClose={hideDialog}
+        title={dialog.title}
+        message={dialog.message}
+        variant={dialog.variant}
+        primaryLabel={dialog.primaryLabel}
+        onPrimary={dialog.onPrimary}
+        secondaryLabel={dialog.secondaryLabel}
+        onSecondary={dialog.onSecondary}
+      />
+    </SafeAreaView>
+  );
+}

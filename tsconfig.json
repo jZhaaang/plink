@@ -2,13 +2,15 @@
   "compilerOptions": {
     "jsx": "react-native",
     "types": [
-      "nativewind/types"
+      "nativewind/types",
+      "node"
     ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "global.d.ts"
+    "global.d.ts",
+    "nativewind-env.d.ts"
   ],
   "extends": "expo/tsconfig.base"
 }

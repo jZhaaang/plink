@@ -1,0 +1,174 @@
+import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { AuthStackParamList } from '../../../navigation/types';
+import { supabase } from '../../../lib/supabase/client';
+import { Button, DialogProps, TextField } from '../../../components';
+import { Dialog } from '../../../components';
+
+type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
+
+export default function SignUpScreen({ navigation }: Props) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [secure, setSecure] = useState(true);
+  const [dialog, setDialog] = useState<Omit<DialogProps, 'onClose'>>({
+    visible: false,
+    variant: 'info',
+  });
+  const [loading, setLoading] = useState(false);
+
+  const valid =
+    /\S+@\S+\.\S+/.test(email.trim()) &&
+    password.length >= 6 &&
+    password === confirmPassword;
+
+  const hideDialog = () => setDialog((d) => ({ ...d, visible: false }));
+
+  const showDialog = (next: Omit<DialogProps, 'onClose' | 'visible'>) =>
+    setDialog((d) => ({ ...d, visible: true, ...next }));
+
+  async function onSignUp() {
+    if (!valid) {
+      showDialog({
+        variant: 'error',
+        title: 'Check your details',
+        message:
+          'Enter a valid email, a 6+ char password, and make sure they match',
+        onPrimary: hideDialog,
+      });
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+
+    if (error) {
+      showDialog({
+        variant: 'error',
+        title: 'Sign up failed',
+        onPrimary: hideDialog,
+      });
+    }
+    if (data.user) navigation.navigate('CompleteProfile');
+  }
+
+  return (
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
+      <View className="flex-1 gap-8 px-6">
+        <View className="pt-2">
+          <Text className="text-2xl font-extrabold tracking-tight text-slate-900">
+            plink
+          </Text>
+        </View>
+
+        <View className="gap-2">
+          <Text className="text-3xl font-bold text-slate-900">
+            Create your account
+          </Text>
+          <Text className="text-slate-600">
+            Join and start sharing memories
+          </Text>
+        </View>
+
+        <View className="mt-2 gap-4">
+          <View className="gap-1">
+            <Text className="text-xs font-medium text-slate-600">Email</Text>
+            <TextField
+              left={<Ionicons name="mail-outline" size={18} color="#64748b" />}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              value={email}
+              onChangeText={setEmail}
+              returnKeyType="next"
+            />
+          </View>
+
+          <View className="gap-1">
+            <Text className="text-xs font-medium text-slate-600">Password</Text>
+            <TextField
+              left={
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={18}
+                  color="#64748b"
+                />
+              }
+              placeholder="Password"
+              secureTextEntry={secure}
+              textContentType="newPassword"
+              value={password}
+              onChangeText={setPassword}
+              returnKeyType="next"
+              right={
+                <Pressable hitSlop={8} onPress={() => setSecure((s) => !s)}>
+                  <Ionicons
+                    name={secure ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#64748b"
+                  />
+                </Pressable>
+              }
+            />
+            <Text className="pl-1 text-[11px] text-slate-500">
+              Minimum 6 characters
+            </Text>
+          </View>
+
+          <View className="gap-1">
+            <Text className="text-xs font-medium text-slate-600">Confirm</Text>
+            <TextField
+              left={
+                <Ionicons
+                  name="shield-checkmark-outline"
+                  size={18}
+                  color="#64748b"
+                />
+              }
+              placeholder="Confirm"
+              secureTextEntry={secure}
+              textContentType="newPassword"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              returnKeyType="done"
+              onSubmitEditing={onSignUp}
+            />
+          </View>
+
+          <Button
+            title="Create Account"
+            size="lg"
+            disabled={loading}
+            onPress={onSignUp}
+          />
+        </View>
+
+        <View className="mt-auto mb-6 flex-row justify-center gap-1">
+          <Text className="text-slate-600">Already have an account?</Text>
+          <Pressable onPress={() => navigation.navigate('SignIn')}>
+            <Text className="font-semibold text-slate-900">Log in</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <Dialog
+        visible={dialog.visible}
+        onClose={hideDialog}
+        title={dialog.title}
+        message={dialog.message}
+        variant={dialog.variant}
+        primaryLabel={dialog.primaryLabel}
+        onPrimary={dialog.onPrimary}
+        secondaryLabel={dialog.secondaryLabel}
+        onSecondary={dialog.onSecondary}
+      />
+    </SafeAreaView>
+  );
+}

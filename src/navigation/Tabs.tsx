@@ -1,6 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
-const Tab = createBottomTabNavigator();
+import type { TabsParamList } from './types';
+import HomeScreen from '../features/auth/screens/HomeScreen';
+
+const Tab = createBottomTabNavigator<TabsParamList>();
 
 export default function Tabs() {
   return (
