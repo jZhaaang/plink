@@ -4,8 +4,8 @@ import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../../navigation/types';
-import { supabase } from '../../../lib/supabase/client';
 import { Button, Dialog, DialogProps, TextField } from '../../../components';
+import { signInWithEmail } from '../../../lib/supabase/queries/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
@@ -35,10 +35,7 @@ export default function SignInScreen({ navigation }: Props) {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    const { error } = await signInWithEmail(email.trim(), password);
     setLoading(false);
     if (error)
       showDialog({

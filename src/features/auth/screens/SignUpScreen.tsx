@@ -4,9 +4,9 @@ import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../../navigation/types';
-import { supabase } from '../../../lib/supabase/client';
 import { Button, DialogProps, TextField } from '../../../components';
 import { Dialog } from '../../../components';
+import { signUpWithEmail } from '../../../lib/supabase/queries/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
@@ -43,16 +43,14 @@ export default function SignUpScreen({ navigation }: Props) {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
+    const { data, error } = await signUpWithEmail(email.trim(), password);
     setLoading(false);
 
     if (error) {
       showDialog({
         variant: 'error',
         title: 'Sign up failed',
+        message: error.message,
         onPrimary: hideDialog,
       });
     }

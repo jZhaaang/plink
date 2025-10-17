@@ -1,4 +1,4 @@
-import { supabase } from './client';
+import { supabase } from '../client';
 
 export async function signInWithEmail(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email: email.trim(), password });
