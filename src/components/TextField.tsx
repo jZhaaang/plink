@@ -1,7 +1,8 @@
-import { TextInput, TextInputProps, View } from 'react-native';
+import { Text, TextInput, TextInputProps, View } from 'react-native';
 import { cn } from './cn';
 
 type Props = TextInputProps & {
+  header?: string;
   left?: React.ReactNode;
   right?: React.ReactNode;
   containerClassName?: string;
@@ -9,6 +10,7 @@ type Props = TextInputProps & {
 };
 
 export default function TextField({
+  header,
   left,
   right,
   containerClassName,
@@ -16,18 +18,23 @@ export default function TextField({
   ...rest
 }: Props) {
   return (
-    <View
-      className={cn(
-        'flex-row items-center rounded-2xl border border-slate-300 bg-white px-3',
-        containerClassName,
+    <>
+      {header && (
+        <Text className="text-xs font-medium text-slate-600">Email</Text>
       )}
-    >
-      {left}
-      <TextInput
-        {...rest}
-        className={cn('ml-2 flex-1 py-3 text-base', inputClassName)}
-      />
-      {right}
-    </View>
+      <View
+        className={cn(
+          'flex-row items-center rounded-2xl border border-slate-300 bg-white px-3',
+          containerClassName,
+        )}
+      >
+        {left}
+        <TextInput
+          {...rest}
+          className={cn('ml-2 flex-1 py-3 text-base', inputClassName)}
+        />
+        {right}
+      </View>
+    </>
   );
 }
