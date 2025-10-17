@@ -7,7 +7,7 @@ import {
 import { cn } from './cn';
 
 type Variant = 'primary' | 'outline' | 'ghost';
-type Size = 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg';
 
 type Props = PressableProps & {
   title: string;
@@ -20,6 +20,7 @@ type Props = PressableProps & {
 
 const base = 'rounded-2xl active:opacity-90 disabled:opacity-60';
 const sizes: Record<Size, string> = {
+  sm: 'py-2 px-3',
   md: 'py-3 px-4',
   lg: 'py-4 px-5',
 };
