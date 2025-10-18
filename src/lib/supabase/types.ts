@@ -18,16 +18,19 @@ export type Database = {
         Row: {
           created_at: string | null;
           link_id: string;
+          updated_at: string | null;
           user_id: string;
         };
         Insert: {
           created_at?: string | null;
           link_id: string;
+          updated_at?: string | null;
           user_id: string;
         };
         Update: {
           created_at?: string | null;
           link_id?: string;
+          updated_at?: string | null;
           user_id?: string;
         };
         Relationships: [
@@ -42,7 +45,7 @@ export type Database = {
             foreignKeyName: 'link_members_user_id_fkey1';
             columns: ['user_id'];
             isOneToOne: false;
-            referencedRelation: 'users';
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -56,6 +59,7 @@ export type Database = {
           path: string;
           post_id: string;
           type: Database['public']['Enums']['media_type'];
+          updated_at: string | null;
         };
         Insert: {
           created_at?: string | null;
@@ -65,6 +69,7 @@ export type Database = {
           path: string;
           post_id: string;
           type: Database['public']['Enums']['media_type'];
+          updated_at?: string | null;
         };
         Update: {
           created_at?: string | null;
@@ -74,6 +79,7 @@ export type Database = {
           path?: string;
           post_id?: string;
           type?: Database['public']['Enums']['media_type'];
+          updated_at?: string | null;
         };
         Relationships: [
           {
@@ -92,6 +98,7 @@ export type Database = {
           link_id: string;
           owner_id: string;
           text: string | null;
+          updated_at: string | null;
         };
         Insert: {
           created_at?: string | null;
@@ -99,6 +106,7 @@ export type Database = {
           link_id: string;
           owner_id: string;
           text?: string | null;
+          updated_at?: string | null;
         };
         Update: {
           created_at?: string | null;
@@ -106,6 +114,7 @@ export type Database = {
           link_id?: string;
           owner_id?: string;
           text?: string | null;
+          updated_at?: string | null;
         };
         Relationships: [
           {
@@ -119,7 +128,7 @@ export type Database = {
             foreignKeyName: 'link_posts_owner_id_fkey';
             columns: ['owner_id'];
             isOneToOne: false;
-            referencedRelation: 'users';
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -132,6 +141,7 @@ export type Database = {
           name: string;
           owner_id: string;
           party_id: string;
+          updated_at: string | null;
         };
         Insert: {
           created_at?: string | null;
@@ -140,6 +150,7 @@ export type Database = {
           name: string;
           owner_id: string;
           party_id: string;
+          updated_at?: string | null;
         };
         Update: {
           created_at?: string | null;
@@ -148,13 +159,14 @@ export type Database = {
           name?: string;
           owner_id?: string;
           party_id?: string;
+          updated_at?: string | null;
         };
         Relationships: [
           {
             foreignKeyName: 'links_owner_id_fkey';
             columns: ['owner_id'];
             isOneToOne: false;
-            referencedRelation: 'users';
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
           {
@@ -166,218 +178,6 @@ export type Database = {
           },
         ];
       };
-      'old-link_members': {
-        Row: {
-          joined_at: string | null;
-          link_id: string;
-          user_id: string;
-        };
-        Insert: {
-          joined_at?: string | null;
-          link_id?: string;
-          user_id: string;
-        };
-        Update: {
-          joined_at?: string | null;
-          link_id?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'link_members_link_id_fkey';
-            columns: ['link_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-links';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'link_members_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      'old-link_posts': {
-        Row: {
-          comment: string | null;
-          created_at: string;
-          id: string;
-          image_paths: string[];
-          link_id: string;
-          user_id: string;
-        };
-        Insert: {
-          comment?: string | null;
-          created_at?: string;
-          id?: string;
-          image_paths?: string[];
-          link_id: string;
-          user_id: string;
-        };
-        Update: {
-          comment?: string | null;
-          created_at?: string;
-          id?: string;
-          image_paths?: string[];
-          link_id?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'link_posts_link_id_fkey';
-            columns: ['link_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-links';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'link_posts_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      'old-links': {
-        Row: {
-          created_at: string;
-          created_by: string;
-          id: string;
-          is_active: boolean;
-          location: string;
-          name: string;
-          party_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          created_by: string;
-          id?: string;
-          is_active?: boolean;
-          location?: string;
-          name: string;
-          party_id: string;
-        };
-        Update: {
-          created_at?: string;
-          created_by?: string;
-          id?: string;
-          is_active?: boolean;
-          location?: string;
-          name?: string;
-          party_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'links_created_by_fkey';
-            columns: ['created_by'];
-            isOneToOne: false;
-            referencedRelation: 'old-users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'links_party_id_fkey';
-            columns: ['party_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-parties';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      'old-parties': {
-        Row: {
-          avatar_url: string;
-          banner_url: string;
-          created_at: string | null;
-          created_by: string | null;
-          id: string;
-          name: string;
-        };
-        Insert: {
-          avatar_url: string;
-          banner_url: string;
-          created_at?: string | null;
-          created_by?: string | null;
-          id?: string;
-          name: string;
-        };
-        Update: {
-          avatar_url?: string;
-          banner_url?: string;
-          created_at?: string | null;
-          created_by?: string | null;
-          id?: string;
-          name?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'parties_created_by_fkey';
-            columns: ['created_by'];
-            isOneToOne: false;
-            referencedRelation: 'old-users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      'old-party_members': {
-        Row: {
-          joined_at: string;
-          party_id: string;
-          user_id: string;
-        };
-        Insert: {
-          joined_at?: string;
-          party_id: string;
-          user_id: string;
-        };
-        Update: {
-          joined_at?: string;
-          party_id?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'party_members_party_id_fkey';
-            columns: ['party_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-parties';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'party_members_user_id_fkey';
-            columns: ['user_id'];
-            isOneToOne: false;
-            referencedRelation: 'old-users';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      'old-users': {
-        Row: {
-          avatar_url: string;
-          created_at: string;
-          email: string | null;
-          id: string;
-          name: string;
-        };
-        Insert: {
-          avatar_url: string;
-          created_at?: string;
-          email?: string | null;
-          id: string;
-          name: string;
-        };
-        Update: {
-          avatar_url?: string;
-          created_at?: string;
-          email?: string | null;
-          id?: string;
-          name?: string;
-        };
-        Relationships: [];
-      };
       parties: {
         Row: {
           avatar_path: string | null;
@@ -386,6 +186,7 @@ export type Database = {
           id: string;
           name: string;
           owner_id: string;
+          updated_at: string | null;
         };
         Insert: {
           avatar_path?: string | null;
@@ -394,6 +195,7 @@ export type Database = {
           id?: string;
           name: string;
           owner_id: string;
+          updated_at?: string | null;
         };
         Update: {
           avatar_path?: string | null;
@@ -402,13 +204,14 @@ export type Database = {
           id?: string;
           name?: string;
           owner_id?: string;
+          updated_at?: string | null;
         };
         Relationships: [
           {
             foreignKeyName: 'parties_owner_id_fkey';
             columns: ['owner_id'];
             isOneToOne: false;
-            referencedRelation: 'users';
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -417,16 +220,19 @@ export type Database = {
         Row: {
           created_at: string | null;
           party_id: string;
+          updated_at: string | null;
           user_id: string;
         };
         Insert: {
           created_at?: string | null;
           party_id: string;
+          updated_at?: string | null;
           user_id: string;
         };
         Update: {
           created_at?: string | null;
           party_id?: string;
+          updated_at?: string | null;
           user_id?: string;
         };
         Relationships: [
@@ -441,29 +247,32 @@ export type Database = {
             foreignKeyName: 'party_members_user_id_fkey1';
             columns: ['user_id'];
             isOneToOne: false;
-            referencedRelation: 'users';
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
       };
-      users: {
+      profiles: {
         Row: {
           avatar_path: string | null;
           created_at: string;
           id: string;
           name: string | null;
+          updated_at: string | null;
         };
         Insert: {
           avatar_path?: string | null;
           created_at?: string;
           id?: string;
           name?: string | null;
+          updated_at?: string | null;
         };
         Update: {
           avatar_path?: string | null;
           created_at?: string;
           id?: string;
           name?: string | null;
+          updated_at?: string | null;
         };
         Relationships: [];
       };

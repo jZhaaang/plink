@@ -7,7 +7,6 @@ export type AuthStackParamList = {
   Landing: undefined;
   SignIn: undefined;
   SignUp: undefined;
-  CompleteProfile: undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();

@@ -1,0 +1,177 @@
+import * as ImagePicker from 'expo-image-picker';
+import { useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Pressable, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../../../lib/supabase/client';
+import { Button, Dialog, DialogProps, TextField } from '../../../components';
+import { avatars } from '../../../lib/supabase/storage/avatars';
+import { RootStackParamList } from '../../../navigation/types';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
+
+export default function CompleteProfileScreen({ navigation }: Props) {
+  const [name, setName] = useState('');
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<Omit<DialogProps, 'onClose'>>({
+    visible: false,
+    variant: 'info',
+  });
+  const [loading, setLoading] = useState(false);
+
+  console.log(JSON.stringify(navigation.getState(), null, 2));
+
+  const hideDialog = () => setDialog((d) => ({ ...d, visible: false }));
+
+  const showDialog = (next: Omit<DialogProps, 'onClose' | 'visible'>) =>
+    setDialog((d) => ({ ...d, visible: true, ...next }));
+
+  useEffect(() => {
+    ImagePicker.requestMediaLibraryPermissionsAsync();
+    ImagePicker.requestCameraPermissionsAsync();
+  }, []);
+
+  async function choosePhoto() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [3, 3],
+      quality: 1,
+    });
+    if (!result.canceled) setImageUri(result.assets[0].uri);
+  }
+
+  async function takePhoto() {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [3, 3],
+      quality: 1,
+    });
+    if (!result.canceled) setImageUri(result.assets[0].uri);
+  }
+
+  async function save() {
+    if (!name.trim()) {
+      showDialog({
+        variant: 'error',
+        title: 'Missing info',
+        message: 'Name is required',
+        onPrimary: hideDialog,
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
+      if (!user) throw new Error('Not signed in');
+
+      let avatar_path = null;
+
+      if (imageUri) {
+        avatar_path = await avatars.upload(user.id, imageUri, 'jpg');
+      }
+
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({ name: name.trim(), avatar_path })
+        .eq('id', user.id);
+      if (profileErr) throw profileErr;
+      navigation.replace('SignedIn', { needsProfile: false });
+    } catch (err) {
+      showDialog({
+        variant: 'error',
+        title: 'Save Error',
+        message: err.message,
+        onPrimary: hideDialog,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
+      <View className="flex-1 gap-8 px-6">
+        <View className="pt-2">
+          <Text className="text-2xl font-extrabold tracking-tight text-slate-900">
+            plink
+          </Text>
+        </View>
+
+        <View className="gap-2">
+          <Text className="text-3xl font-bold text-slate-900">
+            Complete your profile
+          </Text>
+          <Text className="text-slate-600">Add a name and a photo</Text>
+        </View>
+
+        <View className="items-center gap-3">
+          <Pressable
+            onPress={choosePhoto}
+            className="h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-slate-200"
+          >
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} className="h-28 w-28" />
+            ) : (
+              <Ionicons name="camera-outline" size={26} color="#64748b" />
+            )}
+          </Pressable>
+
+          <View className="flex-row gap-3">
+            <Button
+              title="Choose photo"
+              variant="outline"
+              size="sm"
+              onPress={choosePhoto}
+              textClassName="text-sm font-normal text-slate-600"
+            />
+            <Button
+              title="Take photo"
+              variant="outline"
+              size="sm"
+              onPress={takePhoto}
+              textClassName="text-sm font-normal text-slate-600"
+            />
+          </View>
+        </View>
+
+        <View className="gap-1">
+          <TextField
+            header="Name"
+            left={<Ionicons name="person-outline" size={18} color="#64748b" />}
+            placeholder="Your name"
+            value={name}
+            onChangeText={setName}
+            returnKeyType="done"
+            onSubmitEditing={save}
+          />
+        </View>
+
+        <Button
+          title="Save"
+          size="lg"
+          disabled={loading || !name.trim()}
+          onPress={save}
+        />
+      </View>
+
+      <Dialog
+        visible={dialog.visible}
+        onClose={hideDialog}
+        title={dialog.title}
+        message={dialog.message}
+        variant={dialog.variant}
+        primaryLabel={dialog.primaryLabel}
+        onPrimary={dialog.onPrimary}
+        secondaryLabel={dialog.secondaryLabel}
+        onSecondary={dialog.onSecondary}
+      />
+    </SafeAreaView>
+  );
+}

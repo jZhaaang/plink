@@ -7,20 +7,20 @@ export type AuthStackParamList = {
   CompleteProfile: undefined;
 };
 
-export type PartiesStackParamList = {
-  Parties: undefined;
-  PartyDetail: { partyId: string };
+export type SignedInParamList = {
+  App: NavigatorScreenParams<TabsParamList>;
+  CompleteProfile: undefined;
 };
 
 export type TabsParamList = {
   Home: undefined;
-  Parties: NavigatorScreenParams<PartiesStackParamList>;
-  CreateLink: undefined;
-  Notifications: undefined;
-  Profile: undefined;
 };
 
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
-  App: NavigatorScreenParams<TabsParamList>;
+  SignedIn: {
+    screen?: keyof SignedInParamList;
+    params?: NavigatorScreenParams<SignedInParamList>['params'];
+    needsProfile: boolean;
+  };
 };
