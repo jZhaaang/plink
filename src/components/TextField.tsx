@@ -20,7 +20,7 @@ export default function TextField({
   return (
     <>
       {header && (
-        <Text className="text-xs font-medium text-slate-600">Email</Text>
+        <Text className="text-xs font-medium text-slate-600">{header}</Text>
       )}
       <View
         className={cn(
