@@ -1,29 +1,26 @@
 import { supabase } from '../client';
+import { logger } from '../logger';
 import { Profile, ProfileUpdate } from '../models';
 
-export async function getUserProfile(
-  userId: string,
-): Promise<{ data: Profile | null; error: Error | null }> {
+export async function getUserProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
     .select()
     .eq('id', userId)
     .single();
 
-  if (!data || error) {
-    console.error('Error fetching profile: ', error.message);
+  if (error) {
+    logger.error('Error getting user profile:', error.message);
+    throw error;
   }
 
-  return { data, error };
+  return data;
 }
 
 export async function updateUserProfile(
   userId: string,
   profileUpdate: ProfileUpdate,
-): Promise<{
-  data: Profile | null;
-  error: Error | null;
-}> {
+): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
     .update(profileUpdate)
@@ -31,19 +28,19 @@ export async function updateUserProfile(
     .select()
     .single();
 
-  if (!data || error) {
-    console.error('Error updating profile: ', error.message);
+  if (error) {
+    logger.error('Error updating user profile:', error.message);
+    throw error;
   }
 
-  return { data, error };
+  return data;
 }
 
-export async function deleteUserProfile(userId: string): Promise<Error | null> {
+export async function deleteUserProfile(userId: string) {
   const { error } = await supabase.from('profiles').delete().eq('id', userId);
 
   if (error) {
-    console.error('Error deleting profile: ', error.message);
+    logger.error('Error deleting user profile:', error.message);
+    throw error;
   }
-
-  return error;
 }

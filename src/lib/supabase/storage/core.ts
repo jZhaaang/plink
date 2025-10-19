@@ -1,4 +1,5 @@
 import { supabase } from '../client';
+import { logger } from '../logger';
 
 export type Bucket = 'avatars' | 'parties' | 'links';
 export const BUCKET_PRIVACY: Record<Bucket, 'public' | 'private'> = {
@@ -26,12 +27,18 @@ export async function uploadFile(
     contentType: opts.contentType,
     upsert: opts.upsert,
   });
-  if (error) throw error;
+  if (error) {
+    logger.error('Error uploading file:', error.message);
+    throw error;
+  }
 }
 
 export async function removeFile(bucket: Bucket, paths: string[]) {
   const { error } = await supabase.storage.from(bucket).remove(paths);
-  if (error) throw error;
+  if (error) {
+    logger.error('Error removing file:', error.message);
+    throw error;
+  }
 }
 
 export async function getUrl(bucket: Bucket, path: string, ttl = 60 * 10) {
@@ -42,7 +49,11 @@ export async function getUrl(bucket: Bucket, path: string, ttl = 60 * 10) {
     const { data, error } = await supabase.storage
       .from(bucket)
       .createSignedUrl(path, ttl);
-    if (error) throw error;
+
+    if (error) {
+      logger.error('Error creating signed url:', error.message);
+      throw error;
+    }
     return data.signedUrl;
   }
 }

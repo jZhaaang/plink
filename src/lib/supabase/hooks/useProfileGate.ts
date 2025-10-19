@@ -18,8 +18,8 @@ export function useProfileGate(session: Session | null, ready: boolean) {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await getUserProfile(session.user.id);
-        if (!cancelled) setGate(data.name ? 'app' : 'needsProfile');
+        const profile = await getUserProfile(session.user.id);
+        if (!cancelled) setGate(profile.name ? 'app' : 'needsProfile');
       } catch {
         if (!cancelled) setGate('app');
       }

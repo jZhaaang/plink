@@ -8,6 +8,7 @@ import { Button, Dialog, DialogProps, TextField } from '../../../components';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { updateUserProfile } from '../../../lib/supabase/queries/users';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
@@ -77,11 +78,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         avatar_path = await avatars.upload(user.id, imageUri, 'jpg');
       }
 
-      const { error: profileErr } = await supabase
-        .from('profiles')
-        .update({ name: name.trim(), avatar_path })
-        .eq('id', user.id);
-      if (profileErr) throw profileErr;
+      await updateUserProfile(user.id, { name: name.trim(), avatar_path });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
       showDialog({
