@@ -1,5 +1,5 @@
 import { supabase } from '../client';
-import { LinkMember, LinkMemberInsert } from '../models';
+import { LinkMember, LinkMemberInsert } from '../../models';
 import { logger } from '../logger';
 
 export async function getLinkMembersByLinkId(

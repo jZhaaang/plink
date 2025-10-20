@@ -1,6 +1,6 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { Profile, ProfileUpdate } from '../models';
+import { Profile, ProfileUpdate } from '../../models';
 
 export async function getUserProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
