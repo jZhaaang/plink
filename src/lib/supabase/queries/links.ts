@@ -2,7 +2,7 @@ import { supabase } from '../client';
 import { logger } from '../logger';
 import { Link, LinkInsert } from '../models';
 
-export async function getLinksByUserId(userId: string): Promise<Link[] | null> {
+export async function getLinksByUserId(userId: string): Promise<Link[]> {
   const { data, error } = await supabase
     .from('link_members')
     .select('links (*)')

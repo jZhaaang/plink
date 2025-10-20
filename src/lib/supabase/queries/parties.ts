@@ -2,9 +2,7 @@ import { supabase } from '../client';
 import { logger } from '../logger';
 import { Party, PartyInsert } from '../models';
 
-export async function getPartiesByUserId(
-  userId: string,
-): Promise<Party[] | null> {
+export async function getPartiesByUserId(userId: string): Promise<Party[]> {
   const { data, error } = await supabase
     .from('party_members')
     .select('parties (*)')
