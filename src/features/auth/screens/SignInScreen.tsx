@@ -4,8 +4,9 @@ import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../../navigation/types';
-import { Button, Dialog, DialogProps, TextField } from '../../../components';
+import { Button, TextField } from '../../../components';
 import { signInWithEmail } from '../../../lib/supabase/queries/auth';
+import { useDialog } from '../../../providers/DialogProvider';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
@@ -13,36 +14,20 @@ export default function SignInScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secure, setSecure] = useState(true);
-  const [dialog, setDialog] = useState<Omit<DialogProps, 'onClose'>>({
-    visible: false,
-    variant: 'info',
-  });
   const [loading, setLoading] = useState(false);
-
-  const hideDialog = () => setDialog((d) => ({ ...d, visible: false }));
-
-  const showDialog = (next: Omit<DialogProps, 'onClose' | 'visible'>) =>
-    setDialog((d) => ({ ...d, visible: true, ...next }));
+  const dialog = useDialog();
 
   async function onSignIn() {
     if (!email || !password) {
-      showDialog({
-        variant: 'error',
-        title: 'Missing info',
-        message: 'Enter your email and password',
-        onPrimary: hideDialog,
-      });
+      await dialog.error('Missing info', 'Enter your email and password');
       return;
     }
     setLoading(true);
     const { error } = await signInWithEmail(email.trim(), password);
     setLoading(false);
-    if (error)
-      showDialog({
-        variant: 'error',
-        title: 'Login failed',
-        onPrimary: hideDialog,
-      });
+    if (error) {
+      await dialog.error('Login failed', 'Check your email and password');
+    }
   }
 
   return (
@@ -119,18 +104,6 @@ export default function SignInScreen({ navigation }: Props) {
           </Pressable>
         </View>
       </View>
-
-      <Dialog
-        visible={dialog.visible}
-        onClose={hideDialog}
-        title={dialog.title}
-        message={dialog.message}
-        variant={dialog.variant}
-        primaryLabel={dialog.primaryLabel}
-        onPrimary={dialog.onPrimary}
-        secondaryLabel={dialog.secondaryLabel}
-        onSecondary={dialog.onSecondary}
-      />
     </SafeAreaView>
   );
 }

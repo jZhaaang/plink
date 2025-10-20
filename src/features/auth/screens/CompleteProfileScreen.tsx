@@ -4,29 +4,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../../lib/supabase/client';
-import { Button, Dialog, DialogProps, TextField } from '../../../components';
+import { Button, TextField } from '../../../components';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
+import { useDialog } from '../../../providers/DialogProvider';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
 export default function CompleteProfileScreen({ navigation }: Props) {
   const [name, setName] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<Omit<DialogProps, 'onClose'>>({
-    visible: false,
-    variant: 'info',
-  });
   const [loading, setLoading] = useState(false);
-
-  console.log(JSON.stringify(navigation.getState(), null, 2));
-
-  const hideDialog = () => setDialog((d) => ({ ...d, visible: false }));
-
-  const showDialog = (next: Omit<DialogProps, 'onClose' | 'visible'>) =>
-    setDialog((d) => ({ ...d, visible: true, ...next }));
+  const dialog = useDialog();
 
   useEffect(() => {
     ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -55,12 +46,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
   async function save() {
     if (!name.trim()) {
-      showDialog({
-        variant: 'error',
-        title: 'Missing info',
-        message: 'Name is required',
-        onPrimary: hideDialog,
-      });
+      await dialog.error('Missing info', 'Name cannot be empty');
       return;
     }
     setLoading(true);
@@ -81,12 +67,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       await updateUserProfile(user.id, { name: name.trim(), avatar_path });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
-      showDialog({
-        variant: 'error',
-        title: 'Save Error',
-        message: err.message,
-        onPrimary: hideDialog,
-      });
+      await dialog.error('Save Error', err.message);
     } finally {
       setLoading(false);
     }
@@ -157,18 +138,6 @@ export default function CompleteProfileScreen({ navigation }: Props) {
           onPress={save}
         />
       </View>
-
-      <Dialog
-        visible={dialog.visible}
-        onClose={hideDialog}
-        title={dialog.title}
-        message={dialog.message}
-        variant={dialog.variant}
-        primaryLabel={dialog.primaryLabel}
-        onPrimary={dialog.onPrimary}
-        secondaryLabel={dialog.secondaryLabel}
-        onSecondary={dialog.onSecondary}
-      />
     </SafeAreaView>
   );
 }
