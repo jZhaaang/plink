@@ -1,6 +1,6 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { Party, PartyInsert } from '../../models';
+import { Party, PartyInsert, PartyUpdate } from '../../models';
 
 export async function getPartiesByUserId(userId: string): Promise<Party[]> {
   const { data, error } = await supabase
@@ -48,7 +48,7 @@ export async function createParty(party: PartyInsert): Promise<Party | null> {
 
 export async function updatePartyById(
   partyId: string,
-  partyUpdate: PartyInsert,
+  partyUpdate: PartyUpdate,
 ): Promise<Party | null> {
   const { data, error } = await supabase
     .from('parties')
