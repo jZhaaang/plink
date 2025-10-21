@@ -14,6 +14,7 @@ export type SignedInParamList = {
 
 export type TabsParamList = {
   Home: undefined;
+  PartyList: undefined;
 };
 
 export type RootStackParamList = {
