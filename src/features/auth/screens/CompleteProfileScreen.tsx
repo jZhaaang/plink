@@ -10,10 +10,13 @@ import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
+import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
 export default function CompleteProfileScreen({ navigation }: Props) {
+  const { session, ready } = useAuth();
+  const userId = session!.user.id;
   const [name, setName] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,20 +54,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
     setLoading(true);
     try {
-      const {
-        data: { user },
-        error: userErr,
-      } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
-      if (!user) throw new Error('Not signed in');
-
       let avatar_path = null;
 
       if (imageUri) {
-        avatar_path = await avatars.upload(user.id, imageUri, 'jpg');
+        avatar_path = await avatars.upload(userId, imageUri, 'jpg');
       }
 
-      await updateUserProfile(user.id, { name: name.trim(), avatar_path });
+      await updateUserProfile(userId, { name: name.trim(), avatar_path });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
       await dialog.error('Save Error', err.message);
@@ -72,6 +68,8 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       setLoading(false);
     }
   }
+
+  if (!ready) return null;
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
