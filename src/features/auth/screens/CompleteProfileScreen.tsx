@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../../lib/supabase/client';
 import { Button, TextField } from '../../../components';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { RootStackParamList } from '../../../navigation/types';
