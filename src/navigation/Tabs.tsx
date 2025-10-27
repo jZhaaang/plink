@@ -7,10 +7,7 @@ const Tab = createBottomTabNavigator<TabsParamList>();
 
 export default function Tabs() {
   return (
-    <Tab.Navigator
-      id={undefined}
-      screenOptions={{ headerTitleAlign: 'center' }}
-    >
+    <Tab.Navigator id={undefined} screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="PartyList" component={PartyListScreen} />
     </Tab.Navigator>
