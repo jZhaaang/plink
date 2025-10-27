@@ -46,6 +46,22 @@ export async function createParty(party: PartyInsert): Promise<Party | null> {
   return data;
 }
 
+export async function createPartyWithOwner(
+  party: PartyInsert,
+): Promise<Party | null> {
+  const { data, error } = await supabase.rpc('create_party_with_owner', {
+    party_name: party.name,
+    party_owner_id: party.owner_id,
+  });
+
+  if (error) {
+    logger.error('Error creating party with owner:', error.message);
+    throw error;
+  }
+
+  return data;
+}
+
 export async function updatePartyById(
   partyId: string,
   partyUpdate: PartyUpdate,
