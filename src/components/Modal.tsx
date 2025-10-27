@@ -1,11 +1,23 @@
 import React from 'react';
-import { Modal as RNModal, Pressable, ModalProps } from 'react-native';
+import {
+  Modal as RNModal,
+  Pressable,
+  ModalProps,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { cn } from './cn';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   children: React.ReactNode;
   animationType?: ModalProps['animationType'];
+  contentClassName?: string;
+  backdropClassName?: string;
+  disableBackdropDismiss?: boolean;
 };
 
 export default function Modal({
@@ -13,6 +25,9 @@ export default function Modal({
   onClose,
   children,
   animationType = 'fade',
+  contentClassName,
+  backdropClassName,
+  disableBackdropDismiss = false,
   ...rest
 }: Props) {
   return (
@@ -25,15 +40,31 @@ export default function Modal({
       {...rest}
     >
       <Pressable
-        onPress={onClose}
-        className="flex-1 items-center justify-center bg-black/50"
+        onPress={disableBackdropDismiss ? undefined : onClose}
+        className={cn(
+          'flex-1 items-center justify-center bg-black/50',
+          backdropClassName,
+        )}
       >
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
-          className="w-[88%] rounded-2xl bg-white p-5"
+        <KeyboardAvoidingView
+          behavior={Platform.select({ ios: 'padding', android: 'padding' })}
+          className="w-full items-center"
         >
-          {children}
-        </Pressable>
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className={cn('w-[88%] rounded-2xl bg-white p-5', contentClassName)}
+          >
+            <SafeAreaView edges={['bottom', 'left', 'right']}>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerClassName="flex-grow-1"
+              >
+                {children}
+              </ScrollView>
+            </SafeAreaView>
+          </Pressable>
+        </KeyboardAvoidingView>
       </Pressable>
     </RNModal>
   );
