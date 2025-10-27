@@ -2,7 +2,7 @@ import { uploadFile, getUrl, removeFile } from './core';
 
 export const parties = {
   path(partyId: string, type: 'avatar' | 'banner', ext: string = 'jpg') {
-    return `parties/${partyId}/${type}.${ext}`;
+    return `${partyId}/${type}.${ext}`;
   },
   async upload(
     partyId: string,
