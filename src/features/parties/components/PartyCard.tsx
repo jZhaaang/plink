@@ -19,20 +19,14 @@ export function PartyCard({ party, onPress }: Props) {
         </ImageBackground>
         <View className="px-4 pb-4">
           <View className="-mt-6 mb-2 flex-row items-end">
-            <View
-              className="rounded-full border-2 border-white overflow-hidden mr-3"
-              style={{ width: 56, height: 56 }}
-            >
+            <View className="w-20 h-20 rounded-full border-2 border-white overflow-hidden mr-3">
               <Image
                 source={{ uri: party.avatarUrl }}
-                style={{ width: 56, height: 56 }}
                 resizeMode="cover"
+                className="flex-1"
               />
             </View>
-            <Text
-              className="text-base font-semibold text-neutral-900 flex-1"
-              numberOfLines={1}
-            >
+            <Text className="text-base font-semibold text-neutral-900 flex-1">
               {party.name}
             </Text>
           </View>

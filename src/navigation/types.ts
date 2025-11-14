@@ -12,9 +12,14 @@ export type SignedInParamList = {
   CompleteProfile: undefined;
 };
 
+export type PartyStackParamList = {
+  PartyList: undefined;
+  PartyDetail: { partyId: string };
+};
+
 export type TabsParamList = {
   Home: undefined;
-  PartyList: undefined;
+  Party: NavigatorScreenParams<PartyStackParamList>;
 };
 
 export type RootStackParamList = {

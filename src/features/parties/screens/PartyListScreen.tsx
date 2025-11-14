@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TabsParamList } from '../../../navigation/types';
+import { PartyStackParamList } from '../../../navigation/types';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,7 +22,7 @@ import {
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
 
-type Props = NativeStackScreenProps<TabsParamList, 'PartyList'>;
+type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
 export default function PartyListScreen({ navigation }: Props) {
   const { session, ready } = useAuth();
@@ -38,8 +38,6 @@ export default function PartyListScreen({ navigation }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const goDetail = () => {};
-
   const handleSubmit = async (
     name: string,
     avatarUri: string | null,
@@ -47,6 +45,10 @@ export default function PartyListScreen({ navigation }: Props) {
   ) => {
     if (!name.trim()) {
       await dialog.error('Missing info', 'Name cannot be empty');
+      return;
+    }
+    if (!avatarUri || !bannerUri) {
+      await dialog.error('Missing info', 'Choose an avatar and banner image');
       return;
     }
     setLoading(true);
@@ -57,7 +59,6 @@ export default function PartyListScreen({ navigation }: Props) {
       let avatar_path = null,
         banner_path = null;
 
-      console.log(party);
       if (avatarUri)
         avatar_path = await partiesStorage.upload(
           party.id,
@@ -111,7 +112,12 @@ export default function PartyListScreen({ navigation }: Props) {
           refreshing={partiesLoading}
           onRefresh={refetch}
           renderItem={({ item }) => (
-            <PartyCard party={item} onPress={goDetail} />
+            <PartyCard
+              party={item}
+              onPress={(partyId) =>
+                navigation.navigate('PartyDetail', { partyId })
+              }
+            />
           )}
           ListEmptyComponent={
             <View className="items-center mt-20 px-6">

@@ -281,7 +281,25 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      create_party_with_owner: {
+        Args: { party_name: string; party_owner_id: string };
+        Returns: {
+          avatar_path: string | null;
+          banner_path: string | null;
+          created_at: string | null;
+          id: string;
+          name: string;
+          owner_id: string;
+          updated_at: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'parties';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      is_member_of_party: { Args: { party_id: string }; Returns: boolean };
     };
     Enums: {
       media_type: 'image' | 'video';

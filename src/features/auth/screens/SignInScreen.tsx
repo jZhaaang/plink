@@ -18,6 +18,10 @@ export default function SignInScreen({ navigation }: Props) {
   const dialog = useDialog();
 
   async function onSignIn() {
+    if (__DEV__) {
+      await signInWithEmail('jimmy.zhaang@gmail.com', 'testing');
+      return;
+    }
     if (!email || !password) {
       await dialog.error('Missing info', 'Enter your email and password');
       return;
