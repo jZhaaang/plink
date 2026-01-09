@@ -1,5 +1,8 @@
-import { View } from 'react-native';
+import { View, ViewProps } from 'react-native';
+import { cn } from './cn';
 
-export default function Divider() {
-  return <View className="h-[1px] bg-slate-200" />;
+type Props = ViewProps & { className?: string };
+
+export default function Divider({ className, ...rest }: Props) {
+  return <View {...rest} className={cn('h-[1px] bg-slate-200', className)} />;
 }
