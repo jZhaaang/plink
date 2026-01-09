@@ -21,7 +21,12 @@ import PartyDetail from '../components/PartyDetail';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
-import { Button, SectionHeader, EmptyState, Divider } from '../../../components';
+import {
+  Button,
+  SectionHeader,
+  EmptyState,
+  Divider,
+} from '../../../components';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -56,7 +61,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });
       }
     } catch (err) {
-      dialog.error('Error', 'Failed to create link. Please try again.');
+      await dialog.error('Error creating link', err.message);
     } finally {
       setCreateLoading(false);
     }
@@ -127,21 +132,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
         {/* Active Link Section */}
         <View className="px-4">
-          <SectionHeader
-            title="Active Link"
-            action={
-              !activeLink ? (
-                <Pressable
-                  onPress={() => setCreateModalVisible(true)}
-                  className="flex-row items-center"
-                >
-                  <Feather name="plus" size={18} color="#2563eb" />
-                  <Text className="text-blue-600 font-medium ml-1">Start</Text>
-                </Pressable>
-              ) : null
-            }
-          />
-
           {activeLink ? (
             <LinkCard link={activeLink} onPress={handleLinkPress} />
           ) : (
