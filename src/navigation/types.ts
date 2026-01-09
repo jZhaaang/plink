@@ -15,6 +15,7 @@ export type SignedInParamList = {
 export type PartyStackParamList = {
   PartyList: undefined;
   PartyDetail: { partyId: string };
+  LinkDetail: { linkId: string; partyId: string };
 };
 
 export type TabsParamList = {

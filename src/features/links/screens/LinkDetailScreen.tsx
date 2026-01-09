@@ -1,0 +1,196 @@
+import { useState } from 'react';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
+
+import { PartyStackParamList } from '../../../navigation/types';
+import { useLinkDetail } from '../hooks/useLinkDetail';
+import { useAuth } from '../../../lib/supabase/hooks/useAuth';
+import { useDialog } from '../../../providers/DialogProvider';
+import { endLink } from '../../../lib/supabase/queries/links';
+import AvatarStack from '../../../components/AvatarStack';
+import { Button, EmptyState, Divider } from '../../../components';
+
+type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
+
+function formatDate(dateString: string | null): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export default function LinkDetailScreen({ route, navigation }: Props) {
+  const { linkId } = route.params;
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+  const dialog = useDialog();
+
+  const { link, loading, error, refetch } = useLinkDetail(linkId);
+  const [endingLink, setEndingLink] = useState(false);
+
+  const isActive = link && !link.end_time;
+  const isOwner = link?.owner_id === userId;
+
+  const handleEndLink = async () => {
+    const confirmed = await dialog.confirmDanger(
+      'End Link?',
+      'This will end the link. Members can still view photos but cannot add new ones.',
+    );
+
+    if (!confirmed) return;
+
+    setEndingLink(true);
+    try {
+      await endLink(linkId);
+      refetch();
+    } catch (err) {
+      await dialog.error('Error ending link', err.message);
+    } finally {
+      setEndingLink(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error || !link) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
+        <Text className="text-center text-neutral-600 mb-4">
+          Failed to load link details.
+        </Text>
+        <Button title="Retry" variant="outline" onPress={refetch} />
+      </SafeAreaView>
+    );
+  }
+
+  const memberAvatars = link.members
+    .map((m) => m.avatarUrl)
+    .filter((url): url is string => !!url);
+
+  return (
+    <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">
+      {/* Header */}
+      <View className="flex-row items-center px-4 py-2">
+        <Pressable onPress={() => navigation.goBack()} className="p-2 -ml-2">
+          <Feather name="arrow-left" size={24} color="#333" />
+        </Pressable>
+        <Text
+          className="flex-1 text-lg font-semibold text-center"
+          numberOfLines={1}
+        >
+          {link.name}
+        </Text>
+        <View className="w-10" />
+      </View>
+
+      {/* Status Banner */}
+      <View
+        className={`mx-4 px-4 py-2 rounded-lg ${
+          isActive ? 'bg-green-100' : 'bg-slate-100'
+        }`}
+      >
+        <Text
+          className={`text-center font-medium ${
+            isActive ? 'text-green-700' : 'text-slate-600'
+          }`}
+        >
+          {isActive ? 'Active' : 'Ended'}
+        </Text>
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refetch} />
+        }
+      >
+        {/* Link Info */}
+        <View className="px-4 mt-4">
+          <Text className="text-sm text-slate-500">
+            {isActive
+              ? `Started ${formatDate(link.created_at)}`
+              : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
+          </Text>
+
+          <View className="flex-row items-center mt-3">
+            <AvatarStack avatarUris={memberAvatars} size={36} />
+            <Text className="text-sm text-slate-500 ml-2">
+              {link.members.length} member{link.members.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        </View>
+
+        <Divider className="my-6" />
+
+        {/* Photos Section */}
+        <View className="px-4 pb-8">
+          <Text className="text-base font-semibold text-slate-900 mb-3">
+            Photos ({link.mediaCount})
+          </Text>
+
+          {link.mediaCount === 0 ? (
+            <EmptyState
+              icon="image"
+              title="No photos yet"
+              message={
+                isActive
+                  ? 'Be the first to add a photo!'
+                  : 'No photos were added to this link'
+              }
+            />
+          ) : (
+            <Text className="text-slate-500">Media grid coming soon...</Text>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Bottom Actions (for active links) */}
+      {isActive && (
+        <View className="px-4 py-4 border-t border-slate-200 bg-white">
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <Button
+                title="Add Photos"
+                size="lg"
+                onPress={() => {
+                  // TODO: Implement photo upload
+                  dialog.info(
+                    'Coming Soon',
+                    'Photo upload will be added next!',
+                  );
+                }}
+              />
+            </View>
+            {isOwner && (
+              <Button
+                title="End"
+                variant="outline"
+                size="lg"
+                onPress={handleEndLink}
+                loading={endingLink}
+              />
+            )}
+          </View>
+        </View>
+      )}
+    </SafeAreaView>
+  );
+}
