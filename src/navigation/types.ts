@@ -16,6 +16,7 @@ export type PartyStackParamList = {
   PartyList: undefined;
   PartyDetail: { partyId: string };
   LinkDetail: { linkId: string; partyId: string };
+  MediaViewer: { mediaUrls: string[]; initialIndex: number };
 };
 
 export type TabsParamList = {

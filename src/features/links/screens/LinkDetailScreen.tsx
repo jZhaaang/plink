@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -13,10 +13,12 @@ import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
+import { useMediaUpload } from '../hooks/useMediaUpload';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import { endLink } from '../../../lib/supabase/queries/links';
 import AvatarStack from '../../../components/AvatarStack';
+import MediaGrid from '../components/MediaGrid';
 import { Button, EmptyState, Divider } from '../../../components';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
@@ -38,10 +40,23 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const dialog = useDialog();
 
   const { link, loading, error, refetch } = useLinkDetail(linkId);
-  const [endingLink, setEndingLink] = useState(false);
+
+  const { pickAndUpload, uploading } = useMediaUpload({
+    linkId,
+    userId: userId ?? '',
+    onSuccess: refetch,
+    onError: (err) => dialog.error('Upload failed', err.message),
+  });
 
   const isActive = link && !link.end_time;
   const isOwner = link?.owner_id === userId;
+
+  const allMedia = useMemo(() => {
+    if (!link) return [];
+    return link.posts.flatMap((post) => post.media);
+  }, [link]);
+
+  const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
 
   const handleEndLink = async () => {
     const confirmed = await dialog.confirmDanger(
@@ -51,15 +66,16 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     if (!confirmed) return;
 
-    setEndingLink(true);
     try {
       await endLink(linkId);
       refetch();
     } catch (err) {
       await dialog.error('Error ending link', err.message);
-    } finally {
-      setEndingLink(false);
     }
+  };
+
+  const handleMediaPress = (index: number) => {
+    navigation.navigate('MediaViewer', { mediaUrls, initialIndex: index });
   };
 
   if (loading) {
@@ -157,7 +173,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               }
             />
           ) : (
-            <Text className="text-slate-500">Media grid coming soon...</Text>
+            <MediaGrid media={allMedia} onMediaPress={handleMediaPress} />
           )}
         </View>
       </ScrollView>
@@ -168,15 +184,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           <View className="flex-row gap-3">
             <View className="flex-1">
               <Button
-                title="Add Photos"
+                title={uploading ? 'Uploading...' : 'Add Photos'}
                 size="lg"
-                onPress={() => {
-                  // TODO: Implement photo upload
-                  dialog.info(
-                    'Coming Soon',
-                    'Photo upload will be added next!',
-                  );
-                }}
+                onPress={pickAndUpload}
+                loading={uploading}
+                disabled={uploading}
               />
             </View>
             {isOwner && (
@@ -185,7 +197,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 variant="outline"
                 size="lg"
                 onPress={handleEndLink}
-                loading={endingLink}
               />
             )}
           </View>
