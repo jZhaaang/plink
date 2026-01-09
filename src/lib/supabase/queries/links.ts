@@ -89,3 +89,19 @@ export async function deleteLink(linkId: string) {
     throw error;
   }
 }
+
+export async function endLink(linkId: string): Promise<Link | null> {
+  const { data, error } = await supabase
+    .from('links')
+    .update({ end_time: new Date().toISOString() })
+    .eq('id', linkId)
+    .select()
+    .single();
+
+  if (error) {
+    logger.error('Error ending link:', error.message);
+    throw error;
+  }
+
+  return data;
+}
