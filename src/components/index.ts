@@ -6,3 +6,5 @@ export { default as Spacer } from './Spacer';
 export { default as Modal } from './Modal';
 export { default as Dialog } from './Dialog';
 export type { DialogProps, DialogVariant } from './Dialog';
+export { default as SectionHeader } from './SectionHeader';
+export { default as EmptyState } from './EmptyState';
