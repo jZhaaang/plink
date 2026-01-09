@@ -19,7 +19,13 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { endLink } from '../../../lib/supabase/queries/links';
 import AvatarStack from '../../../components/AvatarStack';
 import MediaGrid from '../components/MediaGrid';
-import { Button, EmptyState, Divider } from '../../../components';
+import PostFeedItem from '../components/PostFeedItem';
+import {
+  Button,
+  EmptyState,
+  Divider,
+  SectionHeader,
+} from '../../../components';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -74,7 +80,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }
   };
 
-  const handleMediaPress = (index: number) => {
+  const handlePostMediaPress = (postMediaUrls: string[], index: number) => {
+    navigation.navigate('MediaViewer', {
+      mediaUrls: postMediaUrls,
+      initialIndex: index,
+    });
+  };
+
+  const handleAllMediaPress = (index: number) => {
     navigation.navigate('MediaViewer', { mediaUrls, initialIndex: index });
   };
 
@@ -156,11 +169,36 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
         <Divider className="my-6" />
 
-        {/* Photos Section */}
+        {/* Post Feed Section */}
+        <View className="px-4">
+          <SectionHeader title="Posts" count={link.postCount} />
+
+          {link.postCount === 0 ? (
+            <EmptyState
+              icon="camera"
+              title="No posts yet"
+              message={
+                isActive
+                  ? 'Be the first to share a photo!'
+                  : 'No photos were shared in this link'
+              }
+            />
+          ) : (
+            link.posts.map((post) => (
+              <PostFeedItem
+                key={post.id}
+                post={post}
+                onMediaPress={handlePostMediaPress}
+              />
+            ))
+          )}
+        </View>
+
+        <Divider className="my-6" />
+
+        {/* All Photos Section */}
         <View className="px-4 pb-8">
-          <Text className="text-base font-semibold text-slate-900 mb-3">
-            Photos ({link.mediaCount})
-          </Text>
+          <SectionHeader title="All Photos" count={link.mediaCount} />
 
           {link.mediaCount === 0 ? (
             <EmptyState
@@ -168,12 +206,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               title="No photos yet"
               message={
                 isActive
-                  ? 'Be the first to add a photo!'
+                  ? 'Photos from all posts will appear here'
                   : 'No photos were added to this link'
               }
             />
           ) : (
-            <MediaGrid media={allMedia} onMediaPress={handleMediaPress} />
+            <MediaGrid media={allMedia} onMediaPress={handleAllMediaPress} />
           )}
         </View>
       </ScrollView>
