@@ -13,7 +13,7 @@ import {
 import { usePartiesWithMembers } from '../hooks/usePartiesWithMembers';
 import { PartyCard } from '../components/PartyCard';
 import { Feather } from '@expo/vector-icons';
-import { Button, Divider } from '../../../components';
+import { Button, Divider, EmptyState } from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useState } from 'react';
 import CreatePartyModal from '../components/CreatePartyModal';
@@ -113,34 +113,39 @@ export default function PartyListScreen({ navigation }: Props) {
           onRefresh={refetch}
           renderItem={({ item }) => (
             <PartyCard
-              party={item}
-              onPress={(partyId) =>
-                navigation.navigate('PartyDetail', { partyId })
-              }
+              variant="compact"
+              name={item.name}
+              avatarUri={item.avatarUrl}
+              bannerUri={item.bannerUrl}
+              members={item.members}
+              hasActiveLink={item.hasActiveLink}
+              lastActivityAt={item.lastActivityAt}
+              onPress={() => navigation.navigate('PartyDetail', { partyId: item.id })}
             />
           )}
           ListEmptyComponent={
-            <View className="items-center mt-20 px-6">
-              <Text className="text-lg font-semibold mb-2">No parties yet</Text>
-              <Text className="text-neutral-600 mb-6 text-center">
-                Create your first party to start linking with friends.
-              </Text>
-              <Button
-                title="Create a Party"
-                variant="primary"
-                size="md"
-                onPress={() => setModalVisible(true)}
-              />
-            </View>
+            <EmptyState
+              icon="users"
+              title="No parties yet"
+              message="Create your first party to start linking with friends."
+              action={
+                <Button
+                  title="Create a Party"
+                  variant="primary"
+                  size="md"
+                  onPress={() => setModalVisible(true)}
+                />
+              }
+            />
           }
         ></FlatList>
         {parties.length ? (
           <Pressable
             onPress={() => setModalVisible(true)}
-            className="absolute right-5 bottom-8 h-14 w-14 rounded-full bg-white-900 items-center justify-center shadow-2xl"
+            className="absolute right-5 bottom-8 h-14 w-14 rounded-full bg-blue-500 items-center justify-center shadow-lg"
             accessibilityLabel="Create a new party"
           >
-            <Feather name="plus" size={18} color="blue" />
+            <Feather name="plus" size={24} color="white" />
           </Pressable>
         ) : null}
 

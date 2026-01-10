@@ -17,7 +17,7 @@ import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import { createLink } from '../../../lib/supabase/queries/links';
 import { createLinkMember } from '../../../lib/supabase/queries/linkMembers';
-import PartyDetail from '../components/PartyDetail';
+import { PartyCard } from '../components/PartyCard';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
@@ -114,11 +114,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       >
         {/* Party Header with banner/avatar */}
         <View className="px-4">
-          <PartyDetail
+          <PartyCard
+            variant="expanded"
             name={party.name}
             avatarUri={party.avatarUrl}
             bannerUri={party.bannerUrl}
-            mode="regular"
           />
         </View>
 

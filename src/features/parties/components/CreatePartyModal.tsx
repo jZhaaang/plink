@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Modal, TextField } from '../../../components';
 import { Pressable, Text, View } from 'react-native';
-import PartyDetail from './PartyDetail';
+import { PartyCard } from './PartyCard';
 
 type Props = {
   visible: boolean;
@@ -70,13 +70,13 @@ export default function CreatePartyModal({
         Preview
       </Text>
 
-      <PartyDetail
+      <PartyCard
+        variant="editable"
         name={name || 'Party Name'}
         avatarUri={avatarUri}
         bannerUri={bannerUri}
         onPressAvatar={() => choosePhoto('avatar')}
         onPressBanner={() => choosePhoto('banner')}
-        mode="preview"
       />
 
       <View className="mt-4 gap-2">

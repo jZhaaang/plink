@@ -13,3 +13,8 @@ export type PartyResolved = Party & { avatarUrl?: string; bannerUrl?: string };
 export type PartyWithMembersResolved = PartyResolved & {
   members: ProfileResolved[];
 };
+
+export type PartyWithActivityResolved = PartyWithMembersResolved & {
+  hasActiveLink: boolean;
+  lastActivityAt: string | null;
+};

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getPartiesByUserId } from '../../../lib/supabase/queries/parties';
-import { PartyWithMembersResolved } from '../../../lib/models';
+import { PartyWithActivityResolved } from '../../../lib/models';
 import { toPartyResolved } from '../../../lib/resolvers/party';
 import { getPartyMembersByPartyId } from '../../../lib/supabase/queries/partyMembers';
 import { toProfileResolved } from '../../../lib/resolvers/profile';
 import { getUserProfile } from '../../../lib/supabase/queries/users';
+import { getLinksByPartyId } from '../../../lib/supabase/queries/links';
 
 export function usePartiesWithMembers(userId: string | null) {
-  const [data, setData] = useState<PartyWithMembersResolved[]>([]);
+  const [data, setData] = useState<PartyWithActivityResolved[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -24,7 +25,7 @@ export function usePartiesWithMembers(userId: string | null) {
         }),
       );
 
-      const partiesWithMembers = await Promise.all(
+      const partiesWithActivity = await Promise.all(
         parties.map(async (party) => {
           const members = await getPartyMembersByPartyId(party.id);
           const profiles = await Promise.all(
@@ -34,14 +35,30 @@ export function usePartiesWithMembers(userId: string | null) {
             }),
           );
 
+          const links = (await getLinksByPartyId(party.id)) ?? [];
+          const hasActiveLink = links.some((link) => !link.end_time);
+
+          // Compute last activity from most recent link timestamp
+          const linkTimestamps = links
+            .flatMap((l) => [l.created_at, l.end_time])
+            .filter((t): t is string => !!t);
+          const lastActivityAt =
+            linkTimestamps.length > 0
+              ? linkTimestamps.sort(
+                  (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+                )[0]
+              : party.updated_at;
+
           return {
             ...party,
             members: profiles,
+            hasActiveLink,
+            lastActivityAt,
           };
         }),
       );
 
-      setData(partiesWithMembers);
+      setData(partiesWithActivity);
     } catch (err) {
       setError(err as Error);
     } finally {
