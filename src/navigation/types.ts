@@ -4,7 +4,6 @@ export type AuthStackParamList = {
   Landing: undefined;
   SignIn: undefined;
   SignUp: undefined;
-  CompleteProfile: undefined;
 };
 
 export type SignedInParamList = {

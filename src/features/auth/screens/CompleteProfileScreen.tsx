@@ -15,7 +15,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
 export default function CompleteProfileScreen({ navigation }: Props) {
   const { session, ready } = useAuth();
-  const userId = session!.user.id;
   const [name, setName] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -47,6 +46,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   }
 
   async function save() {
+    if (!session?.user) {
+      await dialog.error('Session Error', 'Please sign in again');
+      return;
+    }
+
     if (!name.trim()) {
       await dialog.error('Missing info', 'Name cannot be empty');
       return;
@@ -56,10 +60,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       let avatar_path = null;
 
       if (imageUri) {
-        avatar_path = await avatars.upload(userId, imageUri, 'jpg');
+        avatar_path = await avatars.upload(session.user.id, imageUri, 'jpg');
       }
 
-      await updateUserProfile(userId, { name: name.trim(), avatar_path });
+      await updateUserProfile(session.user.id, {
+        name: name.trim(),
+        avatar_path,
+      });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
       await dialog.error('Save Error', err.message);
@@ -68,7 +75,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
   }
 
-  if (!ready) return null;
+  if (!ready || !session?.user) return null;
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">

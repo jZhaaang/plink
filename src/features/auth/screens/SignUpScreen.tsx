@@ -32,13 +32,12 @@ export default function SignUpScreen({ navigation }: Props) {
       return;
     }
     setLoading(true);
-    const { data, error } = await signUpWithEmail(email.trim(), password);
+    const { error } = await signUpWithEmail(email.trim(), password);
     setLoading(false);
 
     if (error) {
       await dialog.error('Sign up failed', error.message);
     }
-    if (data.user) navigation.navigate('CompleteProfile');
   }
 
   return (
