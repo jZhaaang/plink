@@ -21,6 +21,7 @@ export type PartyStackParamList = {
 export type TabsParamList = {
   Home: undefined;
   Party: NavigatorScreenParams<PartyStackParamList>;
+  Profile: undefined;
 };
 
 export type RootStackParamList = {
