@@ -1,6 +1,6 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { Link, LinkInsert } from '../../models';
+import { Link, LinkInsert, LinkUpdate } from '../../models';
 
 export async function getLinksByUserId(userId: string): Promise<Link[]> {
   const { data, error } = await supabase
@@ -64,7 +64,7 @@ export async function createLink(link: LinkInsert): Promise<Link | null> {
 
 export async function updateLinkById(
   linkId: string,
-  linkUpdate: LinkInsert,
+  linkUpdate: LinkUpdate,
 ): Promise<Link | null> {
   const { data, error } = await supabase
     .from('links')
