@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { ComponentProps, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
+  GestureResponderEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -16,15 +17,23 @@ import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useMediaUpload } from '../hooks/useMediaUpload';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
-import { endLink } from '../../../lib/supabase/queries/links';
+import {
+  endLink,
+  deleteLink,
+  updateLinkById,
+} from '../../../lib/supabase/queries/links';
+import { deleteLinkMember } from '../../../lib/supabase/queries/linkMembers';
 import AvatarStack from '../../../components/AvatarStack';
 import MediaGrid from '../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
+import CreateLinkModal from '../components/CreateLinkModal';
 import {
   Button,
   EmptyState,
   Divider,
   SectionHeader,
+  DropdownMenu,
+  DropdownMenuItem,
 } from '../../../components';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
@@ -40,7 +49,7 @@ function formatDate(dateString: string | null): string {
 }
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
-  const { linkId } = route.params;
+  const { linkId, partyId } = route.params;
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
@@ -54,6 +63,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     onError: (err) => dialog.error('Upload failed', err.message),
   });
 
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
   const isActive = link && !link.end_time;
   const isOwner = link?.owner_id === userId;
 
@@ -65,6 +80,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
 
   const handleEndLink = async () => {
+    setMenuVisible(false);
     const confirmed = await dialog.confirmDanger(
       'End Link?',
       'This will end the link. Members can still view photos but cannot add new ones.',
@@ -79,6 +95,105 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       await dialog.error('Error ending link', err.message);
     }
   };
+
+  const handleEditName = async (newName: string) => {
+    try {
+      await updateLinkById(linkId, { name: newName });
+      setEditModalVisible(false);
+      refetch();
+    } catch (err) {
+      await dialog.error('Error updating link', err.message);
+    }
+  };
+
+  const handleDeleteLink = async () => {
+    setMenuVisible(false);
+    const confirmed = await dialog.confirmDanger(
+      'Delete Link?',
+      'This will permanently delete the link and all its photos. This cannot be undone.',
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteLink(linkId);
+      navigation.navigate('PartyDetail', { partyId });
+    } catch (err) {
+      await dialog.error('Error deleting link', err.message);
+    }
+  };
+
+  const handleLeaveLink = async () => {
+    setMenuVisible(false);
+    const confirmed = await dialog.confirmDanger(
+      'Leave Link?',
+      'You will no longer be able to view or add photos to this link.',
+    );
+
+    if (!confirmed) return;
+
+    if (!userId) return;
+
+    try {
+      await deleteLinkMember(linkId, userId);
+      navigation.goBack();
+    } catch (err) {
+      await dialog.error('Error leaving link', err.message);
+    }
+  };
+
+  const handleMenuPress = (event: GestureResponderEvent) => {
+    event.currentTarget.measureInWindow(
+      (x: number, y: number, width: number, height: number) => {
+        setMenuAnchor({ x: x + width, y: y + height });
+        setMenuVisible(true);
+      },
+    );
+  };
+
+  const menuItems = useMemo(() => {
+    const items: Array<{
+      icon: ComponentProps<typeof Feather>['name'];
+      label: string;
+      action: () => void;
+      variant?: 'danger';
+    }> = [];
+
+    if (isOwner) {
+      items.push({
+        icon: 'edit-2',
+        label: 'Edit Name',
+        action: () => {
+          setMenuVisible(false);
+          setEditModalVisible(true);
+        },
+      });
+
+      if (isActive) {
+        items.push({
+          icon: 'check-circle',
+          label: 'End Link',
+          action: handleEndLink,
+        });
+      }
+
+      items.push({
+        icon: 'trash-2',
+        label: 'Delete Link',
+        action: handleDeleteLink,
+        variant: 'danger',
+      });
+    } else {
+      items.push({
+        icon: 'log-out',
+        label: 'Leave Link',
+        action: handleLeaveLink,
+        variant: 'danger',
+      });
+    }
+
+    return items;
+  }, [isOwner, isActive]);
 
   const handlePostMediaPress = (postMediaUrls: string[], index: number) => {
     navigation.navigate('MediaViewer', {
@@ -127,7 +242,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         >
           {link.name}
         </Text>
-        <View className="w-10" />
+        <Pressable onPress={handleMenuPress} className="p-2 -mr-2">
+          <Feather name="more-vertical" size={24} color="#333" />
+        </Pressable>
       </View>
 
       {/* Status Banner */}
@@ -219,27 +336,40 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       {/* Bottom Actions (for active links) */}
       {isActive && (
         <View className="px-4 py-4 border-t border-slate-200 bg-white">
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Button
-                title={uploading ? 'Uploading...' : 'Add Photos'}
-                size="lg"
-                onPress={pickAndUpload}
-                loading={uploading}
-                disabled={uploading}
-              />
-            </View>
-            {isOwner && (
-              <Button
-                title="End"
-                variant="outline"
-                size="lg"
-                onPress={handleEndLink}
-              />
-            )}
-          </View>
+          <Button
+            title={uploading ? 'Uploading...' : 'Add Photos'}
+            size="lg"
+            onPress={pickAndUpload}
+            loading={uploading}
+            disabled={uploading}
+          />
         </View>
       )}
+
+      {/* Dropdown Menu */}
+      <DropdownMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+      >
+        {menuItems.map((item, index) => (
+          <DropdownMenuItem
+            key={index}
+            icon={item.icon}
+            label={item.label}
+            onPress={item.action}
+            variant={item.variant}
+          />
+        ))}
+      </DropdownMenu>
+
+      {/* Edit Link Name Modal */}
+      <CreateLinkModal
+        visible={editModalVisible}
+        initialName={link?.name ?? ''}
+        onClose={() => setEditModalVisible(false)}
+        onSubmit={handleEditName}
+      />
     </SafeAreaView>
   );
 }

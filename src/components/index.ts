@@ -8,3 +8,4 @@ export { default as Dialog } from './Dialog';
 export type { DialogProps, DialogVariant } from './Dialog';
 export { default as SectionHeader } from './SectionHeader';
 export { default as EmptyState } from './EmptyState';
+export { default as DropdownMenu, DropdownMenuItem } from './DropdownMenu';
