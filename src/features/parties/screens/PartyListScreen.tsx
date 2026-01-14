@@ -120,7 +120,9 @@ export default function PartyListScreen({ navigation }: Props) {
               members={item.members}
               hasActiveLink={item.hasActiveLink}
               lastActivityAt={item.lastActivityAt}
-              onPress={() => navigation.navigate('PartyDetail', { partyId: item.id })}
+              onPress={() =>
+                navigation.navigate('PartyDetail', { partyId: item.id })
+              }
             />
           )}
           ListEmptyComponent={

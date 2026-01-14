@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ComponentProps, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
+  GestureResponderEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -17,16 +18,25 @@ import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import { createLink } from '../../../lib/supabase/queries/links';
 import { createLinkMember } from '../../../lib/supabase/queries/linkMembers';
+import {
+  deleteParty,
+  updatePartyById,
+} from '../../../lib/supabase/queries/parties';
+import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
 import { PartyCard } from '../components/PartyCard';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
+import CreatePartyModal from '../components/CreatePartyModal';
 import {
   Button,
   SectionHeader,
   EmptyState,
   Divider,
+  DropdownMenu,
+  DropdownMenuItem,
 } from '../../../components';
+import { PartyUpdate } from '../../../lib/models';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -39,7 +49,14 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const { party, links, loading, error, refetch } = usePartyDetail(partyId);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
+  const isOwner = party?.owner_id === userId;
   const activeLink = links.find((l) => !l.end_time);
   const pastLinks = links.filter((l) => l.end_time);
 
@@ -71,6 +88,104 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     navigation.navigate('LinkDetail', { linkId, partyId });
   };
 
+  const handleEditParty = async (
+    name: string,
+    avatarUri: string | null,
+    bannerUri: string | null,
+  ) => {
+    setEditLoading(true);
+    try {
+      const updates: PartyUpdate = {};
+
+      if (name !== party?.name) {
+        updates.name = name;
+      }
+
+      if (avatarUri && avatarUri !== party?.avatarUrl) {
+        const avatar_path = await partiesStorage.upload(
+          partyId,
+          'avatar',
+          avatarUri,
+        );
+        updates.avatar_path = avatar_path;
+      }
+
+      if (bannerUri && bannerUri !== party?.bannerUrl) {
+        const banner_path = await partiesStorage.upload(
+          partyId,
+          'banner',
+          bannerUri,
+        );
+        updates.banner_path = banner_path;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await updatePartyById(partyId, updates);
+      }
+
+      setEditModalVisible(false);
+      refetch();
+    } catch (err) {
+      await dialog.error('Error updating party', err.message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDeleteParty = async () => {
+    setMenuVisible(false);
+    const confirmed = await dialog.confirmDanger(
+      'Delete Party?',
+      'This will permanently delete the party and all its links. This cannot be undone.',
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteParty(partyId);
+      navigation.goBack();
+    } catch (err) {
+      await dialog.error('Error deleting party', err.message);
+    }
+  };
+
+  const handleMenuPress = (event: GestureResponderEvent) => {
+    event.currentTarget.measureInWindow(
+      (x: number, y: number, width: number, height: number) => {
+        setMenuAnchor({ x: x + width, y: y + height });
+        setMenuVisible(true);
+      },
+    );
+  };
+
+  const menuItems = useMemo(() => {
+    const items: Array<{
+      icon: ComponentProps<typeof Feather>['name'];
+      label: string;
+      action: () => void;
+      variant?: 'danger';
+    }> = [];
+
+    if (isOwner) {
+      items.push({
+        icon: 'edit-2',
+        label: 'Edit Name',
+        action: () => {
+          setMenuVisible(false);
+          setEditModalVisible(true);
+        },
+      });
+      items.push({
+        icon: 'trash-2',
+        label: 'Delete Party',
+        action: handleDeleteParty,
+        variant: 'danger',
+      });
+    }
+
+    return items;
+  }, [isOwner]);
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-neutral-50">
@@ -101,9 +216,14 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         <Pressable onPress={() => navigation.goBack()} className="p-2 -ml-2">
           <Feather name="arrow-left" size={24} color="#333" />
         </Pressable>
-        <Text className="flex-1 text-lg font-semibold text-center mr-8">
+        <Text className="flex-1 text-lg font-semibold text-center">
           {party.name}
         </Text>
+        {isOwner && (
+          <Pressable onPress={handleMenuPress} className="p-2 -mr-2">
+            <Feather name="more-vertical" size={24} color="#333" />
+          </Pressable>
+        )}
       </View>
 
       <ScrollView
@@ -177,6 +297,36 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         onClose={() => setCreateModalVisible(false)}
         onSubmit={handleCreateLink}
       />
+
+      {/* Dropdown Menu */}
+      {isOwner && (
+        <DropdownMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          anchor={menuAnchor}
+        >
+          {menuItems.map((item, index) => (
+            <DropdownMenuItem
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              onPress={item.action}
+              variant={item.variant}
+            />
+          ))}
+        </DropdownMenu>
+      )}
+
+      {/* Edit Party Modal */}
+      {isOwner && (
+        <CreatePartyModal
+          visible={editModalVisible}
+          initialParty={party}
+          loading={editLoading}
+          onClose={() => setEditModalVisible(false)}
+          onSubmit={handleEditParty}
+        />
+      )}
     </SafeAreaView>
   );
 }
