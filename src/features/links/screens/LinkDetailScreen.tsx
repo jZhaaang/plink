@@ -10,7 +10,7 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
@@ -56,7 +56,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const { link, loading, error, refetch } = useLinkDetail(linkId);
 
-  const { pickAndUpload, uploading } = useMediaUpload({
+  const { pickAndUpload, captureAndUpload, uploading } = useMediaUpload({
     linkId,
     userId: userId ?? '',
     onSuccess: refetch,
@@ -336,13 +336,27 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       {/* Bottom Actions (for active links) */}
       {isActive && (
         <View className="px-4 py-4 border-t border-slate-200 bg-white">
-          <Button
-            title={uploading ? 'Uploading...' : 'Add Photos'}
-            size="lg"
-            onPress={pickAndUpload}
-            loading={uploading}
-            disabled={uploading}
-          />
+          <View className="flex-row gap-3">
+            {/* Camera button */}
+            <Pressable
+              onPress={captureAndUpload}
+              className="flex-1 bg-slate-100 rounded-xl py-4 items-center"
+              disabled={uploading}
+            >
+              <Ionicons name="camera" size={24} color="#334155" />
+              <Text className="text-slate-700 mt-1 font-medium">Camera</Text>
+            </Pressable>
+
+            {/* Upload button */}
+            <Pressable
+              onPress={pickAndUpload}
+              className="flex-1 bg-blue-100 rounded-xl py-4 items-center"
+              disabled={uploading}
+            >
+              <Ionicons name="images" size={24} color="#6366f1" />
+              <Text className="text-primary-600 mt-1 font-medium">Gallery</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 
