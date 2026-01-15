@@ -17,7 +17,7 @@ import {
 } from '../../../lib/supabase/queries/users';
 import { toProfileResolved } from '../../../lib/resolvers/profile';
 import { useDialog } from '../../../providers/DialogProvider';
-import { Button, TextField } from '../../../components';
+import { Button, Divider, TextField } from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
@@ -155,116 +155,116 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
-      <ScrollView className="flex-1" contentContainerClassName="px-6 py-4">
+      <ScrollView className="flex-1" contentContainerClassName="px-4">
         {editing ? (
-          // EDIT MODE
-          <View className="gap-6">
-            <Text className="text-2xl font-bold text-slate-900">
-              Edit Profile
-            </Text>
+          <>
+            <Text className="text-xl font-bold mb-4">Edit Profile</Text>
+            <Divider />
 
-            {/* Avatar Editor */}
-            <View className="items-center gap-2">
-              <Pressable
-                onPress={choosePhoto}
-                className="relative h-28 w-28 overflow-hidden rounded-full"
-              >
-                {editModeAvatarUri ? (
-                  <Image
-                    source={{ uri: editModeAvatarUri }}
-                    className="h-28 w-28"
-                  />
-                ) : (
-                  ''
-                )}
-                {/* Camera Icon Overlay */}
-                <View className="absolute inset-0 items-center justify-center bg-black/30">
-                  <Ionicons name="camera-outline" size={32} color="white" />
-                </View>
-              </Pressable>
-              <Text className="text-sm text-slate-500">
-                Tap to change photo
-              </Text>
-            </View>
-
-            {/* Name Field */}
-            <View className="gap-1">
-              <TextField
-                header="Name"
-                left={
-                  <Ionicons name="person-outline" size={18} color="#64748b" />
-                }
-                placeholder="Your name"
-                value={name}
-                onChangeText={setName}
-                returnKeyType="done"
-                onSubmitEditing={handleSave}
-              />
-            </View>
-
-            {/* Action Buttons */}
-            <View className="gap-3">
-              <Button
-                title="Save"
-                onPress={handleSave}
-                disabled={loading || !name.trim()}
-              />
-              <Button
-                title="Cancel"
-                variant="outline"
-                onPress={handleCancel}
-                disabled={loading}
-              />
-            </View>
-          </View>
-        ) : (
-          // DISPLAY MODE
-          <View className="gap-6">
-            <Text className="text-2xl font-bold text-slate-900">
-              My Profile
-            </Text>
-
-            {/* Profile Display Card */}
-            <View className="items-center rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
-              {/* Avatar */}
-              <View className="mb-4">
-                {profile.avatarUrl ? (
-                  <Image
-                    source={{ uri: profile.avatarUrl }}
-                    className="h-24 w-24 rounded-full"
-                  />
-                ) : (
-                  ''
-                )}
+            <View className="gap-6 mt-4">
+              {/* Avatar Editor */}
+              <View className="items-center gap-2">
+                <Pressable
+                  onPress={choosePhoto}
+                  className="relative h-28 w-28 overflow-hidden rounded-full"
+                >
+                  {editModeAvatarUri ? (
+                    <Image
+                      source={{ uri: editModeAvatarUri }}
+                      className="h-28 w-28"
+                    />
+                  ) : (
+                    ''
+                  )}
+                  {/* Camera Icon Overlay */}
+                  <View className="absolute inset-0 items-center justify-center bg-black/30">
+                    <Ionicons name="camera-outline" size={32} color="white" />
+                  </View>
+                </Pressable>
+                <Text className="text-sm text-slate-500">
+                  Tap to change photo
+                </Text>
               </View>
 
-              {/* Name */}
-              <Text className="text-xl font-semibold text-slate-900">
-                {profile.name}
-              </Text>
+              {/* Name Field */}
+              <View className="gap-1">
+                <TextField
+                  header="Name"
+                  left={
+                    <Ionicons name="person-outline" size={18} color="#64748b" />
+                  }
+                  placeholder="Your name"
+                  value={name}
+                  onChangeText={setName}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSave}
+                />
+              </View>
 
-              {/* Join Date */}
-              <Text className="mt-1 text-sm text-slate-500">
-                Joined {new Date(profile.created_at).toLocaleDateString()}
-              </Text>
+              {/* Action Buttons */}
+              <View className="gap-3">
+                <Button
+                  title="Save"
+                  onPress={handleSave}
+                  disabled={loading || !name.trim()}
+                />
+                <Button
+                  title="Cancel"
+                  variant="outline"
+                  onPress={handleCancel}
+                  disabled={loading}
+                />
+              </View>
             </View>
+          </>
+        ) : (
+          <>
+            <Text className="text-xl font-bold mb-4">My Profile</Text>
+            <Divider />
 
-            {/* Edit Profile Button */}
-            <Button
-              title="Edit Profile"
-              variant="outline"
-              onPress={handleEdit}
-            />
+            <View className="gap-6 mt-4">
+              {/* Profile Display Card */}
+              <View className="items-center rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
+                {/* Avatar */}
+                <View className="mb-4">
+                  {profile.avatarUrl ? (
+                    <Image
+                      source={{ uri: profile.avatarUrl }}
+                      className="h-24 w-24 rounded-full"
+                    />
+                  ) : (
+                    ''
+                  )}
+                </View>
 
-            {/* Sign Out Button */}
-            <View className="mt-6">
+                {/* Name */}
+                <Text className="text-xl font-semibold text-slate-900">
+                  {profile.name}
+                </Text>
+
+                {/* Join Date */}
+                <Text className="mt-1 text-sm text-slate-500">
+                  Joined {new Date(profile.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+
+              {/* Edit Profile Button */}
               <Button
-                title="Sign Out"
-                variant="ghost"
-                onPress={handleSignOut}
+                title="Edit Profile"
+                variant="outline"
+                onPress={handleEdit}
               />
+
+              {/* Sign Out Button */}
+              <View className="mt-6">
+                <Button
+                  title="Sign Out"
+                  variant="ghost"
+                  onPress={handleSignOut}
+                />
+              </View>
             </View>
-          </View>
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
