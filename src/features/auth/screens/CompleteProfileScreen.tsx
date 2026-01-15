@@ -61,19 +61,21 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
     setLoading(true);
     try {
+      let avatarId = null;
+
       if (imageUri) {
-        await avatars.upload(session.user.id, imageUri, 'jpg');
+        avatarId = await avatars.upload(session.user.id, imageUri, 'jpg');
       } else {
         const encodedName = encodeURIComponent(name.trim());
-        await avatars.upload(
+        avatarId = await avatars.upload(
           session.user.id,
           `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg`,
-          'jpg',
         );
       }
 
       await updateUserProfile(session.user.id, {
         name: name.trim(),
+        avatar_id: avatarId,
       });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {

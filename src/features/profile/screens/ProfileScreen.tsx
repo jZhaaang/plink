@@ -97,12 +97,20 @@ export default function ProfileScreen() {
     }
     setLoading(true);
     try {
+      let avatarId = profile.avatar_id;
+
       if (imageUri) {
-        await avatars.upload(session.user.id, imageUri, 'jpg');
+        avatarId = await avatars.upload(
+          session.user.id,
+          imageUri,
+          profile.avatar_id,
+          'jpg',
+        );
       }
 
       await updateUserProfile(session.user.id, {
         name: name.trim(),
+        avatar_id: avatarId,
       });
 
       await loadProfile();

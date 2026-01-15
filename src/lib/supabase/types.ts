@@ -254,21 +254,21 @@ export type Database = {
       };
       profiles: {
         Row: {
-          avatar_path: string | null;
+          avatar_id: string | null;
           created_at: string;
           id: string;
           name: string | null;
           updated_at: string | null;
         };
         Insert: {
-          avatar_path?: string | null;
+          avatar_id?: string | null;
           created_at?: string;
           id?: string;
           name?: string | null;
           updated_at?: string | null;
         };
         Update: {
-          avatar_path?: string | null;
+          avatar_id?: string | null;
           created_at?: string;
           id?: string;
           name?: string | null;
@@ -281,6 +281,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      can_upload_to_link: { Args: { p_link_id: string }; Returns: boolean };
       create_party_with_owner: {
         Args: { party_name: string; party_owner_id: string };
         Returns: {
@@ -299,7 +300,13 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      is_member_of_party: { Args: { party_id: string }; Returns: boolean };
+      is_media_uploader: { Args: { p_post_id: string }; Returns: boolean };
+      is_member_of_party: { Args: { p_party_id: string }; Returns: boolean };
+      is_party_member_of_link: {
+        Args: { p_link_id: string };
+        Returns: boolean;
+      };
+      is_party_owner_of_link: { Args: { p_link_id: string }; Returns: boolean };
     };
     Enums: {
       media_type: 'image' | 'video';
