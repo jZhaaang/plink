@@ -4,5 +4,5 @@ import { avatars } from '../supabase/storage/avatars';
 export async function toProfileResolved(
   profile: Profile,
 ): Promise<ProfileResolved> {
-  return { ...profile, avatarUrl: await avatars.getUrl(profile.avatar_path) };
+  return { ...profile, avatarUrl: await avatars.getUrl(profile.id) };
 }

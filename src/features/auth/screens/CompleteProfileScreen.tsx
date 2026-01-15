@@ -45,6 +45,10 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     if (!result.canceled) setImageUri(result.assets[0].uri);
   }
 
+  function removePhoto() {
+    setImageUri(null);
+  }
+
   async function save() {
     if (!session?.user) {
       await dialog.error('Session Error', 'Please sign in again');
@@ -57,15 +61,19 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
     setLoading(true);
     try {
-      let avatar_path = null;
-
       if (imageUri) {
-        avatar_path = await avatars.upload(session.user.id, imageUri, 'jpg');
+        await avatars.upload(session.user.id, imageUri, 'jpg');
+      } else {
+        const encodedName = encodeURIComponent(name.trim());
+        await avatars.upload(
+          session.user.id,
+          `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg`,
+          'jpg',
+        );
       }
 
       await updateUserProfile(session.user.id, {
         name: name.trim(),
-        avatar_path,
       });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
@@ -118,6 +126,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
               variant="outline"
               size="sm"
               onPress={takePhoto}
+              textClassName="text-sm font-normal text-slate-600"
+            />
+            <Button
+              title="Remove photo"
+              variant="outline"
+              size="sm"
+              onPress={removePhoto}
               textClassName="text-sm font-normal text-slate-600"
             />
           </View>
