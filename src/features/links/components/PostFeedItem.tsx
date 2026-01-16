@@ -1,10 +1,5 @@
-import {
-  View,
-  Text,
-  Image,
-  Pressable,
-  useWindowDimensions,
-} from 'react-native';
+import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { LinkPostWithMediaResolved } from '../../../lib/models';
 
 type Props = {
@@ -99,7 +94,9 @@ export default function PostFeedItem({ post, onMediaPress }: Props) {
                   height: mediaCount === 1 ? itemSize * 0.75 : itemSize,
                   borderRadius: 8,
                 }}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={200}
               />
             </Pressable>
           ))}

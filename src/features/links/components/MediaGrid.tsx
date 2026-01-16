@@ -1,10 +1,5 @@
-import {
-  FlatList,
-  Pressable,
-  Image,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, useWindowDimensions, View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinkPostMediaResolved } from '../../../lib/models';
 
 type Props = {
@@ -39,7 +34,9 @@ export default function MediaGrid({ media, onMediaPress, columns = 3 }: Props) {
               height: itemSize,
               borderRadius: 4,
             }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={200}
           />
         </Pressable>
       )}

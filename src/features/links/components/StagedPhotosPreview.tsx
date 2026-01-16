@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Image } from 'expo-image';
 
 type Props = {
   assets: ImagePicker.ImagePickerAsset[];
@@ -22,7 +23,7 @@ export function StagedPhotosPreview({ assets, onRemove }: Props) {
             <Image
               source={{ uri: asset.uri }}
               className="w-20 h-20 rounded-lg"
-              resizeMode="cover"
+              contentFit="cover"
             />
             {/* Remove button */}
             <Pressable

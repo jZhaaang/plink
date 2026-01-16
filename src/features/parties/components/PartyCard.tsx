@@ -1,6 +1,7 @@
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, ImageBackground, Pressable, View, Text } from 'react-native';
+import { ImageBackground, Pressable, View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import AvatarStack from '../../../components/AvatarStack';
 import { formatRelativeTime } from '../../../lib/utils/formatRelativeTime';
 
@@ -125,8 +126,9 @@ export function PartyCard(props: Props) {
             {avatarUri ? (
               <Image
                 source={{ uri: avatarUri }}
-                resizeMode="cover"
-                className="flex-1"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                style={{ width: '100%', height: '100%' }}
               />
             ) : (
               <AvatarFallback showIcon={false} />
@@ -211,8 +213,9 @@ export function PartyCard(props: Props) {
             {avatarUri ? (
               <Image
                 source={{ uri: avatarUri }}
-                resizeMode="cover"
-                className="flex-1"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                style={{ width: '100%', height: '100%' }}
               />
             ) : (
               <AvatarFallback showIcon={isEditable} />
