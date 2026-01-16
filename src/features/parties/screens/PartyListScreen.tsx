@@ -10,6 +10,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { usePartiesWithMembers } from '../hooks/usePartiesWithMembers';
 import { PartyCard } from '../components/PartyCard';
 import { Feather } from '@expo/vector-icons';
@@ -144,10 +145,19 @@ export default function PartyListScreen({ navigation }: Props) {
         {parties.length ? (
           <Pressable
             onPress={() => setModalVisible(true)}
-            className="absolute right-5 bottom-8 h-14 w-14 rounded-full bg-blue-500 items-center justify-center shadow-lg"
+            className="absolute right-5 bottom-5 overflow-hidden rounded-full shadow-lg active:scale-95"
+            style={{ elevation: 8 }}
             accessibilityLabel="Create a new party"
           >
-            <Feather name="plus" size={24} color="white" />
+            <LinearGradient
+              colors={['#6366f1', '#8b5cf6']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="flex-row items-center px-5 py-4 gap-2"
+            >
+              <Feather name="plus" size={20} color="white" />
+              <Text className="text-white font-semibold">New Party</Text>
+            </LinearGradient>
           </Pressable>
         ) : null}
 
