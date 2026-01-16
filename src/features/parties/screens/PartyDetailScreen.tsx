@@ -253,7 +253,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         {/* Active Link Section */}
         <View className="px-4">
           {activeLink ? (
-            <LinkCard link={activeLink} onPress={handleLinkPress} />
+            <>
+              <SectionHeader title="Active Link" count={0} />
+              <LinkCard link={activeLink} onPress={handleLinkPress} />
+            </>
           ) : (
             <EmptyState
               icon="link"

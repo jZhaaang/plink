@@ -20,8 +20,13 @@ export default function SectionHeader({
       {...rest}
       className={cn('flex-row items-center justify-between mb-3', className)}
     >
-      <View className="flex-row items-center gap-2">
-        <Text className="text-lg font-semibold text-slate-900">{title}</Text>
+      <View className="flex-row items-center">
+        <Text
+          className="text-lg font-semibold text-slate-900 mr-2"
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
         {count !== undefined && (
           <View className="bg-slate-100 rounded-full px-2 py-0.5">
             <Text className="text-sm text-slate-600">{count}</Text>
