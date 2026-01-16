@@ -1,5 +1,4 @@
 import { Pressable, View, Text } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { Link } from '../../../lib/models';
 
 type Props = {
@@ -46,11 +45,6 @@ export default function LinkCard({ link, onPress }: Props) {
             {isActive ? 'Active' : 'Ended'}
           </Text>
         </View>
-      </View>
-
-      <View className="flex-row items-center mt-3 pt-3 border-t border-slate-100">
-        <Feather name="image" size={14} color="#64748b" />
-        <Text className="text-sm text-slate-500 ml-1">0 photos</Text>
       </View>
     </Pressable>
   );
