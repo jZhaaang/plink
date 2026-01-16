@@ -38,14 +38,52 @@ import { StagedPhotosPreview } from '../components/StagedPhotosPreview';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
-function formatDate(dateString: string | null): string {
-  if (!dateString) return '';
+function formatDateTime(dateString: string | null): {
+  date: string;
+  time: string;
+} {
+  if (!dateString) return { date: '', time: '' };
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return {
+    date: date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    time: date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }),
+  };
+}
+
+function formatDuration(startDate: string, endDate: string | null): string {
+  const start = new Date(startDate);
+  const end = endDate ? new Date(endDate) : new Date();
+  const diffMs = end.getTime() - start.getTime();
+
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMs / 3600000);
+  const days = Math.floor(diffMs / 86400000);
+
+  if (days > 0) {
+    const remainingHours = Math.floor((diffMs % 86400000) / 3600000);
+    if (remainingHours > 0) {
+      return `${days}d ${remainingHours}h`;
+    }
+    return `${days} day${days !== 1 ? 's' : ''}`;
+  }
+
+  if (hours > 0) {
+    const remainingMins = Math.floor((diffMs % 3600000) / 60000);
+    if (remainingMins > 0) {
+      return `${hours}h ${remainingMins}m`;
+    }
+    return `${hours} hour${hours !== 1 ? 's' : ''}`;
+  }
+
+  return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
 }
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
@@ -236,6 +274,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const memberAvatars = link.members
     .map((m) => m.avatarUrl)
     .filter((url): url is string => !!url);
+  const owner = link.members.find((m) => m.id === link.owner_id);
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">
@@ -277,18 +316,50 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         }
       >
         {/* Link Info */}
-        <View className="px-4 mt-4">
+        <View className="px-4 mt-4 gap-2">
+          {/* Owner */}
+          <Text className="text-sm text-slate-500">
+            Created by {owner.name}
+          </Text>
+          {/* Primary timestamp */}
           <Text className="text-sm text-slate-500">
             {isActive
-              ? `Started ${formatDate(link.created_at)}`
-              : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
+              ? `Started ${formatDateTime(link.created_at).date} at ${formatDateTime(link.created_at).time}`
+              : `${formatDateTime(link.created_at).date}, ${formatDateTime(link.created_at).time} - ${formatDateTime(link.end_time).date}, ${formatDateTime(link.end_time).time}`}
           </Text>
 
-          <View className="flex-row items-center mt-3">
+          {/* Duration badge */}
+          <View className="flex-row items-center">
+            <Feather name="clock" size={14} color="#64748b" />
+            <Text className="text-sm text-slate-500 ml-1">
+              {isActive
+                ? `Active for ${formatDuration(link.created_at, null)}`
+                : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
+            </Text>
+          </View>
+
+          {/* Members */}
+          <View className="flex-row items-center mt-2">
             <AvatarStack avatarUris={memberAvatars} size={36} />
             <Text className="text-sm text-slate-500 ml-2">
               {link.members.length} member{link.members.length !== 1 ? 's' : ''}
             </Text>
+          </View>
+
+          {/* Stats row */}
+          <View className="flex-row justify-around mt-2 py-3 bg-slate-50 rounded-xl">
+            <View className="items-center">
+              <Text className="text-lg font-semibold text-slate-800">
+                {link.postCount}
+              </Text>
+              <Text className="text-xs text-slate-500">Posts</Text>
+            </View>
+            <View className="items-center">
+              <Text className="text-lg font-semibold text-slate-800">
+                {link.mediaCount}
+              </Text>
+              <Text className="text-xs text-slate-500">Photos</Text>
+            </View>
           </View>
         </View>
 
