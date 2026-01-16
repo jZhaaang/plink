@@ -28,6 +28,7 @@ import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
 import CreatePartyModal from '../components/CreatePartyModal';
+import InviteMemberModal from '../components/InviteMemberModal';
 import {
   Button,
   SectionHeader,
@@ -54,6 +55,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     null,
   );
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
   const isOwner = party?.owner_id === userId;
@@ -168,6 +170,14 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
     if (isOwner) {
       items.push({
+        icon: 'user-plus',
+        label: 'Invite Member',
+        action: () => {
+          setMenuVisible(false);
+          setInviteModalVisible(true);
+        },
+      });
+      items.push({
         icon: 'edit-2',
         label: 'Edit Name',
         action: () => {
@@ -244,7 +254,20 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
         {/* Members Section */}
         <View className="mt-6 px-4">
-          <SectionHeader title="Members" count={party.members.length} />
+          <SectionHeader
+            title="Members"
+            count={party.members.length}
+            action={
+              <Pressable
+                onPress={() => setInviteModalVisible(true)}
+                className="flex-row items-center"
+              >
+                <Text className="text-blue-600 text-sm font-medium">
+                  + Invite Members
+                </Text>
+              </Pressable>
+            }
+          />
           <AvatarStack avatarUris={memberAvatars} size={44} />
         </View>
 
@@ -328,6 +351,17 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           loading={editLoading}
           onClose={() => setEditModalVisible(false)}
           onSubmit={handleEditParty}
+        />
+      )}
+
+      {/* Invite Member Modal */}
+      {isOwner && (
+        <InviteMemberModal
+          visible={inviteModalVisible}
+          onClose={() => setInviteModalVisible(false)}
+          partyId={partyId}
+          existingMemberIds={party.members.map((m) => m.id)}
+          onSuccess={refetch}
         />
       )}
     </SafeAreaView>
