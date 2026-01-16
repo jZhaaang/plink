@@ -65,7 +65,6 @@ export default function ProfileScreen() {
       const rawProfile = await getUserProfile(session.user.id);
       if (rawProfile) {
         const resolved = await toProfileResolved(rawProfile);
-        console.log(resolved.avatarUrl);
         setProfile(resolved);
       }
     } catch (err) {
