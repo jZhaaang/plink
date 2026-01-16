@@ -109,7 +109,6 @@ export default function ProfileScreen() {
       return;
     }
 
-    setLoading(true);
     try {
       if (trimmedUsername && trimmedUsername !== profile.username) {
         const existingUser = await searchUserByUsername(trimmedUsername);
@@ -118,10 +117,10 @@ export default function ProfileScreen() {
             'Username taken',
             'This username is already in use',
           );
-          setLoading(false);
           return;
         }
       }
+      setLoading(true);
 
       let avatarId = profile.avatar_id;
 
