@@ -20,7 +20,10 @@ import {
   deleteLink,
   updateLinkById,
 } from '../../../lib/supabase/queries/links';
-import { deleteLinkMember } from '../../../lib/supabase/queries/linkMembers';
+import {
+  createLinkMember,
+  deleteLinkMember,
+} from '../../../lib/supabase/queries/linkMembers';
 import AvatarStack from '../../../components/AvatarStack';
 import MediaGrid from '../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
@@ -117,6 +120,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const isActive = link && !link.end_time;
   const isOwner = link?.owner_id === userId;
+  const isMember = link?.members.some((m) => m.id === userId) ?? false;
+  const memberAvatars = link?.members
+    .map((m) => m.avatarUrl)
+    .filter((url): url is string => !!url);
+  const owner = link?.members.find((m) => m.id === link.owner_id);
 
   const allMedia = useMemo(() => {
     if (!link) return [];
@@ -166,6 +174,23 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       navigation.navigate('PartyDetail', { partyId });
     } catch (err) {
       await dialog.error('Error deleting link', err.message);
+    }
+  };
+
+  const handleJoinLink = async () => {
+    setMenuVisible(false);
+    const confirmed = await dialog.confirmAsk(
+      'Join Link?',
+      'Become an active participant in the ongoing link.',
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await createLinkMember({ link_id: linkId, user_id: userId });
+      refetch();
+    } catch (err) {
+      await dialog.error('Error joining link', err.message);
     }
   };
 
@@ -229,17 +254,23 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         action: handleDeleteLink,
         variant: 'danger',
       });
-    } else {
+    } else if (isMember) {
       items.push({
         icon: 'log-out',
         label: 'Leave Link',
         action: handleLeaveLink,
         variant: 'danger',
       });
+    } else if (isActive) {
+      items.push({
+        icon: 'log-in',
+        label: 'Join Link',
+        action: handleJoinLink,
+      });
     }
 
     return items;
-  }, [isOwner, isActive]);
+  }, [isOwner, isActive, isMember]);
 
   const handlePostMediaPress = (postMediaUrls: string[], index: number) => {
     navigation.navigate('MediaViewer', {
@@ -270,11 +301,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       </SafeAreaView>
     );
   }
-
-  const memberAvatars = link.members
-    .map((m) => m.avatarUrl)
-    .filter((url): url is string => !!url);
-  const owner = link.members.find((m) => m.id === link.owner_id);
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">
@@ -413,7 +439,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       </ScrollView>
 
       {/* Bottom Actions (for active links) */}
-      {isActive && (
+      {isActive && isMember && (
         <>
           <StagedPhotosPreview assets={stagedAssets} onRemove={removeAsset} />
           <View className="px-4 py-4 border-t border-slate-200 bg-white">
