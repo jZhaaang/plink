@@ -50,7 +50,8 @@ export default function PostFeedItem({ post, onMediaPress }: Props) {
         {post.owner.avatarUrl ? (
           <Image
             source={{ uri: post.owner.avatarUrl }}
-            className="w-10 h-10 rounded-full bg-slate-200"
+            style={{ width: 40, height: 40, borderRadius: 20 }}
+            contentFit="cover"
           />
         ) : (
           <View className="w-10 h-10 rounded-full bg-slate-200 items-center justify-center">
