@@ -4,6 +4,7 @@ import PartyListScreen from '../features/parties/screens/PartyListScreen';
 import PartyDetailScreen from '../features/parties/screens/PartyDetailScreen';
 import LinkDetailScreen from '../features/links/screens/LinkDetailScreen';
 import MediaViewerScreen from '../features/links/screens/MediaViewerScreen';
+import AllMediaScreen from '../features/links/screens/AllMediaScreen';
 
 const Stack = createNativeStackNavigator<PartyStackParamList>();
 
@@ -20,6 +21,11 @@ export default function PartyStack() {
           presentation: 'fullScreenModal',
           animation: 'fade',
         }}
+      />
+      <Stack.Screen
+        name="AllMedia"
+        component={AllMediaScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

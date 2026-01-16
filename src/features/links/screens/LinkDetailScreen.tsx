@@ -279,8 +279,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   };
 
-  const handleAllMediaPress = (index: number) => {
+  const handleMediaPress = (index: number) => {
     navigation.navigate('MediaViewer', { mediaUrls, initialIndex: index });
+  };
+
+  const handleSeeAllMedia = () => {
+    navigation.navigate('AllMedia', { linkId });
   };
 
   if (loading) {
@@ -391,6 +395,46 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
         <Divider className="my-6" />
 
+        {/* All Photos Section */}
+        <View className="px-4 pb-8">
+          <SectionHeader
+            title="All Photos"
+            count={link.mediaCount}
+            action={
+              link.mediaCount > 6 ? (
+                <Pressable
+                  onPress={handleSeeAllMedia}
+                  className="flex-row items-center"
+                >
+                  <Text className="text-blue-600 text-sm font-medium">
+                    See all
+                  </Text>
+                  <Feather name="chevron-right" size={16} color="#2563eb" />
+                </Pressable>
+              ) : undefined
+            }
+          />
+
+          {link.mediaCount === 0 ? (
+            <EmptyState
+              icon="image"
+              title="No photos yet"
+              message={
+                isActive
+                  ? 'Photos from all posts will appear here'
+                  : 'No photos were added to this link'
+              }
+            />
+          ) : (
+            <MediaGrid
+              media={allMedia}
+              onMediaPress={handleMediaPress}
+              maxItems={6}
+              onOverflowPress={handleSeeAllMedia}
+            />
+          )}
+        </View>
+
         {/* Post Feed Section */}
         <View className="px-4">
           <SectionHeader title="Posts" count={link.postCount} />
@@ -417,25 +461,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         </View>
 
         <Divider className="my-6" />
-
-        {/* All Photos Section */}
-        <View className="px-4 pb-8">
-          <SectionHeader title="All Photos" count={link.mediaCount} />
-
-          {link.mediaCount === 0 ? (
-            <EmptyState
-              icon="image"
-              title="No photos yet"
-              message={
-                isActive
-                  ? 'Photos from all posts will appear here'
-                  : 'No photos were added to this link'
-              }
-            />
-          ) : (
-            <MediaGrid media={allMedia} onMediaPress={handleAllMediaPress} />
-          )}
-        </View>
       </ScrollView>
 
       {/* Bottom Actions (for active links) */}
