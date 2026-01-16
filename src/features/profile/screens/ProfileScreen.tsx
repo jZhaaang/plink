@@ -10,7 +10,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { ProfileResolved } from '../../../lib/models';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   getUserProfile,
   updateUserProfile,
@@ -38,6 +39,15 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadProfile();
   }, [session]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setEditing(false);
+        setImageUri(null);
+      };
+    }, []),
+  );
 
   useEffect(() => {
     ImagePicker.requestMediaLibraryPermissionsAsync();
