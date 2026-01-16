@@ -44,3 +44,28 @@ export async function deleteUserProfile(userId: string) {
     throw error;
   }
 }
+
+export async function searchUserByUsername(
+  username: string,
+): Promise<Profile | null> {
+  const normalizedUsername = username.toLowerCase().trim().replace(/^@/, '');
+
+  if (!normalizedUsername) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select()
+    .eq('username', normalizedUsername)
+    .single();
+
+  if (error || !data) {
+    if (error && error.code !== 'PGRST116') {
+      logger.error('Error searching user by username:', error.message);
+    }
+    return null;
+  }
+
+  return data;
+}

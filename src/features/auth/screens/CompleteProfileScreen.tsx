@@ -17,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 export default function CompleteProfileScreen({ navigation }: Props) {
   const { session, ready } = useAuth();
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const dialog = useDialog();
@@ -60,6 +61,21 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       await dialog.error('Missing info', 'Name cannot be empty');
       return;
     }
+
+    const trimmedUsername = username.trim().toLowerCase();
+    if (!trimmedUsername) {
+      await dialog.error('Missing info', 'Username is required');
+      return;
+    }
+
+    if (!/^[a-z0-9_]{3,12}$/.test(trimmedUsername)) {
+      await dialog.error(
+        'Invalid username',
+        'Username must be 3-12 characters: lowercase letters, numbers, and underscores',
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       let avatarId = null;
@@ -76,11 +92,19 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
       await updateUserProfile(session.user.id, {
         name: name.trim(),
+        username: trimmedUsername,
         avatar_id: avatarId,
       });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
-      await dialog.error('Save Error', err.message);
+      if (err.message?.includes('duplicate') || err.code == '23505') {
+        await dialog.error(
+          'Username taken',
+          'This username is already in use. Please choose another',
+        );
+      } else {
+        await dialog.error('Save Error', err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -151,12 +175,29 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             returnKeyType="done"
             onSubmitEditing={save}
           />
+          <TextField
+            header="Username"
+            left={<Text className="text-slate-400 text-base">@</Text>}
+            placeholder="username"
+            value={username}
+            onChangeText={(text) =>
+              setUsername(text.toLowerCase().replace(/[^a-z0-9_]/g, ''))
+            }
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={12}
+            returnKeyType="done"
+            onSubmitEditing={save}
+          />
+          <Text className="pl-1 text-[11px] text-slate-500">
+            3-12 characters. Others will find you by this.
+          </Text>
         </View>
 
         <Button
           title="Save"
           size="lg"
-          disabled={loading || !name.trim()}
+          disabled={loading || !name.trim() || !username.trim()}
           onPress={save}
         />
       </View>

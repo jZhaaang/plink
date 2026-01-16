@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import {
   getUserProfile,
   updateUserProfile,
+  searchUserByUsername,
 } from '../../../lib/supabase/queries/users';
 import { toProfileResolved } from '../../../lib/resolvers/profile';
 import { useDialog } from '../../../providers/DialogProvider';
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,12 +68,14 @@ export default function ProfileScreen() {
   function handleEdit() {
     setEditing(true);
     setName(profile.name || '');
+    setUsername(profile.username || '');
     setImageUri(null);
   }
 
   function handleCancel() {
     setEditing(false);
     setName(profile.name || '');
+    setUsername(profile.username || '');
     setImageUri(null);
   }
 
@@ -95,8 +99,30 @@ export default function ProfileScreen() {
       await dialog.error('Missing info', 'Name cannot be empty');
       return;
     }
+
+    const trimmedUsername = username.trim().toLowerCase();
+    if (trimmedUsername && !/^[a-z0-9_]{3,12}$/.test(trimmedUsername)) {
+      await dialog.error(
+        'Invalid username',
+        'Username must be 3-12 characters, lowercase letters, numbers, and underscores only',
+      );
+      return;
+    }
+
     setLoading(true);
     try {
+      if (trimmedUsername && trimmedUsername !== profile.username) {
+        const existingUser = await searchUserByUsername(trimmedUsername);
+        if (existingUser && existingUser.id !== session.user.id) {
+          await dialog.error(
+            'Username taken',
+            'This username is already in use',
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       let avatarId = profile.avatar_id;
 
       if (imageUri) {
@@ -110,6 +136,7 @@ export default function ProfileScreen() {
 
       await updateUserProfile(session.user.id, {
         name: name.trim(),
+        username: trimmedUsername || null,
         avatar_id: avatarId,
       });
 
@@ -117,7 +144,11 @@ export default function ProfileScreen() {
       setEditing(false);
       setImageUri(null);
     } catch (err) {
-      await dialog.error('Save Error', err.message);
+      if (err.message?.includes('duplicate') || err.code == '23505') {
+        await dialog.error('Username taken', 'This username is already in use');
+      } else {
+        await dialog.error('Save Error', err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -201,6 +232,25 @@ export default function ProfileScreen() {
                 />
               </View>
 
+              {/* Username Field */}
+              <View className="gap-1">
+                <TextField
+                  header="Username"
+                  left={<Text className="text-slate-400">@</Text>}
+                  placeholder="username"
+                  value={username}
+                  onChangeText={(text) =>
+                    setUsername(text.toLowerCase().replace(/[^a-z0-9_]/g, ''))
+                  }
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={20}
+                />
+                <Text className="text-xs text-slate-500 px-1">
+                  Others can find and invite you by username
+                </Text>
+              </View>
+
               {/* Action Buttons */}
               <View className="gap-3">
                 <Button
@@ -241,6 +291,13 @@ export default function ProfileScreen() {
                 <Text className="text-xl font-semibold text-slate-900">
                   {profile.name}
                 </Text>
+
+                {/* Username */}
+                {profile.username && (
+                  <Text className="text-sm text-slate-500">
+                    @{profile.username}
+                  </Text>
+                )}
 
                 {/* Join Date */}
                 <Text className="mt-1 text-sm text-slate-500">
