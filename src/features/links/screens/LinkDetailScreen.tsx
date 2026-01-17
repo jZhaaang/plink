@@ -39,6 +39,9 @@ import {
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import { StagedPhotosPreview } from '../components/StagedPhotosPreview';
 import UploadProgressModal from '../../../components/UploadProgressModal';
+import { links } from '../../../lib/supabase/storage/links';
+import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
+import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -289,6 +292,35 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     navigation.navigate('AllMedia', { linkId });
   };
 
+  const handleDeletePost = async (postId: string) => {
+    const post = link?.posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    const confirmed = await dialog.confirmDanger(
+      'Delete Post?',
+      `This will permanently delete this post and ${post.media.length} photo${post.media.length !== 1 ? 's' : ''}.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      for (const media of post.media) {
+        const ext = media.path.split('.').pop() || 'jpg';
+        await links.remove(linkId, postId, media.id, ext);
+      }
+
+      for (const media of post.media) {
+        await deleteLinkPostMedia(media.id);
+      }
+
+      await deleteLinkPost(postId);
+
+      refetch();
+    } catch (err) {
+      dialog.error('Delete failed', err.message);
+    }
+  };
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-neutral-50">
@@ -437,6 +469,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           )}
         </View>
 
+        <Divider className="my-6" />
+
         {/* Post Feed Section */}
         <View className="px-4">
           <SectionHeader title="Posts" count={link.postCount} />
@@ -457,6 +491,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 key={post.id}
                 post={post}
                 onMediaPress={handlePostMediaPress}
+                currentUserId={userId}
+                onDeletePost={handleDeletePost}
               />
             ))
           )}

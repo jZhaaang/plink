@@ -1,10 +1,21 @@
-import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  useWindowDimensions,
+  GestureResponderEvent,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { LinkPostWithMediaResolved } from '../../../lib/models';
+import { useState } from 'react';
+import { Feather } from '@expo/vector-icons';
+import { DropdownMenu, DropdownMenuItem } from '../../../components';
 
 type Props = {
   post: LinkPostWithMediaResolved;
   onMediaPress?: (mediaUrls: string[], index: number) => void;
+  currentUserId?: string;
+  onDeletePost?: (postId: string) => void;
 };
 
 function formatRelativeTime(dateString: string | null): string {
@@ -29,7 +40,18 @@ function formatRelativeTime(dateString: string | null): string {
 
 const GAP = 2;
 
-export default function PostFeedItem({ post, onMediaPress }: Props) {
+export default function PostFeedItem({
+  post,
+  onMediaPress,
+  currentUserId,
+  onDeletePost,
+}: Props) {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+
+  const isPostOwner = currentUserId === post.owner_id;
   const { width: screenWidth } = useWindowDimensions();
   const contentWidth = screenWidth - 32;
 
@@ -42,6 +64,20 @@ export default function PostFeedItem({ post, onMediaPress }: Props) {
   };
 
   const itemSize = getItemSize();
+
+  const handleMenuPress = (event: GestureResponderEvent) => {
+    event.currentTarget.measureInWindow(
+      (x: number, y: number, width: number, height: number) => {
+        setMenuAnchor({ x: x + width, y: y + height });
+        setMenuVisible(true);
+      },
+    );
+  };
+
+  const handleDelete = () => {
+    setMenuVisible(false);
+    onDeletePost?.(post.id);
+  };
 
   return (
     <View className="mb-6">
@@ -68,6 +104,16 @@ export default function PostFeedItem({ post, onMediaPress }: Props) {
             {formatRelativeTime(post.created_at)}
           </Text>
         </View>
+
+        {isPostOwner && onDeletePost && (
+          <Pressable
+            onPress={handleMenuPress}
+            className="p-2 -mr-2 active:bg-slate-100 rounded-full"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Feather name="more-horizontal" size={20} color="#64748b" />
+          </Pressable>
+        )}
       </View>
 
       {/* Media Grid */}
@@ -110,6 +156,19 @@ export default function PostFeedItem({ post, onMediaPress }: Props) {
           {mediaCount} photo{mediaCount !== 1 ? 's' : ''}
         </Text>
       )}
+
+      <DropdownMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+      >
+        <DropdownMenuItem
+          icon="trash-2"
+          label="Delete Post"
+          onPress={handleDelete}
+          variant="danger"
+        />
+      </DropdownMenu>
     </View>
   );
 }
