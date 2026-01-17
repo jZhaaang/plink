@@ -38,6 +38,7 @@ import {
 } from '../../../components';
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import { StagedPhotosPreview } from '../components/StagedPhotosPreview';
+import UploadProgressModal from '../../../components/UploadProgressModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -104,6 +105,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     removeAsset,
     uploadAll,
     uploading,
+    progress,
     hasAssets,
   } = useStagedMedia({
     linkId,
@@ -536,6 +538,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         onClose={() => setEditModalVisible(false)}
         onSubmit={handleEditName}
       />
+
+      <UploadProgressModal visible={uploading} progress={progress} />
     </SafeAreaView>
   );
 }
