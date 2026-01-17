@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getPartyById } from '../../../lib/supabase/queries/parties';
-import { getPartyMembersByPartyId } from '../../../lib/supabase/queries/partyMembers';
-import { getLinksByPartyId } from '../../../lib/supabase/queries/links';
+import { getPartyDetailById } from '../../../lib/supabase/queries/parties';
 import { PartyWithMembersResolved, Link } from '../../../lib/models';
 import { toPartyResolved } from '../../../lib/resolvers/party';
 import { toProfileResolved } from '../../../lib/resolvers/profile';
-import { getUserProfile } from '../../../lib/supabase/queries/users';
 
 type PartyDetailData = {
   party: PartyWithMembersResolved | null;
@@ -22,26 +19,22 @@ export function usePartyDetail(partyId: string) {
     setError(null);
 
     try {
-      const party = await getPartyById(partyId);
-      if (!party) {
+      const rawParty = await getPartyDetailById(partyId);
+
+      if (!rawParty) {
         throw new Error('Party not found');
       }
 
-      const partyResolved = await toPartyResolved(party);
-
-      const members = await getPartyMembersByPartyId(partyId);
-      const profiles = await Promise.all(
-        members.map(async (member) => {
-          const profile = await getUserProfile(member.user_id);
-          return toProfileResolved(profile);
-        }),
-      );
-
-      const links = (await getLinksByPartyId(partyId)) ?? [];
+      const [partyResolved, members] = await Promise.all([
+        toPartyResolved(rawParty),
+        Promise.all(
+          rawParty.party_members.map((pm) => toProfileResolved(pm.profiles)),
+        ),
+      ]);
 
       setData({
-        party: { ...partyResolved, members: profiles },
-        links,
+        party: { ...partyResolved, members },
+        links: rawParty.links ?? [],
       });
     } catch (err) {
       setError(err as Error);

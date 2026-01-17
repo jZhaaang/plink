@@ -104,3 +104,18 @@ export async function getPartiesWithMembersAndLinksByUserId(userId: string) {
 
   return data.map((d) => d.parties);
 }
+
+export async function getPartyDetailById(partyId: string) {
+  const { data, error } = await supabase
+    .from('parties')
+    .select(`*,party_members (user_id,profiles (*)),links (*)`)
+    .eq('id', partyId)
+    .single();
+
+  if (error) {
+    logger.error('Error fetching party detail:', error.message);
+    throw error;
+  }
+
+  return data;
+}
