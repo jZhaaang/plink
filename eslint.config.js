@@ -33,10 +33,6 @@ export default [
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/no-unused-vars': ['warn'],
       '@typescript-eslint/no-require-imports': 'off',
-      'prettier/prettier': [
-        'warn',
-        { endOfLine: 'auto', singleQuote: true, semi: true },
-      ],
       'no-undef': 'off',
     },
     settings: { react: { version: 'detect' } },
