@@ -105,3 +105,20 @@ export async function endLink(linkId: string): Promise<Link | null> {
 
   return data;
 }
+
+export async function getLinkDetailById(linkId: string) {
+  const { data, error } = await supabase
+    .from('links')
+    .select(
+      `*, link_members(user_id, profiles (*)), link_posts(*, link_post_media (*))`,
+    )
+    .eq('id', linkId)
+    .single();
+
+  if (error) {
+    logger.error('Error fetching link detail:', error.message);
+    throw error;
+  }
+
+  return data;
+}

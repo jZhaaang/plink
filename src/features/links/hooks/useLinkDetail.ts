@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getLinkById } from '../../../lib/supabase/queries/links';
-import { getLinkMembersByLinkId } from '../../../lib/supabase/queries/linkMembers';
-import { getLinkPostsByLinkId } from '../../../lib/supabase/queries/linkPosts';
-import { getMediaByPostId } from '../../../lib/supabase/queries/linkPostMedia';
+import { getLinkDetailById } from '../../../lib/supabase/queries/links';
 import {
   LinkDetailResolved,
   LinkPostWithMediaResolved,
+  ProfileResolved,
 } from '../../../lib/models';
 import { toProfileResolved } from '../../../lib/resolvers/profile';
 import { toLinkPostMediaResolved } from '../../../lib/resolvers/link';
-import { getUserProfile } from '../../../lib/supabase/queries/users';
 
 export function useLinkDetail(linkId: string) {
   const [data, setData] = useState<LinkDetailResolved | null>(null);
@@ -21,46 +18,38 @@ export function useLinkDetail(linkId: string) {
     setError(null);
 
     try {
-      const link = await getLinkById(linkId);
-      if (!link) {
+      const rawLink = await getLinkDetailById(linkId);
+
+      if (!rawLink) {
         throw new Error('Link not found');
       }
 
-      const members = await getLinkMembersByLinkId(linkId);
-      const profiles = await Promise.all(
-        members.map(async (member) => {
-          const profile = await getUserProfile(member.user_id);
-          return toProfileResolved(profile);
-        }),
+      const membersResolved = await Promise.all(
+        rawLink.link_members.map((lm) => toProfileResolved(lm.profiles)),
+      );
+      const profilesMap = new Map<string, ProfileResolved>(
+        membersResolved.map((p) => [p.id, p]),
       );
 
-      const posts = await getLinkPostsByLinkId(linkId);
       let totalMediaCount = 0;
+      const posts: LinkPostWithMediaResolved[] = await Promise.all(
+        rawLink.link_posts.map(async (post) => {
+          const owner = profilesMap.get(post.owner_id)!;
 
-      const postsWithMedia: LinkPostWithMediaResolved[] = await Promise.all(
-        posts.map(async (post) => {
-          const ownerProfile = await getUserProfile(post.owner_id);
-          const owner = await toProfileResolved(ownerProfile);
-
-          const rawMedia = await getMediaByPostId(post.id);
           const media = await Promise.all(
-            rawMedia.map((m) => toLinkPostMediaResolved(m)),
+            post.link_post_media.map((m) => toLinkPostMediaResolved(m)),
           );
 
           totalMediaCount += media.length;
 
-          return {
-            ...post,
-            owner,
-            media,
-          };
+          return { ...post, owner, media };
         }),
       );
 
       setData({
-        ...link,
-        members: profiles,
-        posts: postsWithMedia,
+        ...rawLink,
+        members: membersResolved,
+        posts,
         postCount: posts.length,
         mediaCount: totalMediaCount,
       });
