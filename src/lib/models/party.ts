@@ -1,4 +1,5 @@
 import { Tables, TablesInsert, TablesUpdate } from '../supabase/types';
+import { Link } from './link';
 import { ProfileResolved } from './profile';
 
 export type Party = Tables<'parties'>;
@@ -15,6 +16,7 @@ export type PartyWithMembersResolved = PartyResolved & {
 };
 
 export type PartyWithActivityResolved = PartyWithMembersResolved & {
-  hasActiveLink: boolean;
+  activeLink?: Link | null;
+  linkCount: number;
   lastActivityAt: string | null;
 };

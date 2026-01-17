@@ -4,6 +4,7 @@ import { ImageBackground, Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import AvatarStack from '../../../components/AvatarStack';
 import { formatRelativeTime } from '../../../lib/utils/formatRelativeTime';
+import { Link } from '../../../lib/models';
 
 type BaseProps = {
   name: string;
@@ -15,7 +16,8 @@ type CompactProps = BaseProps & {
   variant: 'compact';
   onPress?: () => void;
   members?: { avatarUrl?: string }[];
-  hasActiveLink?: boolean;
+  activeLink?: Link | null;
+  linkCount?: number;
   lastActivityAt?: string | null;
 };
 
@@ -68,8 +70,11 @@ export function PartyCard(props: Props) {
 
   // Compact-only props
   const members = isCompact ? props.members : undefined;
-  const hasActiveLink = isCompact ? props.hasActiveLink : undefined;
+  const activeLink = isCompact ? props.activeLink : undefined;
+  const linkCount = isCompact ? props.linkCount : undefined;
   const lastActivityAt = isCompact ? props.lastActivityAt : undefined;
+
+  const activeLinkName = activeLink?.name;
   const memberAvatarUris =
     members?.map((m) => m.avatarUrl).filter((url): url is string => !!url) ??
     [];
@@ -111,7 +116,7 @@ export function PartyCard(props: Props) {
             <BannerFallback showIcon={false} />
           )}
           {/* Active link indicator */}
-          {hasActiveLink && (
+          {!!activeLink && (
             <View className="absolute top-2 right-2 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
           )}
         </View>
@@ -144,7 +149,11 @@ export function PartyCard(props: Props) {
               {name}
             </Text>
             <Text className="text-sm text-slate-400">
-              {formatRelativeTime(lastActivityAt ?? null)}
+              {!!activeLink && activeLinkName
+                ? `Active now - ${activeLinkName}`
+                : linkCount === 0
+                  ? 'No links yet'
+                  : formatRelativeTime(lastActivityAt ?? null)}
             </Text>
           </View>
 

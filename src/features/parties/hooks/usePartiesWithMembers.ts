@@ -36,9 +36,8 @@ export function usePartiesWithMembers(userId: string | null) {
           );
 
           const links = (await getLinksByPartyId(party.id)) ?? [];
-          const hasActiveLink = links.some((link) => !link.end_time);
+          const activeLink = links.find((link) => !link.end_time) ?? null;
 
-          // Compute last activity from most recent link timestamp
           const linkTimestamps = links
             .flatMap((l) => [l.created_at, l.end_time])
             .filter((t): t is string => !!t);
@@ -52,7 +51,8 @@ export function usePartiesWithMembers(userId: string | null) {
           return {
             ...party,
             members: profiles,
-            hasActiveLink,
+            activeLink,
+            linkCount: links.length,
             lastActivityAt,
           };
         }),

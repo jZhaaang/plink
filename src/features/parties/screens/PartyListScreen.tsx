@@ -119,7 +119,8 @@ export default function PartyListScreen({ navigation }: Props) {
               avatarUri={item.avatarUrl}
               bannerUri={item.bannerUrl}
               members={item.members}
-              hasActiveLink={item.hasActiveLink}
+              activeLink={item.activeLink}
+              linkCount={item.linkCount}
               lastActivityAt={item.lastActivityAt}
               onPress={() =>
                 navigation.navigate('PartyDetail', { partyId: item.id })
