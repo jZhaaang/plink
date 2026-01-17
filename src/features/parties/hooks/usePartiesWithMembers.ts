@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getPartiesByUserId } from '../../../lib/supabase/queries/parties';
+import { getPartiesWithMembersAndLinksByUserId } from '../../../lib/supabase/queries/parties';
 import { PartyWithActivityResolved } from '../../../lib/models';
 import { toPartyResolved } from '../../../lib/resolvers/party';
-import { getPartyMembersByPartyId } from '../../../lib/supabase/queries/partyMembers';
 import { toProfileResolved } from '../../../lib/resolvers/profile';
-import { getUserProfile } from '../../../lib/supabase/queries/users';
-import { getLinksByPartyId } from '../../../lib/supabase/queries/links';
 
 export function usePartiesWithMembers(userId: string | null) {
   const [data, setData] = useState<PartyWithActivityResolved[]>([]);
@@ -18,29 +15,23 @@ export function usePartiesWithMembers(userId: string | null) {
     setError(null);
 
     try {
-      const parties = await Promise.all(
-        (await getPartiesByUserId(userId)).map(async (party) => {
-          const partyResolved = await toPartyResolved(party);
-          return partyResolved;
-        }),
-      );
+      const rawParties = await getPartiesWithMembersAndLinksByUserId(userId);
 
       const partiesWithActivity = await Promise.all(
-        parties.map(async (party) => {
-          const members = await getPartyMembersByPartyId(party.id);
-          const profiles = await Promise.all(
-            members.map(async (member) => {
-              const profile = await getUserProfile(member.user_id);
-              return await toProfileResolved(profile);
-            }),
+        rawParties.map(async (party) => {
+          const partyResolved = await toPartyResolved(party);
+
+          const members = await Promise.all(
+            party.party_members.map((pm) => toProfileResolved(pm.profiles)),
           );
 
-          const links = (await getLinksByPartyId(party.id)) ?? [];
+          const links = party.links ?? [];
           const activeLink = links.find((link) => !link.end_time) ?? null;
 
           const linkTimestamps = links
             .flatMap((l) => [l.created_at, l.end_time])
-            .filter((t): t is string => !!t);
+            .filter((t) => !!t);
+
           const lastActivityAt =
             linkTimestamps.length > 0
               ? linkTimestamps.sort(
@@ -49,8 +40,8 @@ export function usePartiesWithMembers(userId: string | null) {
               : party.updated_at;
 
           return {
-            ...party,
-            members: profiles,
+            ...partyResolved,
+            members,
             activeLink,
             linkCount: links.length,
             lastActivityAt,

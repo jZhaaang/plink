@@ -89,3 +89,18 @@ export async function deleteParty(partyId: string) {
     throw error;
   }
 }
+
+export async function getPartiesWithMembersAndLinksByUserId(userId: string) {
+  const { data, error } = await supabase
+    .from('party_members')
+    .select(`parties (*, party_members (user_id, profiles (*)), links (*))`)
+
+    .eq('user_id', userId);
+
+  if (error) {
+    logger.error('Error fetching parties with members:', error.message);
+    throw error;
+  }
+
+  return data.map((d) => d.parties);
+}
