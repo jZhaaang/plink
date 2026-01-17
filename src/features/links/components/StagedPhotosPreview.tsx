@@ -22,13 +22,13 @@ export function StagedPhotosPreview({ assets, onRemove }: Props) {
           <View key={asset.uri} className="relative">
             <Image
               source={{ uri: asset.uri }}
-              className="w-20 h-20 rounded-lg"
+              style={{ width: 80, height: 80, borderRadius: 8 }}
               contentFit="cover"
             />
             {/* Remove button */}
             <Pressable
               onPress={() => onRemove(asset.uri)}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-slate-800 rounded-full items-center justify-center"
+              className="absolute top-1 right-1 w-6 h-6 bg-slate-800 rounded-full items-center justify-center"
               hitSlop={8}
             >
               <Feather name="x" size={14} color="white" />
