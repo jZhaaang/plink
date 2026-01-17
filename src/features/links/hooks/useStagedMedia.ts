@@ -12,6 +12,12 @@ type UseStagedMediaOpts = {
   onError?: (error: Error) => void;
 };
 
+type UploadProgress = {
+  total: number;
+  completed: number;
+  failed: number;
+};
+
 export function useStagedMedia({
   linkId,
   userId,
@@ -22,6 +28,7 @@ export function useStagedMedia({
     ImagePicker.ImagePickerAsset[]
   >([]);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
 
   const stageAssets = useCallback((assets: ImagePicker.ImagePickerAsset[]) => {
     setStagedAssets((prev) => [...prev, ...assets]);
@@ -72,10 +79,11 @@ export function useStagedMedia({
     setStagedAssets([]);
   }, []);
 
-  async function uploadAll() {
+  const uploadAll = useCallback(async () => {
     if (stagedAssets.length === 0) return;
 
     setUploading(true);
+    setProgress({ total: stagedAssets.length, completed: 0, failed: 0 });
 
     try {
       const post = await createLinkPost({ link_id: linkId, owner_id: userId });
@@ -84,7 +92,7 @@ export function useStagedMedia({
         throw new Error('Failed to create post');
       }
 
-      for (const asset of stagedAssets) {
+      const uploadAsset = async (asset: ImagePicker.ImagePickerAsset) => {
         const mediaId = randomUUID();
         const ext = asset.uri.split('.').pop()?.toLowerCase() || 'jpg';
 
@@ -102,16 +110,40 @@ export function useStagedMedia({
           mime: ext === 'png' ? 'image/png' : 'image/jpeg',
           type: 'image',
         });
+      };
+
+      const results = await Promise.allSettled(
+        stagedAssets.map(async (asset) => {
+          const result = await uploadAsset(asset);
+          setProgress((prev) =>
+            prev ? { ...prev, completed: prev.completed + 1 } : null,
+          );
+          return result;
+        }),
+      );
+
+      const failures = results.filter((r) => r.status === 'rejected');
+
+      if (failures.length > 0) {
+        setProgress((prev) =>
+          prev ? { ...prev, failed: failures.length } : null,
+        );
+        if (failures.length < stagedAssets.length) {
+          onSuccess?.();
+        }
+        onError?.(new Error(`${failures.length} upload(s) failed`));
+      } else {
+        onSuccess?.();
       }
 
       setStagedAssets([]);
-      onSuccess?.();
     } catch (err) {
       onError?.(err as Error);
     } finally {
       setUploading(false);
+      setProgress(null);
     }
-  }
+  }, [stagedAssets, linkId, userId, onSuccess, onError]);
 
   return {
     stagedAssets,
@@ -121,6 +153,7 @@ export function useStagedMedia({
     clearAll,
     uploadAll,
     uploading,
+    progress,
     hasAssets: stagedAssets.length > 0,
   };
 }
