@@ -3,11 +3,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { Button, Modal, TextField } from '../../../components';
 import { Pressable, Text, View } from 'react-native';
 import { PartyCard } from './PartyCard';
-import { PartyWithMembersResolved } from '../../../lib/models';
+import { Party } from '../../../lib/models';
 
 type Props = {
   visible: boolean;
-  initialParty?: PartyWithMembersResolved;
+  initialParty?: Party;
   loading?: boolean;
   onClose: () => void;
   onSubmit: (

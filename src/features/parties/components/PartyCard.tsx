@@ -1,10 +1,8 @@
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ImageBackground, Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import AvatarStack from '../../../components/AvatarStack';
-import { formatRelativeTime } from '../../../lib/utils/formatRelativeTime';
-import { Link } from '../../../lib/models';
 
 type BaseProps = {
   name: string;
@@ -16,9 +14,6 @@ type CompactProps = BaseProps & {
   variant: 'compact';
   onPress?: () => void;
   members?: { avatarUrl?: string }[];
-  activeLink?: Link | null;
-  linkCount?: number;
-  lastActivityAt?: string | null;
 };
 
 type ExpandedProps = BaseProps & {
@@ -70,11 +65,7 @@ export function PartyCard(props: Props) {
 
   // Compact-only props
   const members = isCompact ? props.members : undefined;
-  const activeLink = isCompact ? props.activeLink : undefined;
-  const linkCount = isCompact ? props.linkCount : undefined;
-  const lastActivityAt = isCompact ? props.lastActivityAt : undefined;
 
-  const activeLinkName = activeLink?.name;
   const memberAvatarUris =
     members?.map((m) => m.avatarUrl).filter((url): url is string => !!url) ??
     [];
@@ -101,87 +92,56 @@ export function PartyCard(props: Props) {
   // Compact variant: card with banner and content below
   if (isCompact) {
     const compactContent = (
-      <View className="rounded-2xl overflow-hidden bg-white shadow-md">
-        {/* Banner */}
-        <View className="h-28 w-full overflow-hidden">
-          {bannerUri ? (
-            <ImageBackground
-              source={{ uri: bannerUri }}
-              resizeMode="cover"
-              className="flex-1"
-            >
-              <View className="flex-1 bg-black/10" />
-            </ImageBackground>
-          ) : (
-            <BannerFallback showIcon={false} />
-          )}
-          {/* Active link indicator */}
-          {!!activeLink && (
-            <View className="absolute top-2 right-2 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />
-          )}
-        </View>
-
-        {/* Content row below banner */}
-        <View className="flex-row items-center px-3.5 py-3">
-          {/* Avatar */}
-          <View
-            style={{ width: 52, height: 52 }}
-            className="rounded-full overflow-hidden border-2 border-white bg-white shadow-sm"
-          >
-            {avatarUri ? (
-              <Image
-                source={{ uri: avatarUri }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                style={{ width: '100%', height: '100%' }}
-              />
-            ) : (
-              <AvatarFallback showIcon={false} />
-            )}
-          </View>
-
-          {/* Center: Name and activity */}
-          <View className="flex-1 ml-3">
-            <Text
-              className="text-lg font-semibold text-neutral-900"
-              numberOfLines={1}
-            >
-              {name}
-            </Text>
-            <Text className="text-sm text-slate-400">
-              {!!activeLink && activeLinkName
-                ? `Active now - ${activeLinkName}`
-                : linkCount === 0
-                  ? 'No links yet'
-                  : formatRelativeTime(lastActivityAt ?? null)}
-            </Text>
-          </View>
-
-          {/* Right: Member avatars and count */}
-          {memberCount > 0 && (
-            <View className="flex-row items-center ml-2 gap-2">
-              <AvatarStack
-                avatarUris={memberAvatarUris}
-                maxVisible={3}
-                size={22}
-              />
-              <View className="flex-row items-center">
-                <Feather name="users" size={14} color="#64748b" />
-                <Text className="text-sm text-slate-500 ml-1">
-                  {memberCount}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
+    <View className="rounded-2xl bg-neutral-100 p-4 shadow-md">
+      {/* Banner - inner rounded rect */}
+      <View className="h-36 rounded-xl overflow-hidden">
+        {bannerUri ? (
+          <Image
+            source={{ uri: bannerUri }}
+            contentFit="cover"
+            style={{ width: '100%', height: '100%' }}
+          />
+        ) : (
+          <BannerFallback showIcon={false} />
+        )}
       </View>
-    );
 
-    return (
-      <Pressable onPress={handlePress} className="mb-3">
-        {compactContent}
-      </Pressable>
-    );
+      {/* Floating info pill */}
+      <View
+        className="mx-3 flex-row items-center rounded-xl bg-white px-4 py-3"
+        style={{
+          marginTop: -20,
+          marginBottom: 4,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <Text
+          className="flex-1 text-base font-semibold text-neutral-900"
+          numberOfLines={1}
+        >
+          {name}
+        </Text>
+
+        {memberCount > 0 && (
+          <AvatarStack
+            avatarUris={memberAvatarUris}
+            maxVisible={3}
+            size={22}
+          />
+        )}
+      </View>
+    </View>
+  );
+
+  return (
+    <Pressable onPress={handlePress} className="mb-3">
+      {compactContent}
+    </Pressable>
+  );
   }
 
   // Expanded/Editable variants: card with banner and content below (matching compact style)

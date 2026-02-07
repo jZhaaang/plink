@@ -1,7 +1,7 @@
-import { Party } from '../models';
+import { Party, PartyRow } from '../models';
 import { parties } from '../supabase/storage/parties';
 
-export async function toPartyResolved(party: Party) {
+export async function resolveParty(party: PartyRow): Promise<Party> {
   return {
     ...party,
     avatarUrl: party.avatar_path

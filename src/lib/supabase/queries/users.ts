@@ -1,8 +1,10 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { Profile, ProfileUpdate } from '../../models';
+import { ProfileRow, ProfileUpdate } from '../../models';
 
-export async function getUserProfile(userId: string): Promise<Profile | null> {
+export async function getUserProfile(
+  userId: string,
+): Promise<ProfileRow | null> {
   const { data, error } = await supabase
     .from('profiles')
     .select()
@@ -20,7 +22,7 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
 export async function updateUserProfile(
   userId: string,
   profileUpdate: ProfileUpdate,
-): Promise<Profile | null> {
+): Promise<ProfileRow | null> {
   const { data, error } = await supabase
     .from('profiles')
     .update(profileUpdate)
@@ -47,7 +49,7 @@ export async function deleteUserProfile(userId: string) {
 
 export async function searchUserByUsername(
   username: string,
-): Promise<Profile | null> {
+): Promise<ProfileRow | null> {
   const normalizedUsername = username.toLowerCase().trim().replace(/^@/, '');
 
   if (!normalizedUsername) {

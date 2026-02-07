@@ -1,8 +1,8 @@
 import { Pressable, View, Text } from 'react-native';
-import { Link } from '../../../lib/models';
+import { LinkRow } from '../../../lib/models';
 
 type Props = {
-  link: Link;
+  link: LinkRow;
   onPress?: (linkId: string) => void;
 };
 

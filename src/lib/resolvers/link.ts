@@ -1,22 +1,22 @@
 import {
-  Link,
-  LinkWithMembersResolved,
+  LinkRow,
+  LinkWithMembers,
   LinkPostMedia,
-  LinkPostMediaResolved,
+  LinkPostMediaRow,
 } from '../models';
 import { links as linksStorage } from '../supabase/storage/links';
 import { getLinkMembersByLinkId } from '../supabase/queries/linkMembers';
 import { getUserProfile } from '../supabase/queries/users';
-import { toProfileResolved } from './profile';
+import { resolveProfile } from './profile';
 
-export async function toLinkWithMembersResolved(
-  link: Link,
-): Promise<LinkWithMembersResolved> {
+export async function resolveLinkWithMembers(
+  link: LinkRow,
+): Promise<LinkWithMembers> {
   const members = await getLinkMembersByLinkId(link.id);
   const profiles = await Promise.all(
     members.map(async (member) => {
       const profile = await getUserProfile(member.user_id);
-      return toProfileResolved(profile);
+      return resolveProfile(profile);
     }),
   );
 
@@ -26,9 +26,9 @@ export async function toLinkWithMembersResolved(
   };
 }
 
-export async function toLinkPostMediaResolved(
-  media: LinkPostMedia,
-): Promise<LinkPostMediaResolved> {
+export async function resolveLinkPostMedia(
+  media: LinkPostMediaRow,
+): Promise<LinkPostMedia> {
   const url = await linksStorage.getUrl(media.path);
 
   return {

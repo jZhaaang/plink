@@ -6,13 +6,13 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { LinkPostWithMediaResolved } from '../../../lib/models';
+import { LinkPostWithMedia } from '../../../lib/models';
 import { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem } from '../../../components';
 
 type Props = {
-  post: LinkPostWithMediaResolved;
+  post: LinkPostWithMedia;
   onMediaPress?: (mediaUrls: string[], index: number) => void;
   currentUserId?: string;
   onDeletePost?: (postId: string) => void;

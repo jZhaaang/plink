@@ -1,8 +1,8 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { Party, PartyInsert, PartyUpdate } from '../../models';
+import { PartyRow, PartyInsert, PartyUpdate } from '../../models';
 
-export async function getPartiesByUserId(userId: string): Promise<Party[]> {
+export async function getPartiesByUserId(userId: string): Promise<PartyRow[]> {
   const { data, error } = await supabase
     .from('party_members')
     .select('parties (*)')
@@ -16,7 +16,7 @@ export async function getPartiesByUserId(userId: string): Promise<Party[]> {
   return data.map((userParties) => userParties.parties);
 }
 
-export async function getPartyById(partyId: string): Promise<Party | null> {
+export async function getPartyById(partyId: string): Promise<PartyRow | null> {
   const { data, error } = await supabase
     .from('parties')
     .select('*')
@@ -31,7 +31,9 @@ export async function getPartyById(partyId: string): Promise<Party | null> {
   return data;
 }
 
-export async function createParty(party: PartyInsert): Promise<Party | null> {
+export async function createParty(
+  party: PartyInsert,
+): Promise<PartyRow | null> {
   const { data, error } = await supabase
     .from('parties')
     .insert(party)
@@ -48,7 +50,7 @@ export async function createParty(party: PartyInsert): Promise<Party | null> {
 
 export async function createPartyWithOwner(
   party: PartyInsert,
-): Promise<Party | null> {
+): Promise<PartyRow | null> {
   const { data, error } = await supabase.rpc('create_party_with_owner', {
     party_name: party.name,
     party_owner_id: party.owner_id,
@@ -65,7 +67,7 @@ export async function createPartyWithOwner(
 export async function updatePartyById(
   partyId: string,
   partyUpdate: PartyUpdate,
-): Promise<Party | null> {
+): Promise<PartyRow | null> {
   const { data, error } = await supabase
     .from('parties')
     .update(partyUpdate)
@@ -88,6 +90,20 @@ export async function deleteParty(partyId: string) {
     logger.error('Error deleting party:', error.message);
     throw error;
   }
+}
+
+export async function getPartiesWithMembersByUserId(userId: string) {
+  const { data, error } = await supabase
+    .from('party_members')
+    .select('parties (*, party_members (user_id, profiles(*)))')
+    .eq('user_id', userId);
+
+  if (error) {
+    logger.error('Error fetching party list items:', error.message);
+    throw error;
+  }
+
+  return data.map((d) => d.parties);
 }
 
 export async function getPartiesWithMembersAndLinksByUserId(userId: string) {

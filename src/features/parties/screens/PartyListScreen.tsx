@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { usePartiesWithMembers } from '../hooks/usePartiesWithMembers';
 import { PartyCard } from '../components/PartyCard';
 import { Feather } from '@expo/vector-icons';
 import { Button, Divider, EmptyState } from '../../../components';
@@ -22,6 +21,7 @@ import {
   createPartyWithOwner,
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
+import { usePartyListItems } from '../hooks/usePartyListItems';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -30,12 +30,7 @@ export default function PartyListScreen({ navigation }: Props) {
   const userId = session?.user?.id ?? undefined;
   const dialog = useDialog();
 
-  const {
-    parties,
-    loading: partiesLoading,
-    error,
-    refetch,
-  } = usePartiesWithMembers(userId);
+  const { parties, loading: partiesLoading, error, refetch } = usePartyListItems(userId);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -119,9 +114,6 @@ export default function PartyListScreen({ navigation }: Props) {
               avatarUri={item.avatarUrl}
               bannerUri={item.bannerUrl}
               members={item.members}
-              activeLink={item.activeLink}
-              linkCount={item.linkCount}
-              lastActivityAt={item.lastActivityAt}
               onPress={() =>
                 navigation.navigate('PartyDetail', { partyId: item.id })
               }

@@ -1,10 +1,10 @@
 import { supabase } from '../client';
-import { LinkMember, LinkMemberInsert } from '../../models';
+import { LinkMemberRow, LinkMemberInsert } from '../../models';
 import { logger } from '../logger';
 
 export async function getLinkMembersByLinkId(
   linkId: string,
-): Promise<LinkMember[]> {
+): Promise<LinkMemberRow[]> {
   const { data, error } = await supabase
     .from('link_members')
     .select('*')
@@ -20,7 +20,7 @@ export async function getLinkMembersByLinkId(
 
 export async function createLinkMember(
   linkMember: LinkMemberInsert,
-): Promise<LinkMember | null> {
+): Promise<LinkMemberRow | null> {
   const { data, error } = await supabase
     .from('link_members')
     .insert(linkMember)

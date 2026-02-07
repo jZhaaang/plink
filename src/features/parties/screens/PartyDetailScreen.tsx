@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -9,7 +9,7 @@ import {
   RefreshControl,
   GestureResponderEvent,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
@@ -23,7 +23,6 @@ import {
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
-import { PartyCard } from '../components/PartyCard';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
@@ -33,11 +32,12 @@ import {
   Button,
   SectionHeader,
   EmptyState,
-  Divider,
   DropdownMenu,
   DropdownMenuItem,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -47,7 +47,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const userId = session?.user?.id;
   const dialog = useDialog();
 
-  const { party, links, loading, error, refetch } = usePartyDetail(partyId);
+  const { data: party, loading, error, refetch } = usePartyDetail(partyId);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -58,9 +58,30 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
+  const insets = useSafeAreaInsets();
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error || !party) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
+        <Text className="text-center text-neutral-600 mb-4">
+          Failed to load party details.
+        </Text>
+        <Button title="Retry" variant="outline" onPress={refetch} />
+      </SafeAreaView>
+    );
+  }
+
   const isOwner = party?.owner_id === userId;
-  const activeLink = links.find((l) => !l.end_time);
-  const pastLinks = links.filter((l) => l.end_time);
+  const activeLink = party.links.find((l) => !l.end_time);
+  const pastLinks = party.links.filter((l) => l.end_time);
 
   const handleCreateLink = async (name: string) => {
     if (!userId) return;
@@ -160,59 +181,36 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     );
   };
 
-  const menuItems = useMemo(() => {
-    const items: Array<{
-      icon: ComponentProps<typeof Feather>['name'];
-      label: string;
-      action: () => void;
-      variant?: 'danger';
-    }> = [];
+  const menuItems: Array<{
+    icon: ComponentProps<typeof Feather>['name'];
+    label: string;
+    action: () => void;
+    variant?: 'danger';
+  }> = [];
 
-    if (isOwner) {
-      items.push({
-        icon: 'user-plus',
-        label: 'Invite Member',
-        action: () => {
-          setMenuVisible(false);
-          setInviteModalVisible(true);
-        },
-      });
-      items.push({
-        icon: 'edit-2',
-        label: 'Edit Name',
-        action: () => {
-          setMenuVisible(false);
-          setEditModalVisible(true);
-        },
-      });
-      items.push({
-        icon: 'trash-2',
-        label: 'Delete Party',
-        action: handleDeleteParty,
-        variant: 'danger',
-      });
-    }
-
-    return items;
-  }, [isOwner]);
-
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (error || !party) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
-        <Text className="text-center text-neutral-600 mb-4">
-          Failed to load party details.
-        </Text>
-        <Button title="Retry" variant="outline" onPress={refetch} />
-      </SafeAreaView>
-    );
+  if (isOwner) {
+    menuItems.push({
+      icon: 'user-plus',
+      label: 'Invite Member',
+      action: () => {
+        setMenuVisible(false);
+        setInviteModalVisible(true);
+      },
+    });
+    menuItems.push({
+      icon: 'edit-2',
+      label: 'Edit Name',
+      action: () => {
+        setMenuVisible(false);
+        setEditModalVisible(true);
+      },
+    });
+    menuItems.push({
+      icon: 'trash-2',
+      label: 'Delete Party',
+      action: handleDeleteParty,
+      variant: 'danger',
+    });
   }
 
   const memberAvatars = party.members
@@ -220,61 +218,70 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     .filter((url): url is string => !!url);
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">
-      {/* Header */}
-      <View className="flex-row items-center px-4 py-2">
-        <Pressable onPress={() => navigation.goBack()} className="p-2 -ml-2">
-          <Feather name="arrow-left" size={24} color="#333" />
-        </Pressable>
-        <Text className="flex-1 text-lg font-semibold text-center">
-          {party.name}
-        </Text>
-        {isOwner && (
-          <Pressable onPress={handleMenuPress} className="p-2 -mr-2">
-            <Feather name="more-vertical" size={24} color="#333" />
-          </Pressable>
-        )}
-      </View>
-
+  <View className="flex-1 bg-neutral-900">
+    <View
+      className="flex-1 bg-neutral-50"
+      style={{ marginTop: insets.top }}
+    >
       <ScrollView
         className="flex-1"
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={refetch} />
         }
       >
-        {/* Party Header with banner/avatar */}
-        <View className="px-4">
-          <PartyCard
-            variant="expanded"
-            name={party.name}
-            avatarUri={party.avatarUrl}
-            bannerUri={party.bannerUrl}
+        {/* Hero Banner */}
+        <View className="h-56 w-full">
+          {party.bannerUrl ? (
+            <Image
+              source={{ uri: party.bannerUrl }}
+              contentFit="cover"
+              style={{ width: '100%', height: '100%' }}
+            />
+          ) : (
+            <LinearGradient
+              colors={['#bfdbfe', '#3b82f6']}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flex: 1 }}
+            />
+          )}
+
+          {/* Bottom gradient for text legibility */}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.55)']}
+            className="absolute bottom-0 left-0 right-0 h-28"
           />
+
+          {/* Party name overlaid on banner */}
+          <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+            <Text className="text-2xl font-bold text-white">
+              {party.name}
+            </Text>
+            <Text className="text-sm text-white/70 mt-1">
+              {party.members.length}{' '}
+              {party.members.length === 1 ? 'member' : 'members'}
+            </Text>
+          </View>
         </View>
 
-        {/* Members Section */}
-        <View className="mt-6 px-4">
-          <SectionHeader
-            title="Members"
-            count={party.members.length}
-            action={
-              <Pressable
-                onPress={() => setInviteModalVisible(true)}
-                className="flex-row items-center"
-              >
-                <Text className="text-blue-600 text-sm font-medium">
-                  + Invite Members
-                </Text>
-              </Pressable>
-            }
-          />
-          <AvatarStack avatarUris={memberAvatars} size={44} />
+        {/* Members */}
+        <View className="flex-row items-center justify-between px-5 mt-5">
+          <AvatarStack avatarUris={memberAvatars} size={40} />
+          {isOwner && (
+            <Pressable
+              onPress={() => setInviteModalVisible(true)}
+              className="flex-row items-center bg-blue-50 px-3 py-1.5 rounded-full"
+            >
+              <Feather name="user-plus" size={14} color="#2563eb" />
+              <Text className="text-blue-600 text-xs font-semibold ml-1.5">
+                Invite
+              </Text>
+            </Pressable>
+          )}
         </View>
 
-        <Divider className="my-6" />
-
-        {/* Active Link Section */}
-        <View className="px-4">
+        {/* Active Link */}
+        <View className="px-5 mt-6">
           {activeLink ? (
             <>
               <SectionHeader title="Active Link" count={0} />
@@ -296,10 +303,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           )}
         </View>
 
-        <Divider className="my-6" />
-
-        {/* Past Links Section */}
-        <View className="px-4 pb-8">
+        {/* Past Links */}
+        <View
+          className="px-5 mt-6"
+          style={{ paddingBottom: Math.max(insets.bottom, 32) }}
+        >
           <SectionHeader title="Past Links" count={pastLinks.length} />
 
           {pastLinks.length === 0 ? (
@@ -315,6 +323,35 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           )}
         </View>
       </ScrollView>
+
+      {/* Floating nav over banner */}
+      <View
+        className="absolute top-0 left-0 right-0"
+        pointerEvents="box-none"
+      >
+        <View
+          className="flex-row items-center justify-between px-4 py-2"
+          pointerEvents="box-none"
+        >
+          <Pressable
+            onPress={() => navigation.goBack()}
+            className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+          >
+            <Feather name="arrow-left" size={20} color="#fff" />
+          </Pressable>
+
+          {isOwner ? (
+            <Pressable
+              onPress={handleMenuPress}
+              className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+            >
+              <Feather name="more-vertical" size={20} color="#fff" />
+            </Pressable>
+          ) : (
+            <View className="w-9" />
+          )}
+        </View>
+      </View>
 
       {/* Create Link Modal */}
       <CreateLinkModal
@@ -364,6 +401,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           onSuccess={refetch}
         />
       )}
-    </SafeAreaView>
-  );
+    </View>
+  </View>
+);
 }

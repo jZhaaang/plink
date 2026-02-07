@@ -1,10 +1,10 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { LinkPost, LinkPostInsert } from '../../models';
+import { LinkPostRow, LinkPostInsert } from '../../models';
 
 export async function getLinkPostsByLinkId(
   linkId: string,
-): Promise<LinkPost[]> {
+): Promise<LinkPostRow[]> {
   const { data, error } = await supabase
     .from('link_posts')
     .select('*')
@@ -21,7 +21,7 @@ export async function getLinkPostsByLinkId(
 
 export async function getLinkPostById(
   postId: string,
-): Promise<LinkPost | null> {
+): Promise<LinkPostRow | null> {
   const { data, error } = await supabase
     .from('link_posts')
     .select('*')
@@ -38,7 +38,7 @@ export async function getLinkPostById(
 
 export async function createLinkPost(
   post: LinkPostInsert,
-): Promise<LinkPost | null> {
+): Promise<LinkPostRow | null> {
   const { data, error } = await supabase
     .from('link_posts')
     .insert(post)

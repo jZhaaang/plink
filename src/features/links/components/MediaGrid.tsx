@@ -6,10 +6,10 @@ import {
   Text,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { LinkPostMediaResolved } from '../../../lib/models';
+import { LinkPostMedia } from '../../../lib/models';
 
 type Props = {
-  media: LinkPostMediaResolved[];
+  media: LinkPostMedia[];
   onMediaPress?: (index: number) => void;
   columns?: number;
   maxItems?: number;

@@ -1,8 +1,8 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { Link, LinkInsert, LinkUpdate } from '../../models';
+import { LinkRow, LinkInsert, LinkUpdate } from '../../models';
 
-export async function getLinksByUserId(userId: string): Promise<Link[]> {
+export async function getLinksByUserId(userId: string): Promise<LinkRow[]> {
   const { data, error } = await supabase
     .from('link_members')
     .select('links (*)')
@@ -16,7 +16,7 @@ export async function getLinksByUserId(userId: string): Promise<Link[]> {
   return data.map((userLinks) => userLinks.links);
 }
 
-export async function getLinkById(linkId: string): Promise<Link | null> {
+export async function getLinkById(linkId: string): Promise<LinkRow | null> {
   const { data, error } = await supabase
     .from('links')
     .select('*')
@@ -33,7 +33,7 @@ export async function getLinkById(linkId: string): Promise<Link | null> {
 
 export async function getLinksByPartyId(
   partyId: string,
-): Promise<Link[] | null> {
+): Promise<LinkRow[] | null> {
   const { data, error } = await supabase
     .from('links')
     .select('*')
@@ -47,7 +47,7 @@ export async function getLinksByPartyId(
   return data;
 }
 
-export async function createLink(link: LinkInsert): Promise<Link | null> {
+export async function createLink(link: LinkInsert): Promise<LinkRow | null> {
   const { data, error } = await supabase
     .from('links')
     .insert(link)
@@ -65,7 +65,7 @@ export async function createLink(link: LinkInsert): Promise<Link | null> {
 export async function updateLinkById(
   linkId: string,
   linkUpdate: LinkUpdate,
-): Promise<Link | null> {
+): Promise<LinkRow | null> {
   const { data, error } = await supabase
     .from('links')
     .update(linkUpdate)
@@ -90,7 +90,7 @@ export async function deleteLink(linkId: string) {
   }
 }
 
-export async function endLink(linkId: string): Promise<Link | null> {
+export async function endLink(linkId: string): Promise<LinkRow | null> {
   const { data, error } = await supabase
     .from('links')
     .update({ end_time: new Date().toISOString() })

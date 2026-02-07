@@ -1,10 +1,10 @@
 import { supabase } from '../client';
 import { logger } from '../logger';
-import { LinkPostMedia, LinkPostMediaInsert } from '../../models';
+import { LinkPostMediaRow, LinkPostMediaInsert } from '../../models';
 
 export async function getMediaByPostId(
   postId: string,
-): Promise<LinkPostMedia[]> {
+): Promise<LinkPostMediaRow[]> {
   const { data, error } = await supabase
     .from('link_post_media')
     .select('*')
@@ -21,7 +21,7 @@ export async function getMediaByPostId(
 
 export async function getMediaByLinkId(
   linkId: string,
-): Promise<LinkPostMedia[]> {
+): Promise<LinkPostMediaRow[]> {
   const { data, error } = await supabase
     .from('link_post_media')
     .select('*, link_posts!inner(link_id)')
@@ -38,7 +38,7 @@ export async function getMediaByLinkId(
 
 export async function createLinkPostMedia(
   media: LinkPostMediaInsert,
-): Promise<LinkPostMedia | null> {
+): Promise<LinkPostMediaRow | null> {
   const { data, error } = await supabase
     .from('link_post_media')
     .insert(media)

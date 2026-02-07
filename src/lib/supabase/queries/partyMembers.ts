@@ -1,10 +1,10 @@
 import { supabase } from '../client';
-import { PartyMember, PartyMemberInsert } from '../../models';
+import { PartyMemberRow, PartyMemberInsert } from '../../models';
 import { logger } from '../logger';
 
 export async function getPartyMembersByPartyId(
   partyId: string,
-): Promise<PartyMember[]> {
+): Promise<PartyMemberRow[]> {
   const { data, error } = await supabase
     .from('party_members')
     .select('*')
@@ -20,7 +20,7 @@ export async function getPartyMembersByPartyId(
 
 export async function createPartyMember(
   partyMember: PartyMemberInsert,
-): Promise<PartyMember | null> {
+): Promise<PartyMemberRow | null> {
   const { data, error } = await supabase
     .from('party_members')
     .insert(partyMember)
