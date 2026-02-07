@@ -9,27 +9,26 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
-import { ProfileResolved } from '../../../lib/models';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  getUserProfile,
   updateUserProfile,
   searchUserByUsername,
 } from '../../../lib/supabase/queries/users';
-import { toProfileResolved } from '../../../lib/resolvers/profile';
 import { useDialog } from '../../../providers/DialogProvider';
 import { Button, Divider, TextField } from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
+import { useProfile } from '../../../lib/supabase/hooks/useProfile';
 
 export default function ProfileScreen() {
   const { session } = useAuth();
+  const userId = session?.user?.id ?? null;
   const dialog = useDialog();
 
-  const [profile, setProfile] = useState<ProfileResolved | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { profile, loading: profileLoading, refetch: reloadProfile } = useProfile(userId);
+  const [saving, setSaving] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -37,7 +36,7 @@ export default function ProfileScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
   useEffect(() => {
-    loadProfile();
+    reloadProfile();
   }, [session]);
 
   useFocusEffect(
@@ -53,26 +52,6 @@ export default function ProfileScreen() {
     ImagePicker.requestMediaLibraryPermissionsAsync();
     ImagePicker.requestCameraPermissionsAsync();
   }, [editing]);
-
-  async function loadProfile() {
-    if (!session?.user) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const rawProfile = await getUserProfile(session.user.id);
-      if (rawProfile) {
-        const resolved = await toProfileResolved(rawProfile);
-        setProfile(resolved);
-      }
-    } catch (err) {
-      await dialog.error('Error loading profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function handleEdit() {
     setEditing(true);
@@ -129,7 +108,7 @@ export default function ProfileScreen() {
           return;
         }
       }
-      setLoading(true);
+      setSaving(true);
 
       let avatarId = profile.avatar_id;
 
@@ -148,7 +127,7 @@ export default function ProfileScreen() {
         avatar_id: avatarId,
       });
 
-      await loadProfile();
+      await reloadProfile();
       setEditing(false);
       setImageUri(null);
     } catch (err) {
@@ -158,7 +137,7 @@ export default function ProfileScreen() {
         await dialog.error('Save Error', err.message);
       }
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
@@ -170,7 +149,7 @@ export default function ProfileScreen() {
     if (confirmed) await signOut();
   }
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
         <View className="flex-1 items-center justify-center">
@@ -264,13 +243,13 @@ export default function ProfileScreen() {
                 <Button
                   title="Save"
                   onPress={handleSave}
-                  disabled={loading || !name.trim()}
+                  disabled={saving || !name.trim()}
                 />
                 <Button
                   title="Cancel"
                   variant="outline"
                   onPress={handleCancel}
-                  disabled={loading}
+                  disabled={saving}
                 />
               </View>
             </View>
