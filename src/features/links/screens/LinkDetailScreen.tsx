@@ -410,6 +410,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               media={allMedia}
               onMediaPress={handleMediaPress}
               maxItems={6}
+              scrollEnabled={false}
               onOverflowPress={handleSeeAllMedia}
             />
           )}

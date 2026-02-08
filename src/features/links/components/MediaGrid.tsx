@@ -10,9 +10,12 @@ import { LinkPostMedia } from '../../../lib/models';
 
 type Props = {
   media: LinkPostMedia[];
-  onMediaPress?: (index: number) => void;
   columns?: number;
   maxItems?: number;
+  scrollEnabled?: boolean;
+  ListHeaderComponent?: React.ComponentType;
+  ListFooterComponent?: React.ComponentType;
+  onMediaPress?: (index: number) => void;
   onOverflowPress?: () => void;
 };
 
@@ -20,9 +23,12 @@ const GAP = 2;
 
 export default function MediaGrid({
   media,
-  onMediaPress,
   columns = 3,
   maxItems,
+  scrollEnabled = true,
+  ListHeaderComponent,
+  ListFooterComponent,
+  onMediaPress,
   onOverflowPress,
 }: Props) {
   const { width } = useWindowDimensions();
@@ -36,10 +42,12 @@ export default function MediaGrid({
     <FlatList
       data={displayedMedia}
       numColumns={columns}
-      scrollEnabled={false}
+      scrollEnabled={scrollEnabled}
       keyExtractor={(item) => item.id}
       columnWrapperStyle={{ gap: GAP }}
-      contentContainerStyle={{ gap: GAP }}
+      contentContainerStyle={{ gap: GAP, paddingHorizontal: 4 }}
+      ListHeaderComponent={ListHeaderComponent}
+      ListFooterComponent={ListFooterComponent}
       renderItem={({ item, index }) => {
         const isLastItem = hasOverflow && index === displayedMedia.length - 1;
 

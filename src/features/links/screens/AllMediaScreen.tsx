@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Pressable,
-  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,7 +14,6 @@ type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
 export default function AllMediaScreen({ route, navigation }: Props) {
   const { allMedia } = route.params;
-
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
 
   const handleMediaPress = (index: number) => {
@@ -38,22 +36,23 @@ export default function AllMediaScreen({ route, navigation }: Props) {
         <View className="w-10" />
       </View>
 
-      {/* Photo count */}
-      <View className="px-4 pb-2">
-        <Text className="text-sm text-slate-500">
-          {allMedia.length} photo{allMedia.length !== 1 ? 's' : ''}
-        </Text>
-      </View>
-
-      {/* Full scrollable grid */}
-      <ScrollView className="flex-1 px-4">
-        <MediaGrid
-          media={allMedia}
-          onMediaPress={handleMediaPress}
-          columns={3}
-        />
-        <View className="h-8" />
-      </ScrollView>
+      <MediaGrid
+        media={allMedia}
+        onMediaPress={handleMediaPress}
+        columns={3}
+        scrollEnabled={true}
+        ListHeaderComponent={() => (
+          <View className="pb-2">
+            <Text className="text-sm text-slate-500">
+              {allMedia.length} photo{allMedia.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        )}
+        ListFooterComponent={() => (
+          <View className="h-8" />
+        )}
+      />
+      <View className="h-8" />
     </SafeAreaView>
   );
 }
