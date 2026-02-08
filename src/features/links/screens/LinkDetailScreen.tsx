@@ -261,7 +261,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   };
 
   const handleSeeAllMedia = () => {
-    navigation.navigate('AllMedia', { allMedia });
+    navigation.navigate('AllMedia', { linkId });
   };
 
   const handleDeletePost = async (postId: string) => {
