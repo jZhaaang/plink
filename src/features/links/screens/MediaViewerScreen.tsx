@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Image } from 'expo-image';
 import {
   View,
   Text,
   FlatList,
-  Image,
   Pressable,
   useWindowDimensions,
   StatusBar,
@@ -20,12 +20,6 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
   const { width, height } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
-
-  const handleScroll = (event) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / width);
-    setCurrentIndex(index);
-  };
 
   return (
     <View className="flex-1 bg-black">
@@ -60,8 +54,11 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
           offset: width * index,
           index,
         })}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        onMomentumScrollEnd={(event) => {
+          const offsetX = event.nativeEvent.contentOffset.x;
+          const index = Math.round(offsetX / width);
+          setCurrentIndex(index);
+        }}
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => (
           <View
@@ -71,7 +68,9 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
             <Image
               source={{ uri: item }}
               style={{ width, height }}
-              resizeMode="contain"
+              contentFit="contain"
+              cachePolicy="memory-disk"
+              transition={200}
             />
           </View>
         )}
