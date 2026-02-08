@@ -42,56 +42,9 @@ import UploadProgressModal from '../../../components/UploadProgressModal';
 import { links } from '../../../lib/supabase/storage/links';
 import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
 import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
+import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
-
-function formatDateTime(dateString: string | null): {
-  date: string;
-  time: string;
-} {
-  if (!dateString) return { date: '', time: '' };
-  const date = new Date(dateString);
-  return {
-    date: date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }),
-    time: date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }),
-  };
-}
-
-function formatDuration(startDate: string, endDate: string | null): string {
-  const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : new Date();
-  const diffMs = end.getTime() - start.getTime();
-
-  const minutes = Math.floor(diffMs / 60000);
-  const hours = Math.floor(diffMs / 3600000);
-  const days = Math.floor(diffMs / 86400000);
-
-  if (days > 0) {
-    const remainingHours = Math.floor((diffMs % 86400000) / 3600000);
-    if (remainingHours > 0) {
-      return `${days}d ${remainingHours}h`;
-    }
-    return `${days} day${days !== 1 ? 's' : ''}`;
-  }
-
-  if (hours > 0) {
-    const remainingMins = Math.floor((diffMs % 3600000) / 60000);
-    if (remainingMins > 0) {
-      return `${hours}h ${remainingMins}m`;
-    }
-    return `${hours} hour${hours !== 1 ? 's' : ''}`;
-  }
-
-  return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
-}
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
@@ -123,20 +76,43 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   );
   const [editModalVisible, setEditModalVisible] = useState(false);
 
-  const isActive = link && !link.end_time;
-  const isOwner = link?.owner_id === userId;
-  const isMember = link?.members.some((m) => m.id === userId) ?? false;
-  const memberAvatars = link?.members
-    .map((m) => m.avatarUrl)
-    .filter((url): url is string => !!url);
-  const owner = link?.members.find((m) => m.id === link.owner_id);
-
   const allMedia = useMemo(() => {
     if (!link) return [];
     return link.posts.flatMap((post) => post.media);
   }, [link]);
 
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error || !link) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
+        <Text className="text-center text-neutral-600 mb-4">
+          Failed to load link details.
+        </Text>
+        <Button title="Retry" variant="outline" onPress={refetch} />
+      </SafeAreaView>
+    );
+  }
+
+  const startFormatted = formatDateTime(link.created_at);
+  const endFormatted = formatDateTime(link.end_time);
+  const isActive = link && !link.end_time;
+  const isOwner = link.owner_id === userId;
+  const isMember = link.members.some((m) => m.id === userId) ?? false;
+  const memberAvatars = link.members
+    .map((m) => m.avatarUrl)
+    .filter((url): url is string => !!url);
+  const owner = link.members.find((m) => m.id === link.owner_id);
+
+  
 
   const handleEndLink = async () => {
     setMenuVisible(false);
@@ -227,55 +203,51 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     );
   };
 
-  const menuItems = useMemo(() => {
-    const items: Array<{
-      icon: ComponentProps<typeof Feather>['name'];
-      label: string;
-      action: () => void;
-      variant?: 'danger';
-    }> = [];
+  const menuItems: Array<{
+    icon: ComponentProps<typeof Feather>['name'];
+    label: string;
+    action: () => void;
+    variant?: 'danger';
+  }> = [];
 
-    if (isOwner) {
-      items.push({
-        icon: 'edit-2',
-        label: 'Edit Name',
-        action: () => {
-          setMenuVisible(false);
-          setEditModalVisible(true);
-        },
-      });
+  if (isOwner) {
+    menuItems.push({
+      icon: 'edit-2',
+      label: 'Edit Name',
+      action: () => {
+        setMenuVisible(false);
+        setEditModalVisible(true);
+      },
+    });
 
-      if (isActive) {
-        items.push({
-          icon: 'check-circle',
-          label: 'End Link',
-          action: handleEndLink,
-        });
-      }
-
-      items.push({
-        icon: 'trash-2',
-        label: 'Delete Link',
-        action: handleDeleteLink,
-        variant: 'danger',
-      });
-    } else if (isMember) {
-      items.push({
-        icon: 'log-out',
-        label: 'Leave Link',
-        action: handleLeaveLink,
-        variant: 'danger',
-      });
-    } else if (isActive) {
-      items.push({
-        icon: 'log-in',
-        label: 'Join Link',
-        action: handleJoinLink,
+    if (isActive) {
+      menuItems.push({
+        icon: 'check-circle',
+        label: 'End Link',
+        action: handleEndLink,
       });
     }
 
-    return items;
-  }, [isOwner, isActive, isMember]);
+    menuItems.push({
+      icon: 'trash-2',
+      label: 'Delete Link',
+      action: handleDeleteLink,
+      variant: 'danger',
+    });
+  } else if (isMember) {
+    menuItems.push({
+      icon: 'log-out',
+      label: 'Leave Link',
+      action: handleLeaveLink,
+      variant: 'danger',
+    });
+  } else if (isActive) {
+    menuItems.push({
+      icon: 'log-in',
+      label: 'Join Link',
+      action: handleJoinLink,
+    });
+  }
 
   const handlePostMediaPress = (postMediaUrls: string[], index: number) => {
     navigation.navigate('MediaViewer', {
@@ -317,25 +289,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       dialog.error('Delete failed', err.message);
     }
   };
-
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (error || !link) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
-        <Text className="text-center text-neutral-600 mb-4">
-          Failed to load link details.
-        </Text>
-        <Button title="Retry" variant="outline" onPress={refetch} />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">
@@ -385,8 +338,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           {/* Primary timestamp */}
           <Text className="text-sm text-slate-500">
             {isActive
-              ? `Started ${formatDateTime(link.created_at).date} at ${formatDateTime(link.created_at).time}`
-              : `${formatDateTime(link.created_at).date}, ${formatDateTime(link.created_at).time} - ${formatDateTime(link.end_time).date}, ${formatDateTime(link.end_time).time}`}
+              ? `Started ${startFormatted.date} at ${startFormatted.time}`
+              : `${startFormatted.date}, ${startFormatted.time} - ${endFormatted.date}, ${endFormatted.time}`}
           </Text>
 
           {/* Duration badge */}
