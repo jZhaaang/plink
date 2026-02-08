@@ -12,12 +12,14 @@ import {
 import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'MediaViewer'>;
 
 export default function MediaViewerScreen({ route, navigation }: Props) {
   const { mediaUrls, initialIndex } = route.params;
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
 
@@ -26,7 +28,7 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View className="absolute top-0 left-0 right-0 z-10 pt-12 px-4 pb-4">
+      <View className="absolute top-0 left-0 right-0 z-10 px-4 pb-4" style={{ paddingTop: insets.top + 8}}>
         <View className="flex-row items-center justify-between">
           <Pressable
             onPress={() => navigation.goBack()}
