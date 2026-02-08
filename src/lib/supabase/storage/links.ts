@@ -1,18 +1,18 @@
-import { uploadFile, getUrl, removeFile } from './core';
+import { randomUUID } from 'expo-crypto';
+import { uploadFile, getUrls, removeFile } from './core';
 
 export const links = {
-  path(linkId: string, postId: string, mediaId: string, ext: string = 'jpg') {
-    return `${linkId}/posts/${postId}/${mediaId}.${ext}`;
+  path(linkId: string, postId: string, ext: string = 'jpg') {
+    return `${linkId}/posts/${postId}/${randomUUID()}.${ext}`;
   },
 
   async upload(
     linkId: string,
     postId: string,
-    mediaId: string,
     uri: string,
     ext: string = 'jpg',
   ) {
-    const path = this.path(linkId, postId, mediaId, ext);
+    const path = this.path(linkId, postId, ext);
     await uploadFile('links', path, uri, {
       contentType: ext === 'png' ? 'image/png' : 'image/jpeg',
       upsert: false,
@@ -20,11 +20,11 @@ export const links = {
     return path;
   },
 
-  getUrl(path: string) {
-    return getUrl('links', path);
+  getUrls(paths: string[]) {
+    return getUrls('links', paths);
   },
 
-  remove(linkId: string, postId: string, mediaId: string, ext: string = 'jpg') {
-    return removeFile('links', [this.path(linkId, postId, mediaId, ext)]);
+  remove(paths: string[]) {
+    return removeFile('links', paths);
   },
 };

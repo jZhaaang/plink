@@ -1,5 +1,5 @@
 import { LinkPostWithMedia, Profile } from '../../../lib/models';
-import { resolveLinkPostMedia } from '../../../lib/resolvers/link';
+import { resolveLinkPostMediaItems } from '../../../lib/resolvers/link';
 import { resolveProfile } from '../../../lib/resolvers/profile';
 import { useAsync } from '../../../lib/supabase/hooks/useAync';
 import { getLinkDetailById } from '../../../lib/supabase/queries/links';
@@ -15,20 +15,18 @@ export function useLinkDetail(linkId: string) {
     const members: Profile[] = await Promise.all(
       rawLink.link_members.map((lm) => resolveProfile(lm.profiles)),
     );
-
     const profilesMap = new Map<string, Profile>(members.map((p) => [p.id, p]));
 
+    const allMedia = rawLink.link_posts.flatMap((post) => post.link_post_media);
+    const mediaMap = await resolveLinkPostMediaItems(allMedia);
+
     let totalMediaCount = 0;
-    const posts: LinkPostWithMedia[] = await Promise.all(
-      rawLink.link_posts.map(async (post) => {
-        const owner = profilesMap.get(post.owner_id)!;
-        const media = await Promise.all(
-          post.link_post_media.map((m) => resolveLinkPostMedia(m)),
-        );
-        totalMediaCount += media.length;
-        return { ...post, owner, media };
-      }),
-    );
+    const posts: LinkPostWithMedia[] = rawLink.link_posts.map((post) => {
+      const owner = profilesMap.get(post.owner_id)!;
+      const media = post.link_post_media.map((m) => mediaMap.get(m.id)!);
+      totalMediaCount += media.length;
+      return { ...post, owner, media };
+    });
 
     return {
       ...rawLink,

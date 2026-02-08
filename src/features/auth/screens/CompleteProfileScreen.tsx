@@ -78,13 +78,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
     setLoading(true);
     try {
-      let avatarId = null;
+      let avatarPath = null;
 
       if (imageUri) {
-        avatarId = await avatars.upload(session.user.id, imageUri, 'jpg');
+        avatarPath = await avatars.upload(session.user.id, imageUri,);
       } else {
         const encodedName = encodeURIComponent(name.trim());
-        avatarId = await avatars.upload(
+        avatarPath = await avatars.upload(
           session.user.id,
           `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg`,
         );
@@ -93,7 +93,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       await updateUserProfile(session.user.id, {
         name: name.trim(),
         username: trimmedUsername,
-        avatar_id: avatarId,
+        avatar_path: avatarPath,
       });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {

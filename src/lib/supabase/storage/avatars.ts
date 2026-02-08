@@ -1,33 +1,23 @@
 import { randomUUID } from 'expo-crypto';
-import { uploadFile, getUrl, removeFile } from './core';
+import { uploadFile, getUrls, removeFile } from './core';
 
 export const avatars = {
-  path(userId: string, avatarId: string, ext: string = 'jpg') {
-    return `users/${userId}/${avatarId}.${ext}`;
+  path(userId: string, ext: string = 'jpg') {
+    return `users/${userId}/${randomUUID()}.${ext}`;
   },
-  async upload(
-    userId: string,
-    uri: string,
-    oldAvatarId?: string,
-    ext: string = 'jpg',
-  ) {
-    const uuid = randomUUID();
-    const path = this.path(userId, uuid, ext);
+  async upload(userId: string, uri: string, ext: string = 'jpg') {
+    const path = this.path(userId, ext);
     await uploadFile('avatars', path, uri, {
       contentType: ext === 'png' ? 'image/png' : 'image/jpeg',
-      upsert: true,
+      upsert: false,
     });
 
-    if (oldAvatarId) {
-      await removeFile('avatars', [this.path(userId, oldAvatarId, ext)]);
-    }
-
-    return uuid;
+    return path;
   },
-  getUrl(userId: string, avatarId: string, ext: string = 'jpg') {
-    return getUrl('avatars', this.path(userId, avatarId, ext));
+  getUrls(paths: string[]) {
+    return getUrls('avatars', paths);
   },
-  remove(userId: string, avatarId: string, ext: string = 'jpg') {
-    return removeFile('avatars', [this.path(userId, avatarId, ext)]);
+  remove(paths: string[]) {
+    return removeFile('avatars', paths);
   },
 };

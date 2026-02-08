@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { Button, Modal, TextField } from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
-import { avatars } from '../../../lib/supabase/storage/avatars';
+import { resolveProfile } from '../../../lib/resolvers/profile';
 
 type Props = {
   visible: boolean;
@@ -22,13 +22,11 @@ export default function InviteMemberModal({
   onSuccess,
 }: Props) {
   const [username, setUsername] = useState('');
-  const [foundUserAvatarUrl, setFoundUserAvatarUrl] = useState<string | null>(
-    null,
-  );
   const { state, searchUser, inviteUser, reset } = useInviteMember(
     partyId,
     existingMemberIds,
   );
+  const foundUserAvatarUrl = state.status === 'found' ? resolveProfile(state.user).avatarUrl : undefined;
 
   useEffect(() => {
     if (!visible) {
@@ -36,14 +34,6 @@ export default function InviteMemberModal({
       reset();
     }
   }, [visible, reset]);
-
-  useEffect(() => {
-    if (state.status === 'found') {
-      avatars
-        .getUrl(state.user.id, state.user.avatar_id)
-        .then(setFoundUserAvatarUrl);
-    }
-  }, [state]);
 
   const handleSearch = () => {
     const trimmed = username.trim();

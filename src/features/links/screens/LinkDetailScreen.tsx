@@ -276,11 +276,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     if (!confirmed) return;
 
     try {
-      await Promise.all(post.media.map((media) => {
-        const ext = media.path.split('.').pop() || 'jpg';
-        return links.remove(linkId, postId, media.id, ext);
-      }))
-
+      await links.remove(post.media.map((media) => media.path));
       await Promise.all(post.media.map((media) => deleteLinkPostMedia(media.id)));
 
       await deleteLinkPost(postId);

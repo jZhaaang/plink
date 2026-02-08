@@ -110,21 +110,19 @@ export default function ProfileScreen() {
       }
       setSaving(true);
 
-      let avatarId = profile.avatar_id;
+      let avatarPath = profile.avatar_path;
 
       if (imageUri) {
-        avatarId = await avatars.upload(
-          session.user.id,
-          imageUri,
-          profile.avatar_id,
-          'jpg',
-        );
+        const newPath = await avatars.upload(session.user.id, imageUri);
+        const oldPath = avatarPath;
+        avatarPath = newPath;
+        if (oldPath) await avatars.remove([oldPath]);
       }
 
       await updateUserProfile(session.user.id, {
         name: name.trim(),
         username: trimmedUsername || null,
-        avatar_id: avatarId,
+        avatar_path: avatarPath,
       });
 
       await reloadProfile();

@@ -1,4 +1,4 @@
-import { uploadFile, getUrl, removeFile } from './core';
+import { uploadFile, getUrls, removeFile } from './core';
 
 export const parties = {
   path(partyId: string, ext: string = 'jpg') {
@@ -12,10 +12,10 @@ export const parties = {
     });
     return path;
   },
-  getUrl(partyId: string, ext: string = 'jpg') {
-    return getUrl('parties', this.path(partyId, ext));
+  getUrls(paths: string[]) {
+    return getUrls('parties', paths);
   },
-  remove(partyId: string, ext: string = 'jpg') {
-    return removeFile('parties', [this.path(partyId, ext)]);
+  remove(paths: string[]) {
+    return removeFile('parties', paths);
   },
 };

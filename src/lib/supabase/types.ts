@@ -251,7 +251,7 @@ export type Database = {
       };
       profiles: {
         Row: {
-          avatar_id: string | null;
+          avatar_path: string | null;
           created_at: string;
           id: string;
           name: string | null;
@@ -259,7 +259,7 @@ export type Database = {
           username: string | null;
         };
         Insert: {
-          avatar_id?: string | null;
+          avatar_path?: string | null;
           created_at?: string;
           id?: string;
           name?: string | null;
@@ -267,7 +267,7 @@ export type Database = {
           username?: string | null;
         };
         Update: {
-          avatar_id?: string | null;
+          avatar_path?: string | null;
           created_at?: string;
           id?: string;
           name?: string | null;

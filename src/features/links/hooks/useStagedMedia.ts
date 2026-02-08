@@ -1,7 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
 import { createLinkPost } from '../../../lib/supabase/queries/linkPosts';
-import { randomUUID } from 'expo-crypto';
 import { links } from '../../../lib/supabase/storage/links';
 import { createLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
 
@@ -93,16 +92,9 @@ export function useStagedMedia({
       }
 
       const uploadAsset = async (asset: ImagePicker.ImagePickerAsset) => {
-        const mediaId = randomUUID();
         const ext = asset.uri.split('.').pop()?.toLowerCase() || 'jpg';
 
-        const path = await links.upload(
-          linkId,
-          post.id,
-          mediaId,
-          asset.uri,
-          ext,
-        );
+        const path = await links.upload(linkId, post.id, asset.uri, ext);
 
         await createLinkPostMedia({
           post_id: post.id,

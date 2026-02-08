@@ -41,19 +41,30 @@ export async function removeFile(bucket: Bucket, paths: string[]) {
   }
 }
 
-export async function getUrl(bucket: Bucket, path: string, ttl = 60 * 10) {
-  if (BUCKET_PRIVACY[bucket] === 'public') {
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    return data.publicUrl;
-  } else {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .createSignedUrl(path, ttl);
+export async function getUrls(
+  bucket: Bucket,
+  paths: string[],
+  ttl = 600 * 10,
+): Promise<Map<string, string>> {
+  if (paths.length === 0) return new Map();
 
-    if (error) {
-      logger.error('Error creating signed url:', error.message);
-      throw error;
-    }
-    return data.signedUrl;
+  if (BUCKET_PRIVACY[bucket] === 'public') {
+    return new Map(
+      paths.map((p) => [
+        p,
+        supabase.storage.from(bucket).getPublicUrl(p).data.publicUrl,
+      ]),
+    );
   }
+
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrls(paths, ttl);
+
+  if (error) {
+    logger.error(' Error creating signed urls:', error.message);
+    throw error;
+  }
+
+  return new Map(data.map((d) => [d.path!, d.signedUrl]));
 }

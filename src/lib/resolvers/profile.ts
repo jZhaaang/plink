@@ -1,9 +1,10 @@
 import { Profile, ProfileRow } from '../models';
-import { avatars } from '../supabase/storage/avatars';
+import { supabase } from '../supabase/client';
 
-export async function resolveProfile(profile: ProfileRow): Promise<Profile> {
-  return {
-    ...profile,
-    avatarUrl: await avatars.getUrl(profile.id, profile.avatar_id),
-  };
+export function resolveProfile(profile: ProfileRow): Profile {
+  const avatarUrl = profile.avatar_path
+    ? supabase.storage.from('avatars').getPublicUrl(profile.avatar_path).data
+        .publicUrl
+    : undefined;
+  return { ...profile, avatarUrl };
 }
