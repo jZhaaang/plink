@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinkPostWithMedia } from '../../../lib/models';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
@@ -37,6 +37,7 @@ export default function PostFeedItem({
   const contentWidth = screenWidth - 32;
 
   const mediaCount = post.media.length;
+  const mediaUrls = useMemo(() => post.media.map((m) => m.url), [post.media]);
 
   const getItemSize = () => {
     if (mediaCount === 1) return contentWidth;
@@ -108,7 +109,7 @@ export default function PostFeedItem({
               key={media.id}
               onPress={() =>
                 onMediaPress?.(
-                  post.media.map((m) => m.url),
+                  mediaUrls,
                   index,
                 )
               }
