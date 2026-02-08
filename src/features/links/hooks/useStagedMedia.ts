@@ -71,7 +71,7 @@ export function useStagedMedia({
     }
   }, [stageAssets]);
 
-  const removeAsset = useCallback(async (uri: string) => {
+  const removeAsset = useCallback((uri: string) => {
     setStagedAssets((prev) => prev.filter((asset) => asset.uri !== uri));
   }, []);
 
