@@ -34,6 +34,7 @@ import {
   EmptyState,
   DropdownMenu,
   DropdownMenuItem,
+  Divider,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { Image } from 'expo-image';
@@ -113,7 +114,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
   const handleEditParty = async (
     name: string,
-    avatarUri: string | null,
     bannerUri: string | null,
   ) => {
     setEditLoading(true);
@@ -122,15 +122,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       if (name !== party?.name) {
         updates.name = name;
-      }
-
-      if (avatarUri && avatarUri !== party?.avatarUrl) {
-        const avatar_path = await partiesStorage.upload(
-          partyId,
-          'avatar',
-          avatarUri,
-        );
-        updates.avatar_path = avatar_path;
       }
 
       if (bannerUri && bannerUri !== party?.bannerUrl) {
@@ -230,7 +221,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         }
       >
         {/* Hero Banner */}
-        <View className="h-56 w-full">
+        <View className="w-full" style={{ aspectRatio: 2.5 }}>
           {party.bannerUrl ? (
             <Image
               source={{ uri: party.bannerUrl }}
@@ -280,8 +271,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           )}
         </View>
 
+        <Divider className="my-6" />
+
         {/* Active Link */}
-        <View className="px-5 mt-6">
+        <View className="px-5">
           {activeLink ? (
             <>
               <SectionHeader title="Active Link" count={0} />

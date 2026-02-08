@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Modal, TextField } from '../../../components';
-import { Pressable, Text, View } from 'react-native';
-import { PartyCard } from './PartyCard';
+import { Pressable, Text, View, ImageBackground } from 'react-native';
 import { Party } from '../../../lib/models';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Props = {
   visible: boolean;
@@ -12,14 +13,8 @@ type Props = {
   onClose: () => void;
   onSubmit: (
     name: string,
-    avatarUri: string | null,
     bannerUri: string | null,
   ) => Promise<void>;
-};
-
-const ASPECT: Record<'avatar' | 'banner', [number, number]> = {
-  avatar: [1, 1],
-  banner: [3, 1],
 };
 
 export default function CreatePartyModal({
@@ -32,9 +27,6 @@ export default function CreatePartyModal({
   const isEditMode = !!initialParty;
 
   const [name, setName] = useState(initialParty?.name ?? '');
-  const [avatarUri, setAvatarUri] = useState<string | null>(
-    initialParty?.avatarUrl ?? null,
-  );
   const [bannerUri, setBannerUri] = useState<string | null>(
     initialParty?.bannerUrl ?? null,
   );
@@ -43,7 +35,6 @@ export default function CreatePartyModal({
   useEffect(() => {
     if (visible) {
       setName(initialParty?.name ?? '');
-      setAvatarUri(initialParty?.avatarUrl ?? null);
       setBannerUri(initialParty?.bannerUrl ?? null);
     }
   }, [visible, initialParty]);
@@ -52,23 +43,21 @@ export default function CreatePartyModal({
     ImagePicker.requestMediaLibraryPermissionsAsync();
   }, []);
 
-  const choosePhoto = async (type: 'avatar' | 'banner') => {
-    const aspect = ASPECT[type];
+  const chooseBanner = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect,
+      aspect: [2.5, 1],
     });
     if (result.canceled) return;
     const uri = result.assets[0].uri;
-    if (type === 'avatar') setAvatarUri(uri);
-    else setBannerUri(uri);
+    setBannerUri(uri);
   };
 
   const handleSubmit = async () => {
     setLocalLoading(true);
     try {
-      await onSubmit(name.trim(), avatarUri, bannerUri);
+      await onSubmit(name.trim(), bannerUri);
     } finally {
       setLocalLoading(false);
     }
@@ -77,7 +66,6 @@ export default function CreatePartyModal({
   const handleClose = () => {
     if (isEditMode) {
       setName(initialParty?.name ?? '');
-      setAvatarUri(initialParty?.avatarUrl ?? null);
       setBannerUri(initialParty?.bannerUrl ?? null);
     }
     onClose();
@@ -85,55 +73,66 @@ export default function CreatePartyModal({
 
   const hasChanges =
     name.trim() !== (initialParty?.name ?? '') ||
-    avatarUri !== (initialParty?.avatarUrl ?? null) ||
     bannerUri !== (initialParty?.bannerUrl ?? null);
 
   return (
-    <Modal visible={visible} onClose={handleClose} animationType="slide">
-      <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-lg font-semibold">
-          {isEditMode ? 'Edit Party' : 'Create Party'}
-        </Text>
-        <Pressable onPress={handleClose} className="p-2">
-          <Text className="text-neutral-500">Close</Text>
-        </Pressable>
-      </View>
-
-      <Text className="text-xs font-semibold uppercase tracking-wide text-neutral-500 px-1">
-        Preview
+  <Modal visible={visible} onClose={handleClose} animationType="slide">
+    <View className="flex-row items-center justify-between mb-4">
+      <Text className="text-lg font-semibold">
+        {isEditMode ? 'Edit Party' : 'Create Party'}
       </Text>
+      <Pressable onPress={handleClose} className="p-2">
+        <Text className="text-neutral-500">Close</Text>
+      </Pressable>
+    </View>
 
-      <PartyCard
-        variant="editable"
-        name={name || 'Party Name'}
-        avatarUri={avatarUri}
-        bannerUri={bannerUri}
-        onPressAvatar={() => choosePhoto('avatar')}
-        onPressBanner={() => choosePhoto('banner')}
+    {/* Banner picker */}
+    <Pressable onPress={chooseBanner} className="rounded-xl overflow-hidden" style={{ aspectRatio: 2.5 }}>
+      {bannerUri ? (
+        <ImageBackground
+          source={{ uri: bannerUri }}
+          className="flex-1 items-center justify-center"
+        >
+          <View className="flex-1 w-full bg-black/20 items-center justify-center">
+            <MaterialIcons name="edit" size={24} color="#ffffffcc" />
+          </View>
+        </ImageBackground>
+      ) : (
+        <LinearGradient
+          colors={['#bfdbfe', '#3b82f6']}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 1, y: 0 }}
+          className="flex-1 items-center justify-center"
+        >
+          <MaterialIcons name="add-photo-alternate" size={36} color="#ffffff99" />
+          <Text className="text-white/60 text-xs mt-1" numberOfLines={1}>Add Banner</Text>
+        </LinearGradient>
+      )}
+    </Pressable>
+
+    <View className="mt-4 gap-2">
+      <TextField
+        header="Party Name"
+        left={<MaterialCommunityIcons name="party-popper" size={18} color="#64748b" />}
+        value={name}
+        onChangeText={setName}
+        className="text-base"
+        autoCapitalize="words"
+        maxLength={30}
+        returnKeyType="done"
       />
 
-      <View className="mt-4 gap-2">
-        <TextField
-          header="Party Name"
-          value={name}
-          onChangeText={setName}
-          placeholder="e.g. Backstreet Boys"
-          className="text-base"
-          autoCapitalize="words"
-          maxLength={30}
-          returnKeyType="done"
+      <View className="mt-6">
+        <Button
+          title={isEditMode ? 'Save Changes' : 'Create Party'}
+          size="lg"
+          onPress={handleSubmit}
+          loading={loading || localLoading}
+          disabled={!name.trim() || (isEditMode && !hasChanges)}
         />
-
-        <View className="mt-6">
-          <Button
-            title={isEditMode ? 'Save Changes' : 'Create Party'}
-            size="lg"
-            onPress={handleSubmit}
-            loading={loading || localLoading}
-            disabled={!name.trim() || (isEditMode && !hasChanges)}
-          />
-        </View>
       </View>
-    </Modal>
-  );
+    </View>
+  </Modal>
+);
+
 }

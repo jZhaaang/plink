@@ -36,15 +36,14 @@ export default function PartyListScreen({ navigation }: Props) {
 
   const handleSubmit = async (
     name: string,
-    avatarUri: string | null,
     bannerUri: string | null,
   ) => {
     if (!name.trim()) {
       await dialog.error('Missing info', 'Name cannot be empty');
       return;
     }
-    if (!avatarUri || !bannerUri) {
-      await dialog.error('Missing info', 'Choose an avatar and banner image');
+    if (!bannerUri) {
+      await dialog.error('Missing info', 'Choose a banner image');
       return;
     }
     setLoading(true);
@@ -55,18 +54,13 @@ export default function PartyListScreen({ navigation }: Props) {
       let avatar_path = null,
         banner_path = null;
 
-      if (avatarUri)
-        avatar_path = await partiesStorage.upload(
-          party.id,
-          'avatar',
-          avatarUri,
-        );
-      if (bannerUri)
+      if (bannerUri) {
         banner_path = await partiesStorage.upload(
           party.id,
           'banner',
           bannerUri,
         );
+      }
 
       await updatePartyById(party.id, { avatar_path, banner_path });
       refetch();
@@ -109,9 +103,7 @@ export default function PartyListScreen({ navigation }: Props) {
           onRefresh={refetch}
           renderItem={({ item }) => (
             <PartyCard
-              variant="compact"
               name={item.name}
-              avatarUri={item.avatarUrl}
               bannerUri={item.bannerUrl}
               members={item.members}
               onPress={() =>
@@ -157,8 +149,8 @@ export default function PartyListScreen({ navigation }: Props) {
         <CreatePartyModal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
-          onSubmit={(name, avatarUri, bannerUri) =>
-            handleSubmit(name, avatarUri, bannerUri)
+          onSubmit={(name, bannerUri) =>
+            handleSubmit(name, bannerUri)
           }
           loading={loading}
         />

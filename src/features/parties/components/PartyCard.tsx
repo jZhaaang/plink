@@ -1,32 +1,15 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ImageBackground, Pressable, View, Text } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import AvatarStack from '../../../components/AvatarStack';
 
-type BaseProps = {
+type Props = {
   name: string;
-  avatarUri?: string | null;
   bannerUri?: string | null;
-};
-
-type CompactProps = BaseProps & {
-  variant: 'compact';
-  onPress?: () => void;
   members?: { avatarUrl?: string }[];
+  onPress?: () => void;
 };
-
-type ExpandedProps = BaseProps & {
-  variant: 'expanded';
-};
-
-type EditableProps = BaseProps & {
-  variant: 'editable';
-  onPressAvatar?: () => void;
-  onPressBanner?: () => void;
-};
-
-type Props = CompactProps | ExpandedProps | EditableProps;
 
 function BannerFallback({ showIcon }: { showIcon?: boolean }) {
   return (
@@ -43,58 +26,19 @@ function BannerFallback({ showIcon }: { showIcon?: boolean }) {
   );
 }
 
-function AvatarFallback({ showIcon }: { showIcon?: boolean }) {
-  return (
-    <LinearGradient
-      colors={['#93c5fd', '#a7f3d0']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      className="flex-1 items-center justify-center"
-    >
-      {showIcon && (
-        <MaterialIcons name="add-a-photo" size={28} color="#ffffff99" />
-      )}
-    </LinearGradient>
-  );
-}
-
 export function PartyCard(props: Props) {
-  const { variant, name, avatarUri, bannerUri } = props;
-  const isEditable = variant === 'editable';
-  const isCompact = variant === 'compact';
-
-  // Compact-only props
-  const members = isCompact ? props.members : undefined;
+  const { name, bannerUri, members, onPress } = props;
 
   const memberAvatarUris =
     members?.map((m) => m.avatarUrl).filter((url): url is string => !!url) ??
     [];
   const memberCount = members?.length ?? 0;
 
-  const handlePress = () => {
-    if (variant === 'compact' && props.onPress) {
-      props.onPress();
-    }
-  };
-
-  const handleAvatarPress = () => {
-    if (variant === 'editable' && props.onPressAvatar) {
-      props.onPressAvatar();
-    }
-  };
-
-  const handleBannerPress = () => {
-    if (variant === 'editable' && props.onPressBanner) {
-      props.onPressBanner();
-    }
-  };
-
-  // Compact variant: card with banner and content below
-  if (isCompact) {
-    const compactContent = (
-    <View className="rounded-2xl bg-neutral-100 p-4 shadow-md">
+  return (
+    <Pressable onPress={onPress} className="mb-3">
+      <View className="rounded-2xl bg-neutral-100 p-4 shadow-md">
       {/* Banner - inner rounded rect */}
-      <View className="h-36 rounded-xl overflow-hidden">
+      <View className="rounded-xl overflow-hidden" style={{ aspectRatio: 2.5 }}>
         {bannerUri ? (
           <Image
             source={{ uri: bannerUri }}
@@ -135,77 +79,8 @@ export function PartyCard(props: Props) {
         )}
       </View>
     </View>
-  );
-
-  return (
-    <Pressable onPress={handlePress} className="mb-3">
-      {compactContent}
     </Pressable>
   );
-  }
-
-  // Expanded/Editable variants: card with banner and content below (matching compact style)
-  const isExpanded = variant === 'expanded';
-  const bannerHeightClass = isExpanded ? 'h-36' : 'h-32';
-  const avatarSize = isExpanded ? 64 : 52;
-  const nameTextClass = isExpanded ? 'text-xl' : 'text-lg';
-
-  const content = (
-    <View className="rounded-2xl overflow-hidden bg-white shadow-md">
-      {/* Banner */}
-      <Pressable
-        onPress={handleBannerPress}
-        disabled={!isEditable}
-        className={`${bannerHeightClass} w-full overflow-hidden`}
-      >
-        {bannerUri ? (
-          <ImageBackground
-            source={{ uri: bannerUri }}
-            resizeMode="cover"
-            className="flex-1"
-          >
-            <View className="flex-1 bg-black/10" />
-          </ImageBackground>
-        ) : (
-          <BannerFallback showIcon={isEditable} />
-        )}
-      </Pressable>
-
-      {/* Content row below banner */}
-      <View className="flex-row items-center px-4 py-3">
-        {/* Avatar */}
-        <Pressable onPress={handleAvatarPress} disabled={!isEditable}>
-          <View
-            style={{ width: avatarSize, height: avatarSize }}
-            className="rounded-full overflow-hidden border-2 border-white bg-white shadow-sm"
-          >
-            {avatarUri ? (
-              <Image
-                source={{ uri: avatarUri }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                style={{ width: '100%', height: '100%' }}
-              />
-            ) : (
-              <AvatarFallback showIcon={isEditable} />
-            )}
-          </View>
-        </Pressable>
-
-        {/* Name */}
-        <View className="flex-1 ml-3">
-          <Text
-            className={`${nameTextClass} font-semibold text-neutral-900`}
-            numberOfLines={2}
-          >
-            {name}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-
-  return content;
 }
 
 export default PartyCard;
