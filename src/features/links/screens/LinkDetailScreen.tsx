@@ -304,17 +304,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     if (!confirmed) return;
 
     try {
-      for (const media of post.media) {
+      await Promise.all(post.media.map((media) => {
         const ext = media.path.split('.').pop() || 'jpg';
-        await links.remove(linkId, postId, media.id, ext);
-      }
+        return links.remove(linkId, postId, media.id, ext);
+      }))
 
-      for (const media of post.media) {
-        await deleteLinkPostMedia(media.id);
-      }
+      await Promise.all(post.media.map((media) => deleteLinkPostMedia(media.id)));
 
       await deleteLinkPost(postId);
-
       refetch();
     } catch (err) {
       dialog.error('Delete failed', err.message);
