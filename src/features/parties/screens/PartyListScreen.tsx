@@ -56,7 +56,6 @@ export default function PartyListScreen({ navigation }: Props) {
       if (bannerUri) {
         banner_path = await partiesStorage.upload(
           party.id,
-          'banner',
           bannerUri,
         );
       }
