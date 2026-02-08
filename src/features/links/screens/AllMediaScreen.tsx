@@ -4,39 +4,23 @@ import {
   Text,
   Pressable,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
-import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaGrid from '../components/MediaGrid';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
 export default function AllMediaScreen({ route, navigation }: Props) {
-  const { linkId } = route.params;
-  const { link, loading } = useLinkDetail(linkId);
-
-  const allMedia = useMemo(() => {
-    if (!link) return [];
-    return link.posts.flatMap((post) => post.media);
-  }, [link]);
+  const { allMedia } = route.params;
 
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
 
   const handleMediaPress = (index: number) => {
     navigation.navigate('MediaViewer', { mediaUrls, initialIndex: index });
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">

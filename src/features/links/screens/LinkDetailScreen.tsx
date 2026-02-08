@@ -289,7 +289,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   };
 
   const handleSeeAllMedia = () => {
-    navigation.navigate('AllMedia', { linkId });
+    navigation.navigate('AllMedia', { allMedia });
   };
 
   const handleDeletePost = async (postId: string) => {
