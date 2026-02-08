@@ -48,7 +48,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const userId = session?.user?.id;
   const dialog = useDialog();
 
-  const { data: party, loading, error, refetch } = usePartyDetail(partyId);
+  const { party, loading, error, refetch } = usePartyDetail(partyId);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
