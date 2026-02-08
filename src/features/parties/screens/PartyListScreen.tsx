@@ -51,8 +51,7 @@ export default function PartyListScreen({ navigation }: Props) {
     try {
       const party = await createPartyWithOwner({ name, owner_id: userId });
 
-      let avatar_path = null,
-        banner_path = null;
+      let banner_path = null;
 
       if (bannerUri) {
         banner_path = await partiesStorage.upload(
@@ -62,7 +61,7 @@ export default function PartyListScreen({ navigation }: Props) {
         );
       }
 
-      await updatePartyById(party.id, { avatar_path, banner_path });
+      await updatePartyById(party.id, { banner_path });
       refetch();
     } catch (err) {
       await dialog.error('Error creating party', err.message);
