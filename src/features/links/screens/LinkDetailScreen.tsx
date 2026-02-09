@@ -463,51 +463,27 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
       {/* Bottom Actions (for active links) */}
       {isActive && isMember && (
-        <>
-          <StagedPhotosPreview assets={stagedAssets} onRemove={removeAsset} />
-          <View className="px-4 py-4 border-t border-slate-200 bg-white">
-            <View className="flex-row gap-3">
-              {/* Camera button */}
-              <Pressable
-                onPress={addFromCamera}
-                disabled={uploading}
-                className="flex-1 bg-slate-100 rounded-xl py-4 items-center"
-              >
-                <Ionicons name="camera" size={24} color="#334155" />
-                <Text className="text-slate-700 mt-1 font-medium">Camera</Text>
-              </Pressable>
-
-              {/* Upload button */}
-              <Pressable
-                onPress={addFromGallery}
-                disabled={uploading}
-                className="flex-1 bg-blue-100 rounded-xl py-4 items-center"
-              >
-                <Ionicons name="images" size={24} color="#6366f1" />
-                <Text className="text-primary-600 mt-1 font-medium">
-                  Gallery
-                </Text>
-              </Pressable>
-
-              {/* Post button */}
-              <Pressable
-                onPress={uploadAll}
-                disabled={uploading || !hasAssets}
-                className={`rounded-xl px-5 py-3 items-center justify-center active:opacity-80 disabled:opacity-40 ${hasAssets ? 'bg-blue-600' : 'bg-slate-200'}`}
-              >
-                {uploading ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Ionicons
-                    name="arrow-up"
-                    size={24}
-                    color={hasAssets ? 'white' : '#94a3b8'}
-                  />
-                )}
-              </Pressable>
+          <View className="flex-row items-center px-4 py-3 border-t border-slate-200 bg-white gap-3">
+            <View className="flex-1">
+              <StagedPhotosPreview assets={stagedAssets} onAddFromGallery={addFromGallery} onRemove={removeAsset} />
             </View>
+
+            <Pressable
+              onPress={uploadAll}
+              disabled={uploading || !hasAssets}
+              className={`rounded-xl px-5 h-20 items-center justify-center active:opacity-80 disabled:opacity-40 ${hasAssets ? 'bg-blue-600' : 'bg-slate-200'}`}
+            >
+              {uploading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons
+                  name="arrow-up"
+                  size={24}
+                  color={hasAssets ? 'white' : '#94a3b8'}
+                />
+              )}
+            </Pressable>
           </View>
-        </>
       )}
 
       {/* Dropdown Menu */}
