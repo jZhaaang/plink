@@ -9,7 +9,7 @@ export default function CustomTabBar({
   state, descriptors, navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { activeLink, openCreateLink, triggerUpload } = useActiveLinkContext();
+  const { activeLink, openCreateLink, requestUpload } = useActiveLinkContext();
 
   const partyRoute = state.routes[state.index];
   const nestedState = partyRoute?.state;
@@ -24,7 +24,7 @@ export default function CustomTabBar({
     isOnLinkDetail: boolean,
   ) {
     if (activeLink && isOnLinkDetail && activeLink) {
-      triggerUpload();
+      requestUpload();
       return;
     }
 

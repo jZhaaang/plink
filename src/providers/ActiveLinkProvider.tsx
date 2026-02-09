@@ -11,8 +11,9 @@ type ActiveLinkContextValue = {
   openCreateLink: () => void;
   closeCreateLink: () => void;
 
-  uploadTrigger: number;
-  triggerUpload: () => void;
+  uploadRequested: boolean;
+  requestUpload: () => void;
+  clearUploadRequest: () => void;
 }
 
 const ActiveLinkContext = createContext<ActiveLinkContextValue>({
@@ -22,18 +23,20 @@ const ActiveLinkContext = createContext<ActiveLinkContextValue>({
   createLinkVisible: false,
   openCreateLink: () => {},
   closeCreateLink: () => {},
-  uploadTrigger: 0,
-  triggerUpload: () => {},
+  uploadRequested: false,
+  requestUpload: () => {},
+  clearUploadRequest: () => {},
 });
 
 export function ActiveLinkProvider({ children }: { children: ReactNode }) {
   const { activeLink, loading, refetch } = useActiveLink();
   const [createLinkVisible, setCreateLinkVisible] = useState(false);
-  const [uploadTrigger, setUploadTrigger] = useState(0);
+  const [uploadRequested, setUploadRequested] = useState(false);
 
   const openCreateLink = useCallback(() => setCreateLinkVisible(true), []);
   const closeCreateLink = useCallback(() => setCreateLinkVisible(false), []);
-  const triggerUpload = useCallback(() => setUploadTrigger((prev) => prev + 1), []);
+  const requestUpload = () => setUploadRequested(true);
+  const clearUploadRequest = () => setUploadRequested(false);
 
   return (
     <ActiveLinkContext.Provider value={{
@@ -43,8 +46,9 @@ export function ActiveLinkProvider({ children }: { children: ReactNode }) {
       createLinkVisible,
       openCreateLink,
       closeCreateLink,
-      uploadTrigger,
-      triggerUpload
+      uploadRequested,
+      requestUpload,
+      clearUploadRequest
     }}>
       {children}
     </ActiveLinkContext.Provider>

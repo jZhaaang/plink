@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
+import { ComponentProps, useEffect, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -85,15 +85,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
 
-  const { uploadTrigger } = useActiveLinkContext();
-  const lastTrigger = useRef(uploadTrigger);
+  const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
 
   useEffect(() => {
-    if (uploadTrigger !== lastTrigger.current) {
-      lastTrigger.current = uploadTrigger;
+    if (uploadRequested) {
+      clearUploadRequest();
       addFromCamera();
     }
-  }, [uploadTrigger]);
+  }, [uploadRequested]);
 
   if (loading) {
     return (
