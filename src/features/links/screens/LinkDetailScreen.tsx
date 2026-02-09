@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useEffect, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -43,6 +43,7 @@ import { links } from '../../../lib/supabase/storage/links';
 import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
 import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
+import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -53,7 +54,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const dialog = useDialog();
 
   const { link, loading, error, refetch } = useLinkDetail(linkId);
-
+  const { refetch: refetchActiveLink } = useActiveLinkContext();
+  
   const {
     stagedAssets,
     addFromGallery,
@@ -82,6 +84,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   }, [link]);
 
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
+
+  const { uploadTrigger } = useActiveLinkContext();
+
+  useEffect(() => {
+    if (uploadTrigger > 0) {
+      addFromCamera();
+    }
+  }, [uploadTrigger])
 
   if (loading) {
     return (
@@ -126,6 +136,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     try {
       await endLink(linkId);
       refetch();
+      refetchActiveLink();
     } catch (err) {
       await dialog.error('Error ending link', err.message);
     }
@@ -152,6 +163,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await deleteLink(linkId);
+      refetchActiveLink();
       navigation.navigate('PartyDetail', { partyId });
     } catch (err) {
       await dialog.error('Error deleting link', err.message);
@@ -188,6 +200,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await deleteLinkMember(linkId, userId);
+      refetchActiveLink();
       navigation.goBack();
     } catch (err) {
       await dialog.error('Error leaving link', err.message);

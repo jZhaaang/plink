@@ -47,6 +47,23 @@ export async function getLinksByPartyId(
   return data;
 }
 
+export async function getActiveLinkByUserId(
+  userId: string,
+): Promise<LinkRow | null> {
+  const { data, error } = await supabase
+    .from('link_members')
+    .select('links!inner (*)')
+    .eq('user_id', userId)
+    .is('links.end_time', null);
+
+  if (error) {
+    logger.error('Error fetching active link:', error.message);
+    throw error;
+  }
+
+  return data ? data[0].links : null;
+}
+
 export async function createLink(link: LinkInsert): Promise<LinkRow | null> {
   const { data, error } = await supabase
     .from('links')
