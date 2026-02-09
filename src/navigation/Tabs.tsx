@@ -4,15 +4,11 @@ import type { TabsParamList } from './types';
 import HomeScreen from '../features/home/HomeScreen';
 import PartyStack from './PartyStack';
 import ProfileScreen from '../features/profile/screens/ProfileScreen';
-import { View } from 'react-native';
 import CustomTabBar from './CustomTabBar';
 import CreateLinkFlowScreen from '../features/links/screens/CreateLinkFlowScreen';
+import LinkStack from './LinkStack';
 
 const Tab = createBottomTabNavigator<TabsParamList>();
-
-function Placeholder() {
-  return <View />
-}
 
 export default function Tabs() {
   return (
@@ -56,7 +52,7 @@ export default function Tabs() {
             ),
           }}
         />
-        <Tab.Screen name="Link" component={Placeholder} listeners={{ tabPress: () => {} }} />
+        <Tab.Screen name="Link" component={LinkStack} listeners={{ tabPress: () => {} }} />
         <Tab.Screen
           name="Profile"
           component={ProfileScreen}

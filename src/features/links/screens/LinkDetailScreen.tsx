@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useMemo, useState } from 'react';
+import { ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -48,14 +48,14 @@ import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
-  const { linkId, partyId } = route.params;
+  const { linkId } = route.params;
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
 
   const { link, loading, error, refetch } = useLinkDetail(linkId);
   const { refetch: refetchActiveLink } = useActiveLinkContext();
-  
+
   const {
     stagedAssets,
     addFromGallery,
@@ -86,12 +86,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
 
   const { uploadTrigger } = useActiveLinkContext();
+  const lastTrigger = useRef(uploadTrigger);
 
   useEffect(() => {
-    if (uploadTrigger > 0) {
+    if (uploadTrigger !== lastTrigger.current) {
+      lastTrigger.current = uploadTrigger;
       addFromCamera();
     }
-  }, [uploadTrigger])
+  }, [uploadTrigger]);
 
   if (loading) {
     return (
@@ -121,8 +123,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     .map((m) => m.avatarUrl)
     .filter((url): url is string => !!url);
   const owner = link.members.find((m) => m.id === link.owner_id);
-
-  
 
   const handleEndLink = async () => {
     setMenuVisible(false);
@@ -164,7 +164,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     try {
       await deleteLink(linkId);
       refetchActiveLink();
-      navigation.navigate('PartyDetail', { partyId });
+      navigation.goBack();
     } catch (err) {
       await dialog.error('Error deleting link', err.message);
     }
@@ -290,7 +290,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await links.remove(post.media.map((media) => media.path));
-      await Promise.all(post.media.map((media) => deleteLinkPostMedia(media.id)));
+      await Promise.all(
+        post.media.map((media) => deleteLinkPostMedia(media.id)),
+      );
 
       await deleteLinkPost(postId);
       refetch();
@@ -463,27 +465,31 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
       {/* Bottom Actions (for active links) */}
       {isActive && isMember && (
-          <View className="flex-row items-center px-4 py-3 border-t border-slate-200 bg-white gap-3">
-            <View className="flex-1">
-              <StagedPhotosPreview assets={stagedAssets} onAddFromGallery={addFromGallery} onRemove={removeAsset} />
-            </View>
-
-            <Pressable
-              onPress={uploadAll}
-              disabled={uploading || !hasAssets}
-              className={`rounded-xl px-5 h-20 items-center justify-center active:opacity-80 disabled:opacity-40 ${hasAssets ? 'bg-blue-600' : 'bg-slate-200'}`}
-            >
-              {uploading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Ionicons
-                  name="arrow-up"
-                  size={24}
-                  color={hasAssets ? 'white' : '#94a3b8'}
-                />
-              )}
-            </Pressable>
+        <View className="flex-row items-center px-4 py-3 border-t border-slate-200 bg-white gap-3">
+          <View className="flex-1">
+            <StagedPhotosPreview
+              assets={stagedAssets}
+              onAddFromGallery={addFromGallery}
+              onRemove={removeAsset}
+            />
           </View>
+
+          <Pressable
+            onPress={uploadAll}
+            disabled={uploading || !hasAssets}
+            className={`rounded-xl px-5 h-20 items-center justify-center active:opacity-80 disabled:opacity-40 ${hasAssets ? 'bg-blue-600' : 'bg-slate-200'}`}
+          >
+            {uploading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Ionicons
+                name="arrow-up"
+                size={24}
+                color={hasAssets ? 'white' : '#94a3b8'}
+              />
+            )}
+          </Pressable>
+        </View>
       )}
 
       {/* Dropdown Menu */}

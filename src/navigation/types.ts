@@ -19,10 +19,16 @@ export type PartyStackParamList = {
   AllMedia: { linkId: string };
 };
 
+export type LinkStackParamList = {
+  LinkDetail: { linkId: string; partyId: string };
+  MediaViewer: { mediaUrls: string[]; initialIndex: number };
+  AllMedia: { linkId: string };
+};
+
 export type TabsParamList = {
   Home: undefined;
   Party: NavigatorScreenParams<PartyStackParamList>;
-  Link: undefined;
+  Link: NavigatorScreenParams<LinkStackParamList>;
   Profile: undefined;
 };
 

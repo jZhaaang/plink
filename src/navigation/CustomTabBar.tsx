@@ -11,7 +11,7 @@ export default function CustomTabBar({
   const insets = useSafeAreaInsets();
   const { activeLink, openCreateLink, triggerUpload } = useActiveLinkContext();
 
-  const partyRoute = state.routes.find((r) => r.name === 'Party');
+  const partyRoute = state.routes[state.index];
   const nestedState = partyRoute?.state;
   const currentScreen = nestedState?.routes?.[nestedState.index ?? 0]?.name;
   const isOnLinkDetail = currentScreen === 'LinkDetail';
@@ -29,7 +29,7 @@ export default function CustomTabBar({
     }
 
     if (activeLink) {
-      navigation.navigate('Party', {
+      navigation.navigate('Link', {
         screen: 'LinkDetail',
         params: {
           linkId: activeLink.id,
