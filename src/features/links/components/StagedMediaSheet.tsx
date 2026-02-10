@@ -8,6 +8,8 @@ import Animated, {
   withSpring,
   interpolate,
   Extrapolation,
+  Easing,
+  withTiming,
 } from 'react-native-reanimated';
 import { Pressable, useWindowDimensions, View, Text } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -43,6 +45,7 @@ export default function StagedMediaSheet({
   const expandedHeight = screenHeight * 0.55;
   const sheetHeight = useSharedValue(0);
   const dragStart = useSharedValue(0);
+  const dismissY = useSharedValue(0);
   const tileSize =
     (screenWidth - SHEET_PADDING * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
     GRID_COLUMNS;
@@ -94,15 +97,21 @@ export default function StagedMediaSheet({
     });
   const handleGesture = Gesture.Exclusive(tapGesture, dragGesture);
 
+  const dismiss = (callback: () => void) => {
+    dismissY.value = withTiming(expandedHeight, {
+      duration: 250,
+      easing: Easing.in(Easing.ease),
+    });
+    setTimeout(callback, 250);
+  };
+
   const handleClearAll = () => {
-    sheetHeight.value = withSpring(0, SPRING_CONFIG);
-    setTimeout(onClearAll, 300);
+    dismiss(onClearAll);
   };
 
   const handleRemove = (uri: string) => {
     if (assets.length === 1) {
-      sheetHeight.value = withSpring(0, SPRING_CONFIG);
-      setTimeout(() => onRemove(uri), 300);
+      dismiss(() => onRemove(uri));
     } else {
       onRemove(uri);
     }
@@ -111,6 +120,7 @@ export default function StagedMediaSheet({
   const animatedStyle = useAnimatedStyle(() => ({
     height: sheetHeight.value,
     paddingBottom: insets.bottom,
+    transform: [{ translateY: dismissY.value }],
   }));
 
   const expandedOpacity = useAnimatedStyle(() => ({
