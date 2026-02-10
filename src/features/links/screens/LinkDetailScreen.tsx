@@ -10,7 +10,7 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
@@ -37,7 +37,7 @@ import {
   DropdownMenuItem,
 } from '../../../components';
 import { useStagedMedia } from '../hooks/useStagedMedia';
-import { StagedPhotosPreview } from '../components/StagedPhotosPreview';
+import StagedMediaSheet from '../components/StagedMediaSheet';
 import UploadProgressModal from '../../../components/UploadProgressModal';
 import { links } from '../../../lib/supabase/storage/links';
 import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
@@ -61,6 +61,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     addFromGallery,
     addFromCamera,
     removeAsset,
+    clearAll,
     uploadAll,
     uploading,
     progress,
@@ -335,6 +336,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
       <ScrollView
         className="flex-1"
+        contentContainerClassName="pb-40"
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={refetch} />
         }
@@ -464,31 +466,32 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
       {/* Bottom Actions (for active links) */}
       {isActive && isMember && (
-        <View className="flex-row items-center px-4 py-3 border-t border-slate-200 bg-white gap-3">
-          <View className="flex-1">
-            <StagedPhotosPreview
+        <>
+          {hasAssets ? (
+            <StagedMediaSheet
               assets={stagedAssets}
               onAddFromGallery={addFromGallery}
               onRemove={removeAsset}
+              onClearAll={clearAll}
+              onUpload={uploadAll}
+              uploading={uploading}
             />
-          </View>
-
-          <Pressable
-            onPress={uploadAll}
-            disabled={uploading || !hasAssets}
-            className={`rounded-xl px-5 h-20 items-center justify-center active:opacity-80 disabled:opacity-40 ${hasAssets ? 'bg-blue-600' : 'bg-slate-200'}`}
-          >
-            {uploading ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <Ionicons
-                name="arrow-up"
-                size={24}
-                color={hasAssets ? 'white' : '#94a3b8'}
-              />
-            )}
-          </Pressable>
-        </View>
+          ) : (
+            <Pressable
+              onPress={addFromGallery}
+              className="absolute bottom-6 right-5 w-14 h-14 rounded-full bg-blue-600 items-center justify-center active:bg-blue-700"
+              style={{
+                shadowColor: '#2563eb',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
+              <Feather name="plus" size={24} color="white" />
+            </Pressable>
+          )}
+        </>
       )}
 
       {/* Dropdown Menu */}
