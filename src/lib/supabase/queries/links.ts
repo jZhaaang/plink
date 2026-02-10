@@ -130,6 +130,7 @@ export async function getLinkDetailById(linkId: string) {
       `*, link_members(user_id, profiles (*)), link_posts(*, link_post_media (*))`,
     )
     .eq('id', linkId)
+    .order('created_at', { referencedTable: 'link_posts', ascending: false })
     .single();
 
   if (error) {
