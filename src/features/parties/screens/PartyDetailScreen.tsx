@@ -9,7 +9,10 @@ import {
   RefreshControl,
   GestureResponderEvent,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
@@ -39,6 +42,7 @@ import {
 import { PartyUpdate } from '../../../lib/models';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -112,10 +116,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     navigation.navigate('LinkDetail', { linkId, partyId });
   };
 
-  const handleEditParty = async (
-    name: string,
-    bannerUri: string | null,
-  ) => {
+  const handleEditParty = async (name: string, bannerUri: string | null) => {
     setEditLoading(true);
     try {
       const updates: PartyUpdate = {};
@@ -209,192 +210,214 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     .filter((url): url is string => !!url);
 
   return (
-  <View className="flex-1 bg-neutral-900">
-    <View
-      className="flex-1 bg-neutral-50"
-      style={{ marginTop: insets.top }}
-    >
-      <ScrollView
-        className="flex-1"
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refetch} />
-        }
-      >
-        {/* Hero Banner */}
-        <View className="w-full" style={{ aspectRatio: 2.5 }}>
-          {party.bannerUrl ? (
+    <View className="flex-1 bg-neutral-50">
+      <StatusBar style="light" />
+      <View style={{ height: insets.top, overflow: 'hidden' }}>
+        {party.bannerUrl ? (
+          <>
             <Image
               source={{ uri: party.bannerUrl }}
               contentFit="cover"
-              style={{ width: '100%', height: '100%' }}
+              blurRadius={20}
+              style={{ width: '100%', height: insets.top + 40 }}
             />
-          ) : (
-            <LinearGradient
-              colors={['#bfdbfe', '#3b82f6']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={{ flex: 1 }}
+            <View
+              className="absolute inset-0 bg-black/20"
+              pointerEvents="none"
             />
-          )}
-
-          {/* Bottom gradient for text legibility */}
+          </>
+        ) : (
           <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.55)']}
-            className="absolute bottom-0 left-0 right-0 h-28"
+            colors={['#bfdbfe', '#3b82f6']}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 1, y: 0 }}
+            style={{ flex: 1 }}
           />
+        )}
+      </View>
 
-          {/* Party name overlaid on banner */}
-          <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
-            <Text className="text-2xl font-bold text-white">
-              {party.name}
-            </Text>
-            <Text className="text-sm text-white/70 mt-1">
-              {party.members.length}{' '}
-              {party.members.length === 1 ? 'member' : 'members'}
-            </Text>
+      <View className="flex-1 bg-neutral-50">
+        <ScrollView
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={refetch} />
+          }
+        >
+          {/* Hero Banner */}
+          <View className="w-full" style={{ aspectRatio: 2.5 }}>
+            {party.bannerUrl ? (
+              <Image
+                source={{ uri: party.bannerUrl }}
+                contentFit="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+            ) : (
+              <LinearGradient
+                colors={['#bfdbfe', '#3b82f6']}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 0 }}
+                style={{ flex: 1 }}
+              />
+            )}
+
+            {/* Bottom gradient for text legibility */}
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.55)']}
+              className="absolute bottom-0 left-0 right-0 h-28"
+            />
+
+            {/* Party name overlaid on banner */}
+            <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+              <Text className="text-2xl font-bold text-white">
+                {party.name}
+              </Text>
+              <Text className="text-sm text-white/70 mt-1">
+                {party.members.length}{' '}
+                {party.members.length === 1 ? 'member' : 'members'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Members */}
+          <View className="flex-row items-center justify-between px-5 mt-5">
+            <AvatarStack avatarUris={memberAvatars} size={40} />
+            {isOwner && (
+              <Pressable
+                onPress={() => setInviteModalVisible(true)}
+                className="flex-row items-center bg-blue-50 px-3 py-1.5 rounded-full"
+              >
+                <Feather name="user-plus" size={14} color="#2563eb" />
+                <Text className="text-blue-600 text-xs font-semibold ml-1.5">
+                  Invite
+                </Text>
+              </Pressable>
+            )}
+          </View>
+
+          <Divider className="my-6" />
+
+          {/* Active Link */}
+          <View className="px-5">
+            {activeLink ? (
+              <>
+                <SectionHeader title="Active Link" count={0} />
+                <LinkCard link={activeLink} onPress={handleLinkPress} />
+              </>
+            ) : (
+              <EmptyState
+                icon="link"
+                title="No active link"
+                message="Start a link to capture memories together"
+                action={
+                  <Button
+                    title="Start Link"
+                    size="sm"
+                    onPress={() => setCreateModalVisible(true)}
+                  />
+                }
+              />
+            )}
+          </View>
+
+          {/* Past Links */}
+          <View
+            className="px-5 mt-6"
+            style={{ paddingBottom: Math.max(insets.bottom, 32) }}
+          >
+            <SectionHeader title="Past Links" count={pastLinks.length} />
+
+            {pastLinks.length === 0 ? (
+              <EmptyState
+                icon="archive"
+                title="No past links"
+                message="Your completed links will appear here"
+              />
+            ) : (
+              pastLinks.map((link) => (
+                <LinkCard key={link.id} link={link} onPress={handleLinkPress} />
+              ))
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Floating nav over banner */}
+        <View
+          className="absolute top-0 left-0 right-0"
+          pointerEvents="box-none"
+        >
+          <View
+            className="flex-row items-center justify-between px-4 py-2"
+            pointerEvents="box-none"
+          >
+            <Pressable
+              onPress={() => navigation.goBack()}
+              className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+            >
+              <Feather name="arrow-left" size={20} color="#fff" />
+            </Pressable>
+
+            {isOwner ? (
+              <Pressable
+                onPress={handleMenuPress}
+                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+              >
+                <Feather name="more-vertical" size={20} color="#fff" />
+              </Pressable>
+            ) : (
+              <View className="w-9" />
+            )}
           </View>
         </View>
 
-        {/* Members */}
-        <View className="flex-row items-center justify-between px-5 mt-5">
-          <AvatarStack avatarUris={memberAvatars} size={40} />
-          {isOwner && (
-            <Pressable
-              onPress={() => setInviteModalVisible(true)}
-              className="flex-row items-center bg-blue-50 px-3 py-1.5 rounded-full"
-            >
-              <Feather name="user-plus" size={14} color="#2563eb" />
-              <Text className="text-blue-600 text-xs font-semibold ml-1.5">
-                Invite
-              </Text>
-            </Pressable>
-          )}
-        </View>
+        {/* Create Link Modal */}
+        <CreateLinkModal
+          visible={createModalVisible}
+          loading={createLoading}
+          onClose={() => setCreateModalVisible(false)}
+          onSubmit={handleCreateLink}
+        />
 
-        <Divider className="my-6" />
-
-        {/* Active Link */}
-        <View className="px-5">
-          {activeLink ? (
-            <>
-              <SectionHeader title="Active Link" count={0} />
-              <LinkCard link={activeLink} onPress={handleLinkPress} />
-            </>
-          ) : (
-            <EmptyState
-              icon="link"
-              title="No active link"
-              message="Start a link to capture memories together"
-              action={
-                <Button
-                  title="Start Link"
-                  size="sm"
-                  onPress={() => setCreateModalVisible(true)}
-                />
-              }
-            />
-          )}
-        </View>
-
-        {/* Past Links */}
-        <View
-          className="px-5 mt-6"
-          style={{ paddingBottom: Math.max(insets.bottom, 32) }}
-        >
-          <SectionHeader title="Past Links" count={pastLinks.length} />
-
-          {pastLinks.length === 0 ? (
-            <EmptyState
-              icon="archive"
-              title="No past links"
-              message="Your completed links will appear here"
-            />
-          ) : (
-            pastLinks.map((link) => (
-              <LinkCard key={link.id} link={link} onPress={handleLinkPress} />
-            ))
-          )}
-        </View>
-      </ScrollView>
-
-      {/* Floating nav over banner */}
-      <View
-        className="absolute top-0 left-0 right-0"
-        pointerEvents="box-none"
-      >
-        <View
-          className="flex-row items-center justify-between px-4 py-2"
-          pointerEvents="box-none"
-        >
-          <Pressable
-            onPress={() => navigation.goBack()}
-            className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+        {/* Dropdown Menu */}
+        {isOwner && (
+          <DropdownMenu
+            visible={menuVisible}
+            onClose={() => setMenuVisible(false)}
+            anchor={menuAnchor}
           >
-            <Feather name="arrow-left" size={20} color="#fff" />
-          </Pressable>
+            {menuItems.map((item, index) => (
+              <DropdownMenuItem
+                key={index}
+                icon={item.icon}
+                label={item.label}
+                onPress={item.action}
+                variant={item.variant}
+              />
+            ))}
+          </DropdownMenu>
+        )}
 
-          {isOwner ? (
-            <Pressable
-              onPress={handleMenuPress}
-              className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-            >
-              <Feather name="more-vertical" size={20} color="#fff" />
-            </Pressable>
-          ) : (
-            <View className="w-9" />
-          )}
-        </View>
+        {/* Edit Party Modal */}
+        {isOwner && (
+          <CreatePartyModal
+            visible={editModalVisible}
+            initialParty={party}
+            loading={editLoading}
+            onClose={() => setEditModalVisible(false)}
+            onSubmit={handleEditParty}
+          />
+        )}
+
+        {/* Invite Member Modal */}
+        {isOwner && (
+          <InviteMemberModal
+            visible={inviteModalVisible}
+            onClose={() => setInviteModalVisible(false)}
+            partyId={partyId}
+            existingMemberIds={party.members.map((m) => m.id)}
+            onSuccess={refetch}
+          />
+        )}
       </View>
-
-      {/* Create Link Modal */}
-      <CreateLinkModal
-        visible={createModalVisible}
-        loading={createLoading}
-        onClose={() => setCreateModalVisible(false)}
-        onSubmit={handleCreateLink}
-      />
-
-      {/* Dropdown Menu */}
-      {isOwner && (
-        <DropdownMenu
-          visible={menuVisible}
-          onClose={() => setMenuVisible(false)}
-          anchor={menuAnchor}
-        >
-          {menuItems.map((item, index) => (
-            <DropdownMenuItem
-              key={index}
-              icon={item.icon}
-              label={item.label}
-              onPress={item.action}
-              variant={item.variant}
-            />
-          ))}
-        </DropdownMenu>
-      )}
-
-      {/* Edit Party Modal */}
-      {isOwner && (
-        <CreatePartyModal
-          visible={editModalVisible}
-          initialParty={party}
-          loading={editLoading}
-          onClose={() => setEditModalVisible(false)}
-          onSubmit={handleEditParty}
-        />
-      )}
-
-      {/* Invite Member Modal */}
-      {isOwner && (
-        <InviteMemberModal
-          visible={inviteModalVisible}
-          onClose={() => setInviteModalVisible(false)}
-          partyId={partyId}
-          existingMemberIds={party.members.map((m) => m.id)}
-          onSuccess={refetch}
-        />
-      )}
     </View>
-  </View>
-);
+  );
 }
