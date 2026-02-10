@@ -9,7 +9,10 @@ import {
   RefreshControl,
   GestureResponderEvent,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
@@ -35,6 +38,7 @@ import {
   SectionHeader,
   DropdownMenu,
   DropdownMenuItem,
+  Card,
 } from '../../../components';
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -44,6 +48,9 @@ import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia
 import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
+import { LinearGradient } from 'expo-linear-gradient';
+import { CardSection } from '../../../components/Card';
+import { StatusBar } from 'expo-status-bar';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -78,6 +85,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     null,
   );
   const [editModalVisible, setEditModalVisible] = useState(false);
+
+  const insets = useSafeAreaInsets();
 
   const allMedia = useMemo(() => {
     if (!link) return [];
@@ -302,224 +311,251 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-neutral-50">
-      {/* Header */}
-      <View className="flex-row items-center px-4 py-2">
-        <Pressable onPress={() => navigation.goBack()} className="p-2 -ml-2">
-          <Feather name="arrow-left" size={24} color="#333" />
-        </Pressable>
-        <Text
-          className="flex-1 text-lg font-semibold text-center"
-          numberOfLines={1}
-        >
-          {link.name}
-        </Text>
-        <Pressable onPress={handleMenuPress} className="p-2 -mr-2">
-          <Feather name="more-vertical" size={24} color="#333" />
-        </Pressable>
-      </View>
-
-      {/* Status Banner */}
-      <View
-        className={`mx-4 px-4 py-2 rounded-lg ${
-          isActive ? 'bg-green-100' : 'bg-slate-100'
-        }`}
-      >
-        <Text
-          className={`text-center font-medium ${
-            isActive ? 'text-green-700' : 'text-slate-600'
-          }`}
-        >
-          {isActive ? 'Active' : 'Ended'}
-        </Text>
-      </View>
-
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="pb-40"
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refetch} />
-        }
-      >
-        {/* Link Info */}
-        <View className="px-4 mt-4 gap-2">
-          {/* Owner */}
-          <Text className="text-sm text-slate-500">
-            Created by {owner.name}
-          </Text>
-          {/* Primary timestamp */}
-          <Text className="text-sm text-slate-500">
-            {isActive
-              ? `Started ${startFormatted.date} at ${startFormatted.time}`
-              : `${startFormatted.date}, ${startFormatted.time} - ${endFormatted.date}, ${endFormatted.time}`}
-          </Text>
-
-          {/* Duration badge */}
-          <View className="flex-row items-center">
-            <Feather name="clock" size={14} color="#64748b" />
-            <Text className="text-sm text-slate-500 ml-1">
-              {isActive
-                ? `Active for ${formatDuration(link.created_at, null)}`
-                : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
-            </Text>
-          </View>
-
-          {/* Members */}
-          <View className="flex-row items-center mt-2">
-            <AvatarStack avatarUris={memberAvatars} size={36} />
-            <Text className="text-sm text-slate-500 ml-2">
-              {link.members.length} member{link.members.length !== 1 ? 's' : ''}
-            </Text>
-          </View>
-
-          {/* Stats row */}
-          <View className="flex-row justify-around mt-2 py-3 bg-slate-50 rounded-xl">
-            <View className="items-center">
-              <Text className="text-lg font-semibold text-slate-800">
-                {link.postCount}
-              </Text>
-              <Text className="text-xs text-slate-500">Posts</Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-lg font-semibold text-slate-800">
-                {link.mediaCount}
-              </Text>
-              <Text className="text-xs text-slate-500">Photos</Text>
-            </View>
-          </View>
-        </View>
-
-        <Divider className="my-6" />
-
-        {/* All Photos Section */}
-        <View className="px-4 pb-8">
-          <SectionHeader
-            title="All Photos"
-            count={link.mediaCount}
-            action={
-              link.mediaCount > 6 ? (
-                <Pressable
-                  onPress={handleSeeAllMedia}
-                  className="flex-row items-center"
-                >
-                  <Text className="text-blue-600 text-sm font-medium">
-                    See all
-                  </Text>
-                  <Feather name="chevron-right" size={16} color="#2563eb" />
-                </Pressable>
-              ) : undefined
-            }
-          />
-
-          {link.mediaCount === 0 ? (
-            <EmptyState
-              icon="image"
-              title="No photos yet"
-              message={
-                isActive
-                  ? 'Photos from all posts will appear here'
-                  : 'No photos were added to this link'
-              }
-            />
-          ) : (
-            <MediaGrid
-              media={allMedia}
-              onMediaPress={handleMediaPress}
-              maxItems={6}
-              scrollEnabled={false}
-              onOverflowPress={handleSeeAllMedia}
-            />
-          )}
-        </View>
-
-        <Divider className="my-6" />
-
-        {/* Post Feed Section */}
-        <View className="px-4">
-          <SectionHeader title="Posts" count={link.postCount} />
-
-          {link.postCount === 0 ? (
-            <EmptyState
-              icon="camera"
-              title="No posts yet"
-              message={
-                isActive
-                  ? 'Be the first to share a photo!'
-                  : 'No photos were shared in this link'
-              }
-            />
-          ) : (
-            link.posts.map((post) => (
-              <PostFeedItem
-                key={post.id}
-                post={post}
-                onMediaPress={handlePostMediaPress}
-                currentUserId={userId}
-                onDeletePost={handleDeletePost}
-              />
-            ))
-          )}
-        </View>
-
-        <Divider className="my-6" />
-      </ScrollView>
-
-      {/* Bottom Actions (for active links) */}
-      {isActive && isMember && (
-        <>
-          {hasAssets ? (
-            <StagedMediaSheet
-              assets={stagedAssets}
-              onAddFromGallery={addFromGallery}
-              onRemove={removeAsset}
-              onClearAll={clearAll}
-              onUpload={uploadAll}
-              uploading={uploading}
-            />
-          ) : (
-            <Pressable
-              onPress={addFromGallery}
-              className="absolute bottom-6 right-5 w-14 h-14 rounded-full bg-blue-600 items-center justify-center active:bg-blue-700"
-              style={{
-                shadowColor: '#2563eb',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 6,
-              }}
-            >
-              <Feather name="plus" size={24} color="white" />
-            </Pressable>
-          )}
-        </>
-      )}
-
-      {/* Dropdown Menu */}
-      <DropdownMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        anchor={menuAnchor}
-      >
-        {menuItems.map((item, index) => (
-          <DropdownMenuItem
-            key={index}
-            icon={item.icon}
-            label={item.label}
-            onPress={item.action}
-            variant={item.variant}
-          />
-        ))}
-      </DropdownMenu>
-
-      {/* Edit Link Name Modal */}
-      <CreateLinkModal
-        visible={editModalVisible}
-        initialName={link?.name ?? ''}
-        onClose={() => setEditModalVisible(false)}
-        onSubmit={handleEditName}
+    <View className="flex-1 bg-neutral-50">
+      <StatusBar style="light" />
+      <LinearGradient
+        colors={['#c4b5fd', '#7c3aed']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 0 }}
+        style={{ height: insets.top }}
       />
+      <View className="flex-1 bg-neutral-50">
+        {/* Hero */}
+        <View className="w-full" style={{ aspectRatio: 2.2 }}>
+          <LinearGradient
+            colors={['#c4b5fd', '#7c3aed']}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 1, y: 0 }}
+            style={{ flex: 1 }}
+          />
 
-      <UploadProgressModal visible={uploading} progress={progress} />
-    </SafeAreaView>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.6)']}
+            className="absolute bottom-0 left-0 right-0 h-28"
+          />
+
+          <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+            <View className="flex-row items-center mb-1">
+              <View
+                className={`px-2.5 py-0.5 rounded-full ${isActive ? 'bg-green-500/80' : 'bg-white/20'}`}
+              >
+                <Text className="text-xs font-semibold text-white">
+                  {isActive ? 'Active' : 'Ended'}
+                </Text>
+              </View>
+            </View>
+            <Text className="text-2xl font-bold text-white">{link.name}</Text>
+            <Text className="text-sm text-white/70 mt-0.5">
+              Created by {owner.name}
+            </Text>
+          </View>
+        </View>
+
+        {/* Floating menu over hero */}
+        <View
+          className="absolute top-0 left-0 right-0"
+          pointerEvents="box-none"
+        >
+          <View
+            className="flex-row justify-end px-4 py-2"
+            pointerEvents="box-none"
+          >
+            <Pressable
+              onPress={handleMenuPress}
+              className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+            >
+              <Feather name="more-vertical" size={20} color="#fff" />
+            </Pressable>
+          </View>
+        </View>
+
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="pb-40"
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={refetch} />
+          }
+        >
+          <Card className="mx-4 mt-4">
+            {/* Time info */}
+            <View className="flex-row items-center mb-2">
+              <Feather name="calendar" size={14} color="#64748b" />
+              <Text className="text-sm text-slate-500 ml-2">
+                {isActive
+                  ? `Started ${startFormatted.date} at ${startFormatted.time}`
+                  : `${startFormatted.date} — ${endFormatted.date}`}
+              </Text>
+            </View>
+            <View className="flex-row items-center mb-3">
+              <Feather name="clock" size={14} color="#64748b" />
+              <Text className="text-sm text-slate-500 ml-2">
+                {isActive
+                  ? `Active for ${formatDuration(link.created_at, null)}`
+                  : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
+              </Text>
+            </View>
+
+            {/* Members row */}
+            <View className="flex-row items-center justify-between mb-3">
+              <AvatarStack avatarUris={memberAvatars} size={32} />
+              <Text className="text-sm text-slate-500">
+                {link.members.length} member
+                {link.members.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
+
+            <CardSection>
+              {/* Stats row */}
+              <View className="flex-row justify-around pt-1">
+                <View className="items-center">
+                  <Text className="text-xl font-bold text-slate-800">
+                    {link.postCount}
+                  </Text>
+                  <Text className="text-xs text-slate-400 mt-0.5">Posts</Text>
+                </View>
+                <View className="w-px bg-slate-100 self-stretch" />
+                <View className="items-center">
+                  <Text className="text-xl font-bold text-slate-800">
+                    {link.mediaCount}
+                  </Text>
+                  <Text className="text-xs text-slate-400 mt-0.5">Photos</Text>
+                </View>
+              </View>
+            </CardSection>
+          </Card>
+
+          <Divider className="my-6" />
+
+          {/* All Photos Section */}
+          <View className="px-4 pb-8">
+            <SectionHeader
+              title="All Photos"
+              count={link.mediaCount}
+              action={
+                link.mediaCount > 6 ? (
+                  <Pressable
+                    onPress={handleSeeAllMedia}
+                    className="flex-row items-center"
+                  >
+                    <Text className="text-blue-600 text-sm font-medium">
+                      See all
+                    </Text>
+                    <Feather name="chevron-right" size={16} color="#2563eb" />
+                  </Pressable>
+                ) : undefined
+              }
+            />
+
+            {link.mediaCount === 0 ? (
+              <EmptyState
+                icon="image"
+                title="No photos yet"
+                message={
+                  isActive
+                    ? 'Photos from all posts will appear here'
+                    : 'No photos were added to this link'
+                }
+              />
+            ) : (
+              <MediaGrid
+                media={allMedia}
+                onMediaPress={handleMediaPress}
+                maxItems={6}
+                scrollEnabled={false}
+                onOverflowPress={handleSeeAllMedia}
+              />
+            )}
+          </View>
+
+          <Divider className="my-6" />
+
+          {/* Post Feed Section */}
+          <View className="px-4">
+            <SectionHeader title="Posts" count={link.postCount} />
+
+            {link.postCount === 0 ? (
+              <EmptyState
+                icon="camera"
+                title="No posts yet"
+                message={
+                  isActive
+                    ? 'Be the first to share a photo!'
+                    : 'No photos were shared in this link'
+                }
+              />
+            ) : (
+              link.posts.map((post) => (
+                <PostFeedItem
+                  key={post.id}
+                  post={post}
+                  onMediaPress={handlePostMediaPress}
+                  currentUserId={userId}
+                  onDeletePost={handleDeletePost}
+                />
+              ))
+            )}
+          </View>
+
+          <Divider className="my-6" />
+        </ScrollView>
+
+        {/* Bottom Actions (for active links) */}
+        {isActive && isMember && (
+          <>
+            {hasAssets ? (
+              <StagedMediaSheet
+                assets={stagedAssets}
+                onAddFromGallery={addFromGallery}
+                onRemove={removeAsset}
+                onClearAll={clearAll}
+                onUpload={uploadAll}
+                uploading={uploading}
+              />
+            ) : (
+              <Pressable
+                onPress={addFromGallery}
+                className="absolute bottom-6 right-5 w-14 h-14 rounded-full bg-blue-600 items-center justify-center active:bg-blue-700"
+                style={{
+                  shadowColor: '#2563eb',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 6,
+                }}
+              >
+                <Feather name="plus" size={24} color="white" />
+              </Pressable>
+            )}
+          </>
+        )}
+
+        {/* Dropdown Menu */}
+        <DropdownMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          anchor={menuAnchor}
+        >
+          {menuItems.map((item, index) => (
+            <DropdownMenuItem
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              onPress={item.action}
+              variant={item.variant}
+            />
+          ))}
+        </DropdownMenu>
+
+        {/* Edit Link Name Modal */}
+        <CreateLinkModal
+          visible={editModalVisible}
+          initialName={link?.name ?? ''}
+          onClose={() => setEditModalVisible(false)}
+          onSubmit={handleEditName}
+        />
+
+        <UploadProgressModal visible={uploading} progress={progress} />
+      </View>
+    </View>
   );
 }

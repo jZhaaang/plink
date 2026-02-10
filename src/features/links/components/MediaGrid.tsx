@@ -19,7 +19,7 @@ type Props = {
   onOverflowPress?: () => void;
 };
 
-const GAP = 2;
+const GAP = 3;
 
 export default function MediaGrid({
   media,
@@ -68,14 +68,14 @@ export default function MediaGrid({
                 style={{
                   width: itemSize,
                   height: itemSize,
-                  borderRadius: 4,
+                  borderRadius: 12,
                 }}
                 contentFit="cover"
                 cachePolicy="memory-disk"
                 transition={200}
               />
               {isLastItem && (
-                <View className="absolute inset-0 bg-black/60 items-center justify-center rounded">
+                <View className="absolute inset-0 bg-black/60 items-center justify-center rounded-xl">
                   <Text className="text-white text-lg font-semibold">
                     +{overflowCount}
                   </Text>

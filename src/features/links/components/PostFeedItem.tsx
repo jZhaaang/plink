@@ -34,7 +34,7 @@ export default function PostFeedItem({
 
   const isPostOwner = currentUserId === post.owner_id;
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = screenWidth - 32;
+  const contentWidth = screenWidth - 66;
 
   const mediaCount = post.media.length;
   const mediaUrls = useMemo(() => post.media.map((m) => m.url), [post.media]);
@@ -62,7 +62,7 @@ export default function PostFeedItem({
   };
 
   return (
-    <View className="mb-6">
+    <View className="mb-4 bg-white rounded-2xl border border-slate-100 p-4">
       {/* Post Header */}
       <View className="flex-row items-center mb-3">
         {post.owner.avatarUrl ? (
@@ -107,12 +107,7 @@ export default function PostFeedItem({
           {post.media.map((media, index) => (
             <Pressable
               key={media.id}
-              onPress={() =>
-                onMediaPress?.(
-                  mediaUrls,
-                  index,
-                )
-              }
+              onPress={() => onMediaPress?.(mediaUrls, index)}
               className="active:opacity-80"
               style={{ marginHorizontal: GAP / 2 }}
             >
@@ -121,7 +116,7 @@ export default function PostFeedItem({
                 style={{
                   width: itemSize,
                   height: mediaCount === 1 ? itemSize * 0.75 : itemSize,
-                  borderRadius: 8,
+                  borderRadius: 12,
                 }}
                 contentFit="cover"
                 cachePolicy="memory-disk"
