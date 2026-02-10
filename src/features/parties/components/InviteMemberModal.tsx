@@ -26,7 +26,8 @@ export default function InviteMemberModal({
     partyId,
     existingMemberIds,
   );
-  const foundUserAvatarUrl = state.status === 'found' ? resolveProfile(state.user).avatarUrl : undefined;
+  const foundUserAvatarUrl =
+    state.status === 'found' ? resolveProfile(state.user).avatarUrl : undefined;
 
   useEffect(() => {
     if (!visible) {

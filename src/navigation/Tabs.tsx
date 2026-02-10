@@ -52,7 +52,11 @@ export default function Tabs() {
             ),
           }}
         />
-        <Tab.Screen name="Link" component={LinkStack} listeners={{ tabPress: () => {} }} />
+        <Tab.Screen
+          name="Link"
+          component={LinkStack}
+          listeners={{ tabPress: () => {} }}
+        />
         <Tab.Screen
           name="Profile"
           component={ProfileScreen}

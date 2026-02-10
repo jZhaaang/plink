@@ -28,7 +28,10 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View className="absolute top-0 left-0 right-0 z-10 px-4 pb-4" style={{ paddingTop: insets.top + 8}}>
+      <View
+        className="absolute top-0 left-0 right-0 z-10 px-4 pb-4"
+        style={{ paddingTop: insets.top + 8 }}
+      >
         <View className="flex-row items-center justify-between">
           <Pressable
             onPress={() => navigation.goBack()}

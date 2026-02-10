@@ -1,10 +1,5 @@
 import { useMemo } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
@@ -65,9 +60,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
             </Text>
           </View>
         )}
-        ListFooterComponent={() => (
-          <View className="h-8" />
-        )}
+        ListFooterComponent={() => <View className="h-8" />}
       />
       <View className="h-8" />
     </SafeAreaView>

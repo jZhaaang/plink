@@ -1,10 +1,16 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
-import { LinkRow } from "../lib/models"
-import { useActiveLink } from "../features/links/hooks/useActiveLink";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from 'react';
+import { LinkRow } from '../lib/models';
+import { useActiveLink } from '../features/links/hooks/useActiveLink';
 
 type ActiveLinkContextValue = {
   activeLink: LinkRow | null;
-  loading: boolean,
+  loading: boolean;
   refetch: () => Promise<void>;
 
   createLinkVisible: boolean;
@@ -14,7 +20,7 @@ type ActiveLinkContextValue = {
   uploadRequested: boolean;
   requestUpload: () => void;
   clearUploadRequest: () => void;
-}
+};
 
 const ActiveLinkContext = createContext<ActiveLinkContextValue>({
   activeLink: null,
@@ -39,20 +45,22 @@ export function ActiveLinkProvider({ children }: { children: ReactNode }) {
   const clearUploadRequest = () => setUploadRequested(false);
 
   return (
-    <ActiveLinkContext.Provider value={{
-      activeLink,
-      loading,
-      refetch,
-      createLinkVisible,
-      openCreateLink,
-      closeCreateLink,
-      uploadRequested,
-      requestUpload,
-      clearUploadRequest
-    }}>
+    <ActiveLinkContext.Provider
+      value={{
+        activeLink,
+        loading,
+        refetch,
+        createLinkVisible,
+        openCreateLink,
+        closeCreateLink,
+        uploadRequested,
+        requestUpload,
+        clearUploadRequest,
+      }}
+    >
       {children}
     </ActiveLinkContext.Provider>
-  )
+  );
 }
 
 export const useActiveLinkContext = () => useContext(ActiveLinkContext);

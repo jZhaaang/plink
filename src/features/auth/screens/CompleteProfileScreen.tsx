@@ -81,7 +81,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       let avatarPath = null;
 
       if (imageUri) {
-        avatarPath = await avatars.upload(session.user.id, imageUri,);
+        avatarPath = await avatars.upload(session.user.id, imageUri);
       } else {
         const encodedName = encodeURIComponent(name.trim());
         avatarPath = await avatars.upload(

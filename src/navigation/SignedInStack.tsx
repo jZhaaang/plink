@@ -19,7 +19,10 @@ export default function SignedInStack() {
         initialRouteName={needsProfile ? 'CompleteProfile' : 'App'}
       >
         <Stack.Screen name="App" component={Tabs} />
-        <Stack.Screen name="CompleteProfile" component={CompleteProfileScreen} />
+        <Stack.Screen
+          name="CompleteProfile"
+          component={CompleteProfileScreen}
+        />
       </Stack.Navigator>
     </ActiveLinkProvider>
   );

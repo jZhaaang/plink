@@ -37,48 +37,51 @@ export function PartyCard(props: Props) {
   return (
     <Pressable onPress={onPress} className="mb-3">
       <View className="rounded-2xl bg-neutral-100 p-4 shadow-md">
-      {/* Banner - inner rounded rect */}
-      <View className="rounded-xl overflow-hidden" style={{ aspectRatio: 2.5 }}>
-        {bannerUri ? (
-          <Image
-            source={{ uri: bannerUri }}
-            contentFit="cover"
-            style={{ width: '100%', height: '100%' }}
-          />
-        ) : (
-          <BannerFallback showIcon={false} />
-        )}
-      </View>
-
-      {/* Floating info pill */}
-      <View
-        className="mx-3 flex-row items-center rounded-xl bg-white px-4 py-3"
-        style={{
-          marginTop: -20,
-          marginBottom: 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 4,
-          elevation: 3,
-        }}
-      >
-        <Text
-          className="flex-1 text-base font-semibold text-neutral-900"
-          numberOfLines={1}
+        {/* Banner - inner rounded rect */}
+        <View
+          className="rounded-xl overflow-hidden"
+          style={{ aspectRatio: 2.5 }}
         >
-          {name}
-        </Text>
+          {bannerUri ? (
+            <Image
+              source={{ uri: bannerUri }}
+              contentFit="cover"
+              style={{ width: '100%', height: '100%' }}
+            />
+          ) : (
+            <BannerFallback showIcon={false} />
+          )}
+        </View>
 
-        {memberCount > 0 && (
-          <AvatarStack
-            avatarUris={memberAvatarUris}
-            maxVisible={3}
-            size={22}
-          />
-        )}
+        {/* Floating info pill */}
+        <View
+          className="mx-3 flex-row items-center rounded-xl bg-white px-4 py-3"
+          style={{
+            marginTop: -20,
+            marginBottom: 4,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <Text
+            className="flex-1 text-base font-semibold text-neutral-900"
+            numberOfLines={1}
+          >
+            {name}
+          </Text>
+
+          {memberCount > 0 && (
+            <AvatarStack
+              avatarUris={memberAvatarUris}
+              maxVisible={3}
+              size={22}
+            />
+          )}
+        </View>
       </View>
-    </View>
     </Pressable>
   );
 }

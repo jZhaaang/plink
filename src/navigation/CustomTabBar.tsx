@@ -1,12 +1,14 @@
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useActiveLinkContext } from "../providers/ActiveLinkProvider";
-import { TouchableOpacity, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinkRow } from "../lib/models";
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useActiveLinkContext } from '../providers/ActiveLinkProvider';
+import { TouchableOpacity, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinkRow } from '../lib/models';
 
 export default function CustomTabBar({
-  state, descriptors, navigation,
+  state,
+  descriptors,
+  navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { activeLink, openCreateLink, requestUpload } = useActiveLinkContext();
@@ -16,7 +18,10 @@ export default function CustomTabBar({
   const currentScreen = nestedState?.routes?.[nestedState.index ?? 0]?.name;
   const isOnLinkDetail = currentScreen === 'LinkDetail';
 
-  const centerIcon = isOnLinkDetail && activeLink !== null ? 'camera-party-mode' : 'party-popper';
+  const centerIcon =
+    isOnLinkDetail && activeLink !== null
+      ? 'camera-party-mode'
+      : 'party-popper';
 
   function handleCenterPress(
     navigation: BottomTabBarProps['navigation'],
@@ -53,17 +58,20 @@ export default function CustomTabBar({
 
         if (route.name === 'Link') {
           return (
-            <View
-              key={route.key}
-              className="flex-1 items-center"
-            >
+            <View key={route.key} className="flex-1 items-center">
               <TouchableOpacity
-                onPress={() => handleCenterPress(navigation, activeLink, isOnLinkDetail)}
+                onPress={() =>
+                  handleCenterPress(navigation, activeLink, isOnLinkDetail)
+                }
                 activeOpacity={0.8}
                 className="w-16 h-16 rounded-full bg-blue-500 items-center justify-center shadow-lg"
                 style={{ elevation: 8 }}
               >
-                <MaterialCommunityIcons name={centerIcon} size={28} color="#ffffff" />
+                <MaterialCommunityIcons
+                  name={centerIcon}
+                  size={28}
+                  color="#ffffff"
+                />
               </TouchableOpacity>
             </View>
           );

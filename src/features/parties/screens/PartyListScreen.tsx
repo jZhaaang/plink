@@ -30,14 +30,16 @@ export default function PartyListScreen({ navigation }: Props) {
   const userId = session?.user?.id ?? undefined;
   const dialog = useDialog();
 
-  const { parties, loading: partiesLoading, error, refetch } = usePartyListItems(userId);
+  const {
+    parties,
+    loading: partiesLoading,
+    error,
+    refetch,
+  } = usePartyListItems(userId);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (
-    name: string,
-    bannerUri: string | null,
-  ) => {
+  const handleSubmit = async (name: string, bannerUri: string | null) => {
     if (!name.trim()) {
       await dialog.error('Missing info', 'Name cannot be empty');
       return;
@@ -54,10 +56,7 @@ export default function PartyListScreen({ navigation }: Props) {
       let banner_path = null;
 
       if (bannerUri) {
-        banner_path = await partiesStorage.upload(
-          party.id,
-          bannerUri,
-        );
+        banner_path = await partiesStorage.upload(party.id, bannerUri);
       }
 
       await updatePartyById(party.id, { banner_path });
@@ -147,9 +146,7 @@ export default function PartyListScreen({ navigation }: Props) {
         <CreatePartyModal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
-          onSubmit={(name, bannerUri) =>
-            handleSubmit(name, bannerUri)
-          }
+          onSubmit={(name, bannerUri) => handleSubmit(name, bannerUri)}
           loading={loading}
         />
       </View>

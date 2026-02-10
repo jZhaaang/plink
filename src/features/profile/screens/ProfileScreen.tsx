@@ -27,7 +27,11 @@ export default function ProfileScreen() {
   const userId = session?.user?.id ?? null;
   const dialog = useDialog();
 
-  const { profile, loading: profileLoading, refetch: reloadProfile } = useProfile(userId);
+  const {
+    profile,
+    loading: profileLoading,
+    refetch: reloadProfile,
+  } = useProfile(userId);
   const [saving, setSaving] = useState(false);
 
   const [editing, setEditing] = useState(false);

@@ -9,7 +9,11 @@ type Props = {
   onRemove: (uri: string) => void;
 };
 
-export function StagedPhotosPreview({ assets, onAddFromGallery, onRemove }: Props) {
+export function StagedPhotosPreview({
+  assets,
+  onAddFromGallery,
+  onRemove,
+}: Props) {
   return (
     <ScrollView
       horizontal
