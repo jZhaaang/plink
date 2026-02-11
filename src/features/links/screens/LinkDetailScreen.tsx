@@ -53,6 +53,7 @@ import { CardSection } from '../../../components/Card';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
+import { useIsFocused } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -96,14 +97,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     return link.posts.flatMap((post) => post.media);
   }, [link]);
 
+  const isFocused = useIsFocused();
   const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
 
   useEffect(() => {
+    if (!isFocused) return;
+
     if (uploadRequested) {
       clearUploadRequest();
       setShowCamera(true);
     }
-  }, [uploadRequested]);
+  }, [isFocused, uploadRequested]);
 
   if (loading) {
     return (
