@@ -17,13 +17,13 @@ import { createLink } from '../../../lib/supabase/queries/links';
 import { createLinkMember } from '../../../lib/supabase/queries/linkMembers';
 import CreateLinkModal from '../components/CreateLinkModal';
 import type { PartyListItem } from '../../../lib/models';
-import { TabsParamList } from '../../../navigation/types';
+import { SignedInParamList } from '../../../navigation/types';
 
 export default function CreateLinkFlowScreen() {
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
-  const navigation = useNavigation<NavigationProp<TabsParamList>>();
+  const navigation = useNavigation<NavigationProp<SignedInParamList>>();
   const { createLinkVisible, closeCreateLink, refetch } =
     useActiveLinkContext();
   const { parties, loading: partiesLoading } = usePartyListItems(
@@ -55,9 +55,12 @@ export default function CreateLinkFlowScreen() {
         await createLinkMember({ link_id: link.id, user_id: userId });
         handleClose();
         await refetch();
-        navigation.navigate('Link', {
-          screen: 'LinkDetail',
-          params: { linkId: link.id, partyId: selectedParty.id },
+        navigation.navigate('App', {
+          screen: 'Link',
+          params: {
+            screen: 'LinkDetail',
+            params: { linkId: link.id, partyId: selectedParty.id },
+          },
         });
       }
     } catch (err) {
