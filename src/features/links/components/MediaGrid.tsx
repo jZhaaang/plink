@@ -75,7 +75,7 @@ export default function MediaGrid({
                 cachePolicy="memory-disk"
                 transition={200}
               />
-              {item.type === 'video' && (
+              {!isLastItem && item.type === 'video' && (
                 <View className="absolute inset-0 items-center justify-center">
                   <View className="w-10 h-10 rounded-full bg-black/50 items-center justify-center">
                     <Feather
