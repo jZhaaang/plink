@@ -275,7 +275,7 @@ export default function StagedMediaSheet({
             </View>
 
             <Text className="flex-1 text-sm font-medium text-slate-700">
-              {assets.length} photo{assets.length !== 1 ? 's' : ''} ready
+              {assets.length} media ready
             </Text>
 
             <Pressable
