@@ -1,6 +1,9 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
-import { createLinkPost } from '../../../lib/supabase/queries/linkPosts';
+import {
+  createLinkPost,
+  deleteLinkPost,
+} from '../../../lib/supabase/queries/linkPosts';
 import { links } from '../../../lib/supabase/storage/links';
 import { createLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
 
@@ -15,6 +18,13 @@ type UploadProgress = {
   total: number;
   completed: number;
   failed: number;
+};
+
+type UploadedAsset = {
+  path: string;
+  mime: string;
+  type: 'image' | 'video';
+  duration_seconds: number | null;
 };
 
 export function useStagedMedia({
@@ -91,45 +101,55 @@ export function useStagedMedia({
         throw new Error('Failed to create post');
       }
 
-      const uploadAsset = async (asset: ImagePicker.ImagePickerAsset) => {
-        const mime = asset.mimeType ?? 'image/jpeg';
-        const isVideo = asset.type === 'video';
-
-        const path = await links.upload(linkId, post.id, asset.uri, mime);
-
-        await createLinkPostMedia({
-          post_id: post.id,
-          path,
-          mime,
-          type: isVideo ? 'video' : 'image',
-          duration_seconds: isVideo ? (asset.duration ?? null) : null,
-        });
-      };
-
-      const results = await Promise.allSettled(
-        stagedAssets.map(async (asset) => {
-          const result = await uploadAsset(asset);
+      const uploadedResults = await Promise.allSettled(
+        stagedAssets.map(async (asset): Promise<UploadedAsset> => {
+          const mime = asset.mimeType ?? 'image/jpeg';
+          const type = asset.type === 'video' ? 'video' : 'image';
+          const path = await links.upload(linkId, post.id, asset.uri, mime);
           setProgress((prev) =>
             prev ? { ...prev, completed: prev.completed + 1 } : null,
           );
-          return result;
+          return {
+            path,
+            mime,
+            type,
+            duration_seconds:
+              type === 'video' ? (asset.duration ?? null) : null,
+          };
         }),
       );
 
-      const failures = results.filter((r) => r.status === 'rejected');
+      const successes = uploadedResults
+        .filter(
+          (r): r is PromiseFulfilledResult<UploadedAsset> =>
+            r.status === 'fulfilled',
+        )
+        .map((r) => r.value);
+      const failures = uploadedResults.length - successes.length;
 
-      if (failures.length > 0) {
-        setProgress((prev) =>
-          prev ? { ...prev, failed: failures.length } : null,
-        );
-        if (failures.length < stagedAssets.length) {
-          onSuccess?.();
-        }
-        onError?.(new Error(`${failures.length} upload(s) failed`));
-      } else {
-        onSuccess?.();
+      if (successes.length === 0) {
+        await deleteLinkPost(post.id);
+        throw new Error(`${failures} upload(s) failed`);
       }
 
+      await Promise.all(
+        successes.map((m) =>
+          createLinkPostMedia({
+            post_id: post.id,
+            path: m.path,
+            mime: m.mime,
+            type: m.type,
+            duration_seconds: m.duration_seconds,
+          }),
+        ),
+      );
+
+      if (failures > 0) {
+        setProgress((prev) => (prev ? { ...prev, failed: failures } : null));
+        onError?.(new Error(`${failures} upload(s) failed`));
+      }
+
+      onSuccess?.();
       setStagedAssets([]);
     } catch (err) {
       onError?.(err as Error);
