@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { Image } from 'expo-image';
 import { Modal } from '../../../components';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
@@ -112,16 +111,9 @@ export default function CreateLinkFlowScreen() {
               onPress={() => setSelectedParty(item)}
               className="flex-row items-center py-3 px-2 rounded-xl active:bg-slate-100"
             >
-              {item.avatarUrl ? (
-                <Image
-                  source={{ uri: item.avatarUrl }}
-                  className="w-10 h-10 rounded-full mr-3"
-                />
-              ) : (
-                <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center mr-3">
-                  <Feather name="users" size={18} color="#3b82f6" />
-                </View>
-              )}
+              <View className="w-10 h-10 rounded-full bg-blue-100 items-center justify-center mr-3">
+                <Feather name="users" size={18} color="#3b82f6" />
+              </View>
               <View className="flex-1">
                 <Text className="font-medium text-neutral-800">
                   {item.name}
