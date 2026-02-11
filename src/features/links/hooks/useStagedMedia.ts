@@ -41,7 +41,7 @@ export function useStagedMedia({
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
+      mediaTypes: ['images', 'videos'],
       allowsMultipleSelection: true,
       quality: 1,
       exif: false,
@@ -60,7 +60,7 @@ export function useStagedMedia({
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: 'images',
+      mediaTypes: ['images', 'videos'],
       quality: 1,
       exif: false,
     });
@@ -92,15 +92,17 @@ export function useStagedMedia({
       }
 
       const uploadAsset = async (asset: ImagePicker.ImagePickerAsset) => {
-        const ext = asset.uri.split('.').pop()?.toLowerCase() || 'jpg';
+        const mime = asset.mimeType ?? 'image/jpeg';
+        const isVideo = asset.type === 'video';
 
-        const path = await links.upload(linkId, post.id, asset.uri, ext);
+        const path = await links.upload(linkId, post.id, asset.uri, mime);
 
         await createLinkPostMedia({
           post_id: post.id,
           path,
-          mime: ext === 'png' ? 'image/png' : 'image/jpeg',
-          type: 'image',
+          mime,
+          type: isVideo ? 'video' : 'image',
+          duration_seconds: isVideo ? (asset.duration ?? null) : null,
         });
       };
 
@@ -139,6 +141,7 @@ export function useStagedMedia({
 
   return {
     stagedAssets,
+    stageAssets,
     addFromGallery,
     addFromCamera,
     removeAsset,

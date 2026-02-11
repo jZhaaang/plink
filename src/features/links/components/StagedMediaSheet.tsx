@@ -186,7 +186,7 @@ export default function StagedMediaSheet({
         >
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-base font-semibold text-slate-800">
-              {assets.length} photo{assets.length !== 1 ? 's' : ''} ready
+              {assets.length} media ready
             </Text>
             <Pressable onPress={handleClearAll} hitSlop={8}>
               <Text className="text-sm text-slate-400">Clear all</Text>

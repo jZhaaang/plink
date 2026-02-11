@@ -6,6 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaGrid from '../components/MediaGrid';
+import { LinkPostMedia } from '../../../lib/models';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
@@ -18,10 +19,12 @@ export default function AllMediaScreen({ route, navigation }: Props) {
     return link.posts.flatMap((post) => post.media);
   }, [link]);
 
-  const mediaUrls = useMemo(() => allMedia.map((m) => m.url), [allMedia]);
-
-  const handleMediaPress = (index: number) => {
-    navigation.navigate('MediaViewer', { mediaUrls, initialIndex: index });
+  const handleMediaPress = (item: LinkPostMedia) => {
+    const index = allMedia.findIndex((m) => m.id === item.id);
+    navigation.navigate('MediaViewer', {
+      mediaItems: allMedia,
+      initialIndex: index,
+    });
   };
 
   if (loading) {

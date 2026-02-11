@@ -4,6 +4,19 @@ import { useActiveLinkContext } from '../providers/ActiveLinkProvider';
 import { TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinkRow } from '../lib/models';
+import { NavigationState, PartialState, Route } from '@react-navigation/native';
+
+type NestedRoute = Route<string> & {
+  state?: NavigationState | PartialState<NavigationState>;
+};
+
+function getDeepFocusedRouteName(route: NestedRoute): string {
+  let current: NestedRoute = route;
+  while (current?.state && current.state.index != null) {
+    current = current.state.routes[current.state.index] as NestedRoute;
+  }
+  return current?.name ?? route.name;
+}
 
 export default function CustomTabBar({
   state,
@@ -13,9 +26,12 @@ export default function CustomTabBar({
   const insets = useSafeAreaInsets();
   const { activeLink, openCreateLink, requestUpload } = useActiveLinkContext();
 
-  const partyRoute = state.routes[state.index];
-  const nestedState = partyRoute?.state;
-  const currentScreen = nestedState?.routes?.[nestedState.index ?? 0]?.name;
+  const activeTabRoute = state.routes[state.index] as NestedRoute;
+  const currentScreen = getDeepFocusedRouteName(activeTabRoute);
+
+  const shouldHideTabBar =
+    currentScreen === 'MediaViewer' || currentScreen === 'AllMedia';
+  if (shouldHideTabBar) return null;
   const isOnLinkDetail = currentScreen === 'LinkDetail';
 
   const centerIcon =

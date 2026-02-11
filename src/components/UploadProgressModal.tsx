@@ -27,7 +27,7 @@ export default function UploadProgressModal({ visible, progress }: Props) {
       <View className="items-center">
         {/* Title */}
         <Text className="text-lg font-semibold text-slate-800 mb-1">
-          Uploading Photos
+          Uploading Media
         </Text>
 
         {/* Count */}

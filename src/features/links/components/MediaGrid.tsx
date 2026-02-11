@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinkPostMedia } from '../../../lib/models';
+import { Feather } from '@expo/vector-icons';
 
 type Props = {
   media: LinkPostMedia[];
@@ -15,7 +16,7 @@ type Props = {
   scrollEnabled?: boolean;
   ListHeaderComponent?: React.ComponentType;
   ListFooterComponent?: React.ComponentType;
-  onMediaPress?: (index: number) => void;
+  onMediaPress?: (item: LinkPostMedia) => void;
   onOverflowPress?: () => void;
 };
 
@@ -57,7 +58,7 @@ export default function MediaGrid({
               if (isLastItem && onOverflowPress) {
                 onOverflowPress();
               } else {
-                onMediaPress?.(index);
+                onMediaPress?.(item);
               }
             }}
             className="active:opacity-80"
@@ -74,6 +75,18 @@ export default function MediaGrid({
                 cachePolicy="memory-disk"
                 transition={200}
               />
+              {item.type === 'video' && (
+                <View className="absolute inset-0 items-center justify-center">
+                  <View className="w-10 h-10 rounded-full bg-black/50 items-center justify-center">
+                    <Feather
+                      name="play"
+                      size={20}
+                      color="white"
+                      className="ml-1"
+                    />
+                  </View>
+                </View>
+              )}
               {isLastItem && (
                 <View className="absolute inset-0 bg-black/60 items-center justify-center rounded-xl">
                   <Text className="text-white text-lg font-semibold">

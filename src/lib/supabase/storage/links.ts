@@ -1,20 +1,21 @@
 import { randomUUID } from 'expo-crypto';
 import { uploadFile, getUrls, removeFile } from './core';
+import { extFromMime } from '../../utils/extFromMime';
 
 export const links = {
-  path(linkId: string, postId: string, ext: string = 'jpg') {
-    return `${linkId}/posts/${postId}/${randomUUID()}.${ext}`;
+  path(linkId: string, postId: string, contentType: string) {
+    return `${linkId}/posts/${postId}/${randomUUID()}.${extFromMime(contentType)}`;
   },
 
   async upload(
     linkId: string,
     postId: string,
     uri: string,
-    ext: string = 'jpg',
+    contentType: string = 'image/jpeg',
   ) {
-    const path = this.path(linkId, postId, ext);
+    const path = this.path(linkId, postId, contentType);
     await uploadFile('links', path, uri, {
-      contentType: ext === 'png' ? 'image/png' : 'image/jpeg',
+      contentType,
       upsert: false,
     });
     return path;

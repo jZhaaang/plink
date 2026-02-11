@@ -1,4 +1,5 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
+import { LinkPostMedia } from '../lib/models';
 
 export type AuthStackParamList = {
   Landing: undefined;
@@ -15,13 +16,13 @@ export type PartyStackParamList = {
   PartyList: undefined;
   PartyDetail: { partyId: string };
   LinkDetail: { linkId: string; partyId: string };
-  MediaViewer: { mediaUrls: string[]; initialIndex: number };
+  MediaViewer: { mediaItems: LinkPostMedia[]; initialIndex: number };
   AllMedia: { linkId: string };
 };
 
 export type LinkStackParamList = {
   LinkDetail: { linkId: string; partyId: string };
-  MediaViewer: { mediaUrls: string[]; initialIndex: number };
+  MediaViewer: { mediaItems: LinkPostMedia[]; initialIndex: number };
   AllMedia: { linkId: string };
 };
 
