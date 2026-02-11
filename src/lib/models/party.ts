@@ -10,7 +10,7 @@ export type PartyMemberRow = Tables<'party_members'>;
 export type PartyMemberInsert = TablesInsert<'party_members'>;
 export type PartyMemberUpdate = TablesUpdate<'party_members'>;
 
-export type Party = PartyRow & { avatarUrl?: string; bannerUrl?: string };
+export type Party = PartyRow & { bannerUrl?: string };
 export type PartyDetail = Party & {
   members: Profile[];
   links: LinkRow[];
