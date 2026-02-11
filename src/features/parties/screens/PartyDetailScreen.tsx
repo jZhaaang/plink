@@ -126,11 +126,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       }
 
       if (bannerUri && bannerUri !== party?.bannerUrl) {
-        const banner_path = await partiesStorage.upload(
-          partyId,
-          'banner',
-          bannerUri,
-        );
+        const banner_path = await partiesStorage.upload(partyId, bannerUri);
         updates.banner_path = banner_path;
       }
 
