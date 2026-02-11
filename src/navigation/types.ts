@@ -12,19 +12,18 @@ export type SignedInParamList = {
   CompleteProfile: undefined;
 };
 
-export type PartyStackParamList = {
-  PartyList: undefined;
-  PartyDetail: { partyId: string };
+export type LinkFlowParamList = {
   LinkDetail: { linkId: string; partyId: string };
   MediaViewer: { mediaItems: LinkPostMedia[]; initialIndex: number };
   AllMedia: { linkId: string };
 };
 
-export type LinkStackParamList = {
-  LinkDetail: { linkId: string; partyId: string };
-  MediaViewer: { mediaItems: LinkPostMedia[]; initialIndex: number };
-  AllMedia: { linkId: string };
-};
+export type PartyStackParamList = {
+  PartyList: undefined;
+  PartyDetail: { partyId: string };
+} & LinkFlowParamList;
+
+export type LinkStackParamList = LinkFlowParamList;
 
 export type TabsParamList = {
   Home: undefined;
