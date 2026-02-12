@@ -1,5 +1,8 @@
 import { LinkPostWithMedia, Profile } from '../../../lib/models';
-import { resolveLinkPostMediaItems } from '../../../lib/resolvers/link';
+import {
+  resolveLink,
+  resolveLinkPostMediaItems,
+} from '../../../lib/resolvers/link';
 import { resolveProfile } from '../../../lib/resolvers/profile';
 import { useAsync } from '../../../lib/supabase/hooks/useAync';
 import { getLinkDetailById } from '../../../lib/supabase/queries/links';
@@ -12,9 +15,13 @@ export function useLinkDetail(linkId: string) {
       throw new Error('Link not found');
     }
 
-    const members: Profile[] = await Promise.all(
-      rawLink.link_members.map((lm) => resolveProfile(lm.profiles)),
-    );
+    const [resolvedLink, members] = await Promise.all([
+      resolveLink(rawLink),
+      Promise.all(
+        rawLink.link_members.map((lm) => resolveProfile(lm.profiles)),
+      ),
+    ]);
+
     const profilesMap = new Map<string, Profile>(members.map((p) => [p.id, p]));
 
     const allMedia = rawLink.link_posts.flatMap((post) => post.link_post_media);
@@ -29,7 +36,7 @@ export function useLinkDetail(linkId: string) {
     });
 
     return {
-      ...rawLink,
+      ...resolvedLink,
       members,
       posts,
       postCount: posts.length,

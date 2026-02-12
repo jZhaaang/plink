@@ -12,6 +12,7 @@ type UseStagedMediaOpts = {
   userId: string;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
+  onUploadComplete?: (uploaded: UploadedAsset[]) => Promise<void> | void;
 };
 
 type UploadProgress = {
@@ -32,6 +33,7 @@ export function useStagedMedia({
   userId,
   onSuccess,
   onError,
+  onUploadComplete,
 }: UseStagedMediaOpts) {
   const [stagedAssets, setStagedAssets] = useState<
     ImagePicker.ImagePickerAsset[]
@@ -144,6 +146,14 @@ export function useStagedMedia({
         ),
       );
 
+      if (onUploadComplete) {
+        try {
+          await onUploadComplete(successes);
+        } catch (err) {
+          onError?.(err as Error);
+        }
+      }
+
       if (failures > 0) {
         setProgress((prev) => (prev ? { ...prev, failed: failures } : null));
         onError?.(new Error(`${failures} upload(s) failed`));
@@ -157,7 +167,7 @@ export function useStagedMedia({
       setUploading(false);
       setProgress(null);
     }
-  }, [stagedAssets, linkId, userId, onSuccess, onError]);
+  }, [stagedAssets, linkId, userId, onSuccess, onError, onUploadComplete]);
 
   return {
     stagedAssets,

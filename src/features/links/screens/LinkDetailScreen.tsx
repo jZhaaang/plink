@@ -54,6 +54,8 @@ import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
 import { useIsFocused } from '@react-navigation/native';
+import { Image } from 'expo-image';
+import EditLinkBannerModal from '../components/EditLinkBannerModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -81,6 +83,16 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     userId,
     onSuccess: refetch,
     onError: (error) => dialog.error('Upload failed', error.message),
+    onUploadComplete: async (uploaded) => {
+      if (link?.banner_path) return;
+      const firstImage = uploaded.find((item) => item.type === 'image');
+      if (!firstImage) return;
+      await updateLinkById(linkId, {
+        banner_path: firstImage.path,
+        banner_crop_x: 50,
+        banner_crop_y: 42,
+      });
+    },
   });
 
   const [showCamera, setShowCamera] = useState(false);
@@ -89,6 +101,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     null,
   );
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editBannerVisible, setEditBannerVisible] = useState(false);
+  const [savingBanner, setSavingBanner] = useState(false);
 
   const insets = useSafeAreaInsets();
 
@@ -96,6 +110,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     if (!link) return [];
     return link.posts.flatMap((post) => post.media);
   }, [link]);
+  const imageMedia = useMemo(
+    () => allMedia.filter((media) => media.type === 'image'),
+    [allMedia],
+  );
 
   const isFocused = useIsFocused();
   const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
@@ -246,6 +264,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         setEditModalVisible(true);
       },
     });
+    menuItems.push({
+      icon: 'image',
+      label: 'Edit Banner',
+      action: () => {
+        setMenuVisible(false);
+        setEditBannerVisible(true);
+      },
+    });
 
     if (isActive) {
       menuItems.push({
@@ -310,15 +336,53 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     if (!confirmed) return;
 
     try {
+      const deletedPaths = new Set(post.media.map((media) => media.path));
+      const isDeletingBanner =
+        !!link.banner_path && deletedPaths.has(link.banner_path);
+      const nextImageBanner = isDeletingBanner
+        ? allMedia.find(
+            (media) => media.type === 'image' && !deletedPaths.has(media.path),
+          )
+        : null;
+
       await links.remove(post.media.map((media) => media.path));
       await Promise.all(
         post.media.map((media) => deleteLinkPostMedia(media.id)),
       );
-
       await deleteLinkPost(postId);
+
+      if (isDeletingBanner) {
+        await updateLinkById(linkId, {
+          banner_path: nextImageBanner?.path ?? null,
+          banner_crop_x: 50,
+          banner_crop_y: 42,
+        });
+      }
+
       refetch();
     } catch (err) {
       dialog.error('Delete failed', err.message);
+    }
+  };
+
+  const handleSaveBanner = async (
+    bannerPath: string,
+    cropX: number,
+    cropY: number,
+  ) => {
+    setSavingBanner(true);
+    try {
+      await updateLinkById(linkId, {
+        banner_path: bannerPath,
+        banner_crop_x: cropX,
+        banner_crop_y: cropY,
+      });
+      setEditBannerVisible(false);
+      refetch();
+    } catch (err) {
+      await dialog.error('Error updating banner', err.message);
+    } finally {
+      setSavingBanner(false);
     }
   };
 
@@ -326,21 +390,51 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     <>
       <View className="flex-1 bg-neutral-50">
         <StatusBar style="light" />
-        <LinearGradient
-          colors={['#c4b5fd', '#7c3aed']}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 1, y: 0 }}
-          style={{ height: insets.top }}
-        />
-        <View className="flex-1 bg-neutral-50">
-          {/* Hero */}
-          <View className="w-full" style={{ aspectRatio: 2.2 }}>
+        <View style={{ height: insets.top, overflow: 'hidden' }}>
+          {link.bannerUrl ? (
+            <>
+              <Image
+                source={{ uri: link.bannerUrl }}
+                contentFit="cover"
+                contentPosition={{
+                  left: `${link.banner_crop_x}%`,
+                  top: `${link.banner_crop_y}%`,
+                }}
+                blurRadius={20}
+                style={{ width: '100%', height: insets.top + 40 }}
+              />
+              <View className="absolute inset-0 bg-black/25" />
+            </>
+          ) : (
             <LinearGradient
-              colors={['#c4b5fd', '#7c3aed']}
+              colors={['#dbeafe', '#60a5fa']}
               start={{ x: 0, y: 1 }}
               end={{ x: 1, y: 0 }}
-              style={{ flex: 1 }}
+              style={{ width: '100%', height: insets.top + 40 }}
             />
+          )}
+        </View>
+        <View className="flex-1 bg-neutral-50">
+          {/* Hero */}
+          <View className="w-full" style={{ aspectRatio: 2.5 }}>
+            {link.bannerUrl ? (
+              <Image
+                source={{ uri: link.bannerUrl }}
+                contentFit="cover"
+                contentPosition={{
+                  left: `${link.banner_crop_x}%`,
+                  top: `${link.banner_crop_y}%`,
+                }}
+                style={{ width: '100%', height: '100%' }}
+              />
+            ) : (
+              <LinearGradient
+                colors={['#dbeafe', '#60a5fa']}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 0 }}
+                style={{ flex: 1 }}
+              />
+            )}
 
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.6)']}
@@ -565,6 +659,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             initialName={link?.name ?? ''}
             onClose={() => setEditModalVisible(false)}
             onSubmit={handleEditName}
+          />
+
+          <EditLinkBannerModal
+            visible={editBannerVisible}
+            onClose={() => setEditBannerVisible(false)}
+            images={imageMedia}
+            initialPath={link.banner_path}
+            initialCropX={link.banner_crop_x}
+            initialCropY={link.banner_crop_y}
+            onSave={handleSaveBanner}
+            saving={savingBanner}
           />
 
           <UploadProgressModal visible={uploading} progress={progress} />

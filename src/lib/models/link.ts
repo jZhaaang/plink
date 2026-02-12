@@ -18,8 +18,8 @@ export type LinkPostMedia = LinkPostMediaRow & { url: string };
 export type LinkPostMediaInsert = TablesInsert<'link_post_media'>;
 export type LinkPostMediaUpdate = TablesUpdate<'link_post_media'>;
 
-// Resolved types for UI consumption
-export type LinkWithMembers = LinkRow & {
+export type Link = LinkRow & { bannerUrl?: string };
+export type LinkWithMembers = Link & {
   members: Profile[];
 };
 

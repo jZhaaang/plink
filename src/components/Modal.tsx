@@ -18,6 +18,7 @@ type Props = {
   contentClassName?: string;
   backdropClassName?: string;
   disableBackdropDismiss?: boolean;
+  scrollEnabled?: boolean;
 };
 
 export default function Modal({
@@ -28,6 +29,7 @@ export default function Modal({
   contentClassName,
   backdropClassName,
   disableBackdropDismiss = false,
+  scrollEnabled = true,
   ...rest
 }: Props) {
   return (
@@ -56,6 +58,7 @@ export default function Modal({
           >
             <SafeAreaView edges={['bottom', 'left', 'right']}>
               <ScrollView
+                scrollEnabled={scrollEnabled}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 contentContainerClassName="flex-grow-1"

@@ -1,5 +1,5 @@
 import { Tables, TablesInsert, TablesUpdate } from '../supabase/types';
-import { LinkRow } from './link';
+import { Link } from './link';
 import { Profile } from './profile';
 
 export type PartyRow = Tables<'parties'>;
@@ -13,7 +13,7 @@ export type PartyMemberUpdate = TablesUpdate<'party_members'>;
 export type Party = PartyRow & { bannerUrl?: string };
 export type PartyDetail = Party & {
   members: Profile[];
-  links: LinkRow[];
+  links: Link[];
 };
 export type PartyListItem = Party & {
   members: Profile[];
