@@ -36,7 +36,7 @@ export default function LandingScreen({ navigation }: Props) {
         />
 
         <Button
-          title="Login"
+          title="Log In"
           variant="outline"
           size="lg"
           onPress={() => navigation.navigate('SignIn')}
