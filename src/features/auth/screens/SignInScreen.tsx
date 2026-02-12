@@ -7,6 +7,7 @@ import type { AuthStackParamList } from '../../../navigation/types';
 import { Button, TextField } from '../../../components';
 import { signInWithEmail } from '../../../lib/supabase/queries/auth';
 import { useDialog } from '../../../providers/DialogProvider';
+import { normalizeEmail } from '../../../lib/utils/validation';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
@@ -20,7 +21,7 @@ export default function SignInScreen({ navigation }: Props) {
   async function onSignIn() {
     if (loading) return;
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     if (!normalizedEmail || !password) {
       if (__DEV__ && Platform.OS === 'android') {
         await signInWithEmail('jimmy.zhaang@gmail.com', 'testing');
@@ -37,7 +38,7 @@ export default function SignInScreen({ navigation }: Props) {
     try {
       const { error } = await signInWithEmail(normalizedEmail, password);
       if (error) {
-        await dialog.error('Login failed', 'Check your email and password.');
+        await dialog.error('Login failed', error.message);
       }
     } finally {
       setLoading(false);
