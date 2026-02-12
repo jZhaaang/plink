@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../../navigation/types';
@@ -20,8 +20,11 @@ export default function SignInScreen({ navigation }: Props) {
   async function onSignIn() {
     if (!email || !password) {
       await dialog.error('Missing info', 'Enter your email and password');
-      if (__DEV__) {
+      if (__DEV__ && Platform.OS === 'android') {
         await signInWithEmail('jimmy.zhaang@gmail.com', 'testing');
+        return;
+      } else if (__DEV__ && Platform.OS === 'ios') {
+        await signInWithEmail('isniffcookies@gmail.com', 'popcorn');
         return;
       }
       return;
