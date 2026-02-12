@@ -36,11 +36,10 @@ export default function CreatePartyModal({
     }
   }, [visible, initialParty]);
 
-  useEffect(() => {
-    ImagePicker.requestMediaLibraryPermissionsAsync();
-  }, []);
-
   const chooseBanner = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
