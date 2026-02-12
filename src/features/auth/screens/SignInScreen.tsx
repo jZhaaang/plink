@@ -18,8 +18,10 @@ export default function SignInScreen({ navigation }: Props) {
   const dialog = useDialog();
 
   async function onSignIn() {
-    if (!email || !password) {
-      await dialog.error('Missing info', 'Enter your email and password');
+    if (loading) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
       if (__DEV__ && Platform.OS === 'android') {
         await signInWithEmail('jimmy.zhaang@gmail.com', 'testing');
         return;
@@ -27,13 +29,18 @@ export default function SignInScreen({ navigation }: Props) {
         await signInWithEmail('isniffcookies@gmail.com', 'popcorn');
         return;
       }
+      await dialog.error('Missing info', 'Enter your email and password.');
       return;
     }
+
     setLoading(true);
-    const { error } = await signInWithEmail(email.trim(), password);
-    setLoading(false);
-    if (error) {
-      await dialog.error('Login failed', 'Check your email and password');
+    try {
+      const { error } = await signInWithEmail(normalizedEmail, password);
+      if (error) {
+        await dialog.error('Login failed', 'Check your email and password.');
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -79,7 +86,7 @@ export default function SignInScreen({ navigation }: Props) {
               }
               placeholder="Password"
               secureTextEntry={secure}
-              textContentType="newPassword"
+              textContentType="password"
               value={password}
               onChangeText={setPassword}
               returnKeyType="done"
@@ -99,6 +106,7 @@ export default function SignInScreen({ navigation }: Props) {
           <Button
             title="Log In"
             size="lg"
+            loading={loading}
             disabled={loading}
             onPress={onSignIn}
           />
