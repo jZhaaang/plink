@@ -56,6 +56,7 @@ import CameraModal from '../components/CameraModal';
 import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -170,7 +171,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       refetch();
       refetchActiveLink();
     } catch (err) {
-      await dialog.error('Error ending link', err.message);
+      await dialog.error('Error ending link', getErrorMessage(err));
     }
   };
 
@@ -180,7 +181,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       setEditModalVisible(false);
       refetch();
     } catch (err) {
-      await dialog.error('Error updating link', err.message);
+      await dialog.error('Error updating link', getErrorMessage(err));
     }
   };
 
@@ -198,7 +199,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       refetchActiveLink();
       navigation.goBack();
     } catch (err) {
-      await dialog.error('Error deleting link', err.message);
+      await dialog.error('Error deleting link', getErrorMessage(err));
     }
   };
 
@@ -215,7 +216,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       await createLinkMember({ link_id: linkId, user_id: userId });
       refetch();
     } catch (err) {
-      await dialog.error('Error joining link', err.message);
+      await dialog.error('Error joining link', getErrorMessage(err));
     }
   };
 
@@ -235,7 +236,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       refetchActiveLink();
       navigation.goBack();
     } catch (err) {
-      await dialog.error('Error leaving link', err.message);
+      await dialog.error('Error leaving link', getErrorMessage(err));
     }
   };
 
@@ -361,7 +362,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
       refetch();
     } catch (err) {
-      dialog.error('Delete failed', err.message);
+      dialog.error('Delete failed', getErrorMessage(err));
     }
   };
 
@@ -380,7 +381,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       setEditBannerVisible(false);
       refetch();
     } catch (err) {
-      await dialog.error('Error updating banner', err.message);
+      await dialog.error('Error updating banner', getErrorMessage(err));
     } finally {
       setSavingBanner(false);
     }

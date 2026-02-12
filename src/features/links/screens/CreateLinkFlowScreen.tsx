@@ -18,6 +18,7 @@ import { createLinkMember } from '../../../lib/supabase/queries/linkMembers';
 import CreateLinkModal from '../components/CreateLinkModal';
 import type { PartyListItem } from '../../../lib/models';
 import { SignedInParamList } from '../../../navigation/types';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 export default function CreateLinkFlowScreen() {
   const { session } = useAuth();
@@ -64,7 +65,7 @@ export default function CreateLinkFlowScreen() {
         });
       }
     } catch (err) {
-      await dialog.error('Error creating link', err.message);
+      await dialog.error('Error creating link', getErrorMessage(err));
     } finally {
       setCreateLoading(false);
     }

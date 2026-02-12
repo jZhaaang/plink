@@ -11,6 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
+import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
@@ -110,14 +111,8 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       });
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
-      if (err.message?.includes('duplicate') || err.code == '23505') {
-        await dialog.error(
-          'Username taken',
-          'This username is already in use. Please choose another',
-        );
-      } else {
-        await dialog.error('Save Error', err.message);
-      }
+      const error = getErrorMessageForUsername(err);
+      await dialog.error(error.title, error.message);
     } finally {
       setLoading(false);
     }

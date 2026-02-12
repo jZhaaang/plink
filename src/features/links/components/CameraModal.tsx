@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type CapturedAsset = {
   uri: string;
@@ -47,7 +48,9 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
   const [micPermission, requestMicPermission] = useMicrophonePermissions();
   const [facing, setFacing] = useState<'front' | 'back'>(DEFAULT_FACING);
   const [isRecording, setIsRecording] = useState(false);
-  const [mode, setMode] = useState<'picture' | 'video' | 'preview'>(DEFAULT_MODE);
+  const [mode, setMode] = useState<'picture' | 'video' | 'preview'>(
+    DEFAULT_MODE,
+  );
   const [capturedAsset, setCapturedAsset] = useState<CapturedAsset | null>(
     null,
   );
@@ -104,7 +107,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
         setMode('preview');
       }
     } catch (err) {
-      logger.error('Failed to take picture:', err.message);
+      logger.error('Failed to take picture:', getErrorMessage(err));
     }
   };
 
@@ -127,7 +130,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
         setMode('preview');
       }
     } catch (err) {
-      logger.error('Failed to record video:', err.message);
+      logger.error('Failed to record video:', getErrorMessage(err));
       setMode('picture');
     } finally {
       setIsRecording(false);

@@ -21,6 +21,7 @@ import { signOut } from '../../../lib/supabase/queries/auth';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../../lib/supabase/hooks/useProfile';
+import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 
 export default function ProfileScreen() {
   const { session } = useAuth();
@@ -133,11 +134,8 @@ export default function ProfileScreen() {
       setEditing(false);
       setImageUri(null);
     } catch (err) {
-      if (err.message?.includes('duplicate') || err.code == '23505') {
-        await dialog.error('Username taken', 'This username is already in use');
-      } else {
-        await dialog.error('Save Error', err.message);
-      }
+      const error = getErrorMessageForUsername(err);
+      await dialog.error(error.title, error.message);
     } finally {
       setSaving(false);
     }

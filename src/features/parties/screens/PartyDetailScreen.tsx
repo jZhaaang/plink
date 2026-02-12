@@ -43,6 +43,7 @@ import { PartyUpdate } from '../../../lib/models';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -109,7 +110,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });
       }
     } catch (err) {
-      await dialog.error('Error creating link', err.message);
+      await dialog.error('Error creating link', getErrorMessage(err));
     } finally {
       setCreateLoading(false);
     }
@@ -140,7 +141,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       setEditModalVisible(false);
       refetch();
     } catch (err) {
-      await dialog.error('Error updating party', err.message);
+      await dialog.error('Error updating party', getErrorMessage(err));
     } finally {
       setEditLoading(false);
     }
@@ -159,7 +160,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       await deleteParty(partyId);
       navigation.goBack();
     } catch (err) {
-      await dialog.error('Error deleting party', err.message);
+      await dialog.error('Error deleting party', getErrorMessage(err));
     }
   };
 

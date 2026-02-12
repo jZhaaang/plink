@@ -22,6 +22,7 @@ import {
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
 import { usePartyListItems } from '../hooks/usePartyListItems';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -62,7 +63,7 @@ export default function PartyListScreen({ navigation }: Props) {
       await updatePartyById(party.id, { banner_path });
       refetch();
     } catch (err) {
-      await dialog.error('Error creating party', err.message);
+      await dialog.error('Error creating party', getErrorMessage(err));
     } finally {
       setLoading(false);
       setModalVisible(false);
