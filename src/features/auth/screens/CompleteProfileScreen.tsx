@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
@@ -22,12 +22,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const dialog = useDialog();
 
-  useEffect(() => {
-    ImagePicker.requestMediaLibraryPermissionsAsync();
-    ImagePicker.requestCameraPermissionsAsync();
-  }, []);
-
   async function choosePhoto() {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      await dialog.error(
+        'Permission needed',
+        'Allow photo access to choose an avatar.',
+      );
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
@@ -38,6 +42,15 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   }
 
   async function takePhoto() {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      await dialog.error(
+        'Permission needed',
+        'Allow camera access to choose an avatar.',
+      );
+      return;
+    }
+
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
