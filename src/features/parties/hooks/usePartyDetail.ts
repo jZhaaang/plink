@@ -4,6 +4,7 @@ import { resolveProfile } from '../../../lib/resolvers/profile';
 import { useAsync } from '../../../lib/supabase/hooks/useAync';
 import { PartyDetail } from '../../../lib/models';
 import { resolveLink } from '../../../lib/resolvers/link';
+import { Image } from 'expo-image';
 
 export function usePartyDetail(partyId: string) {
   const { data, ...rest } = useAsync(async () => {
@@ -22,6 +23,14 @@ export function usePartyDetail(partyId: string) {
       ),
       Promise.all((rawParty.links ?? []).map((link) => resolveLink(link))),
     ]);
+
+    const avatarUrls = members.map((m) => m.avatarUrl);
+    const bannerUrls = resolvedLinks.map((l) => l.bannerUrl);
+
+    const prefetchUrls = [...bannerUrls, ...avatarUrls].filter(
+      (url): url is string => typeof url === 'string' && url.length > 0,
+    );
+    await Promise.all(prefetchUrls.map((url) => Image.prefetch(url)));
 
     return {
       ...resolvedParty,
