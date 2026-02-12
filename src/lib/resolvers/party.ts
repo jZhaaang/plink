@@ -1,12 +1,13 @@
 import { Party, PartyRow } from '../models';
-import { parties } from '../supabase/storage/parties';
+import { parties as partiesStorage } from '../supabase/storage/parties';
 
 export async function resolveParty(party: PartyRow): Promise<Party> {
-  const bannerUrlMap = party.banner_path
-    ? await parties.getUrls([party.banner_path])
-    : null;
-  return {
-    ...party,
-    bannerUrl: bannerUrlMap?.get(party.banner_path!) ?? null,
-  };
+  if (!party.banner_path) return { ...party, bannerUrl: null };
+
+  try {
+    const bannerUrlMap = await partiesStorage.getUrls([party.banner_path]);
+    return { ...party, bannerUrl: bannerUrlMap.get(party.banner_path) ?? null };
+  } catch {
+    return { ...party, bannerUrl: null };
+  }
 }
