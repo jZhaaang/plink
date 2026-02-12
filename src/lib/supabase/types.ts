@@ -135,6 +135,9 @@ export type Database = {
       };
       links: {
         Row: {
+          banner_crop_x: number;
+          banner_crop_y: number;
+          banner_path: string | null;
           created_at: string | null;
           end_time: string | null;
           id: string;
@@ -144,6 +147,9 @@ export type Database = {
           updated_at: string | null;
         };
         Insert: {
+          banner_crop_x?: number;
+          banner_crop_y?: number;
+          banner_path?: string | null;
           created_at?: string | null;
           end_time?: string | null;
           id?: string;
@@ -153,6 +159,9 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: {
+          banner_crop_x?: number;
+          banner_crop_y?: number;
+          banner_path?: string | null;
           created_at?: string | null;
           end_time?: string | null;
           id?: string;
@@ -299,8 +308,8 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      is_media_uploader: { Args: { p_post_id: string }; Returns: boolean };
       is_member_of_party: { Args: { p_party_id: string }; Returns: boolean };
+      is_owner_of_media: { Args: { p_post_id: string }; Returns: boolean };
       is_party_member_of_link: {
         Args: { p_link_id: string };
         Returns: boolean;

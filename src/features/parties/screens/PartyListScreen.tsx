@@ -18,7 +18,7 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { useState } from 'react';
 import CreatePartyModal from '../components/CreatePartyModal';
 import {
-  createPartyWithOwner,
+  createParty,
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
 import { usePartyListItems } from '../hooks/usePartyListItems';
@@ -51,7 +51,7 @@ export default function PartyListScreen({ navigation }: Props) {
     setLoading(true);
 
     try {
-      const party = await createPartyWithOwner({ name, owner_id: userId });
+      const party = await createParty({ name, owner_id: userId });
 
       let banner_path = null;
 
