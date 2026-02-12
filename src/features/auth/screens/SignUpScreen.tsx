@@ -7,6 +7,7 @@ import type { AuthStackParamList } from '../../../navigation/types';
 import { Button, TextField } from '../../../components';
 import { signUpWithEmail } from '../../../lib/supabase/queries/auth';
 import { useDialog } from '../../../providers/DialogProvider';
+import { isValidEmail, normalizeEmail } from '../../../lib/utils/validation';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
@@ -18,25 +19,33 @@ export default function SignUpScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const dialog = useDialog();
 
-  const valid =
-    /\S+@\S+\.\S+/.test(email.trim()) &&
-    password.length >= 6 &&
-    password === confirmPassword;
-
   async function onSignUp() {
-    if (!valid) {
+    if (loading) return;
+
+    const normalizedEmail = normalizeEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
+      await dialog.error('Sign up failed', 'Enter a valid email.');
+      return;
+    } else if (password.length < 6) {
       await dialog.error(
         'Sign up failed',
-        'Enter a valid email, a 6+ char password, and make sure they match',
+        'Password must be at least 6 characters long',
       );
       return;
+    } else if (password !== confirmPassword) {
+      await dialog.error('Sign up failed', 'Passwords do not match');
+      return;
     }
-    setLoading(true);
-    const { error } = await signUpWithEmail(email.trim(), password);
-    setLoading(false);
 
-    if (error) {
-      await dialog.error('Sign up failed', error.message);
+    setLoading(true);
+
+    try {
+      const { error } = await signUpWithEmail(normalizedEmail.trim(), password);
+      if (error) {
+        await dialog.error('Sign up failed', error.message);
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -66,6 +75,8 @@ export default function SignUpScreen({ navigation }: Props) {
               placeholder="you@example.com"
               keyboardType="email-address"
               textContentType="emailAddress"
+              autoCapitalize="none"
+              autoCorrect={false}
               value={email}
               onChangeText={setEmail}
               returnKeyType="next"
