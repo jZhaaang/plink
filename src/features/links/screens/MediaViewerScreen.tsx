@@ -100,7 +100,7 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
           const index = Math.round(offsetX / width);
           setCurrentIndex(index);
         }}
-        keyExtractor={(_, index) => index.toString()}
+        keyExtractor={(index) => index.id}
         renderItem={({ item, index }) => {
           if (item.type === 'video') {
             return (
