@@ -205,7 +205,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     });
     menuItems.push({
       icon: 'edit-2',
-      label: 'Edit Name',
+      label: 'Edit Party',
       action: () => {
         setMenuVisible(false);
         setEditModalVisible(true);
