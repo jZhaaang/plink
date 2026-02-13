@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { LinkPostWithMedia, Profile } from '../../../lib/models';
 import {
   resolveLink,
@@ -39,6 +40,12 @@ export function useLinkDetail(linkId: string) {
       totalMediaCount += media.length;
       return { ...post, owner, media };
     });
+
+    const avatarUrls = members.map((m) => m.avatarUrl);
+    const prefetchUrls = [resolvedLink.bannerUrl, ...avatarUrls].filter(
+      (url): url is string => typeof url === 'string' && url.length > 0,
+    );
+    await Promise.all(prefetchUrls.map((url) => Image.prefetch(url)));
 
     return {
       ...resolvedLink,
