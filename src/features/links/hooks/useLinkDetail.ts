@@ -29,8 +29,13 @@ export function useLinkDetail(linkId: string) {
 
     let totalMediaCount = 0;
     const posts: LinkPostWithMedia[] = rawLink.link_posts.map((post) => {
-      const owner = profilesMap.get(post.owner_id)!;
-      const media = post.link_post_media.map((m) => mediaMap.get(m.id)!);
+      const owner = profilesMap.get(post.owner_id);
+      if (!owner) throw new Error('Error retrieving owner for link post');
+
+      const media = post.link_post_media
+        .map((m) => mediaMap.get(m.id))
+        .filter((m): m is NonNullable<typeof m> => !!m);
+
       totalMediaCount += media.length;
       return { ...post, owner, media };
     });

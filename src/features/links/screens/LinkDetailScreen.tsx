@@ -454,7 +454,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               </View>
               <Text className="text-2xl font-bold text-white">{link.name}</Text>
               <Text className="text-sm text-white/70 mt-0.5">
-                Created by {owner.name}
+                Created by {owner.name ?? 'Unknown'}
               </Text>
             </View>
           </View>
