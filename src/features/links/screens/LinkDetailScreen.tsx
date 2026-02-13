@@ -43,7 +43,7 @@ import {
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import StagedMediaSheet from '../components/StagedMediaSheet';
 import UploadProgressModal from '../../../components/UploadProgressModal';
-import { links } from '../../../lib/supabase/storage/links';
+import { links as linksStorage } from '../../../lib/supabase/storage/links';
 import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
 import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
@@ -346,11 +346,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           )
         : null;
 
-      await links.remove(post.media.map((media) => media.path));
       await Promise.all(
         post.media.map((media) => deleteLinkPostMedia(media.id)),
       );
       await deleteLinkPost(postId);
+      await linksStorage.remove(post.media.map((media) => media.path));
 
       if (isDeletingBanner) {
         await updateLinkById(linkId, {
