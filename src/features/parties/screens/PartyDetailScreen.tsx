@@ -1,5 +1,6 @@
-import { ComponentProps, useState } from 'react';
+import { ComponentProps, useCallback, useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -43,6 +44,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -53,6 +55,9 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const dialog = useDialog();
 
   const { party, loading, error, refetch } = usePartyDetail(partyId);
+  const { refetch: refetchActiveLink } = useActiveLinkContext();
+
+  const hasFocusedRef = useRef(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -64,6 +69,16 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const [editLoading, setEditLoading] = useState(false);
 
   const insets = useSafeAreaInsets();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasFocusedRef.current) {
+        refetch();
+      } else {
+        hasFocusedRef.current = true;
+      }
+    }, [refetch]),
+  );
 
   if (loading) {
     return (
@@ -105,6 +120,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       if (link) {
         setCreateModalVisible(false);
         refetch();
+        refetchActiveLink();
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });
       }
     } catch (err) {

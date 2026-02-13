@@ -53,7 +53,7 @@ import { CardSection } from '../../../components/Card';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
-import { useIsFocused } from '@react-navigation/native';
+import { CommonActions, useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
@@ -61,7 +61,7 @@ import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
-  const { linkId } = route.params;
+  const { linkId, partyId } = route.params;
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
@@ -197,6 +197,16 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     try {
       await deleteLink(linkId);
       refetchActiveLink();
+      const parentNavigation = navigation.getParent();
+      if (parentNavigation) {
+        parentNavigation.dispatch(
+          CommonActions.navigate('Party', {
+            screen: 'PartyDetail',
+            params: { partyId },
+          }),
+        );
+        return;
+      }
       navigation.goBack();
     } catch (err) {
       await dialog.error('Error deleting link', getErrorMessage(err));
