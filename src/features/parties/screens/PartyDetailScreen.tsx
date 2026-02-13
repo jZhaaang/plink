@@ -20,7 +20,6 @@ import { usePartyDetail } from '../hooks/usePartyDetail';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import { createLink } from '../../../lib/supabase/queries/links';
-import { createLinkMember } from '../../../lib/supabase/queries/linkMembers';
 import {
   deleteParty,
   updatePartyById,
@@ -104,7 +103,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       });
 
       if (link) {
-        await createLinkMember({ link_id: link.id, user_id: userId });
         setCreateModalVisible(false);
         refetch();
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });

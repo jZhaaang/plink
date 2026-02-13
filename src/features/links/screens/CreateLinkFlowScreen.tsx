@@ -53,7 +53,6 @@ export default function CreateLinkFlowScreen() {
       });
 
       if (link) {
-        await createLinkMember({ link_id: link.id, user_id: userId });
         handleClose();
         await refetch();
         navigation.navigate('App', {
