@@ -63,13 +63,6 @@ export default function CreateLinkModal({
         </Pressable>
       </View>
 
-      {!isEditMode && (
-        <Text className="text-sm text-slate-500 mb-4">
-          A Link is a shared space for capturing memories during a hangout or
-          event.
-        </Text>
-      )}
-
       <TextField
         header="Link Name"
         value={name}
