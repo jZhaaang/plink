@@ -4,8 +4,11 @@ import {
   createLinkPost,
   deleteLinkPost,
 } from '../../../lib/supabase/queries/linkPosts';
-import { links } from '../../../lib/supabase/storage/links';
-import { createLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
+import { links as linksStorage } from '../../../lib/supabase/storage/links';
+import {
+  createLinkPostMedia,
+  deleteLinkPostMedia,
+} from '../../../lib/supabase/queries/linkPostMedia';
 
 type UseStagedMediaOpts = {
   linkId: string;
@@ -96,6 +99,9 @@ export function useStagedMedia({
     setUploading(true);
     setProgress({ total: stagedAssets.length, completed: 0, failed: 0 });
 
+    const insertedMediaIds = [];
+    const uploadedPaths = [];
+
     try {
       const post = await createLinkPost({ link_id: linkId, owner_id: userId });
 
@@ -107,7 +113,12 @@ export function useStagedMedia({
         stagedAssets.map(async (asset): Promise<UploadedAsset> => {
           const mime = asset.mimeType ?? 'image/jpeg';
           const type = asset.type === 'video' ? 'video' : 'image';
-          const path = await links.upload(linkId, post.id, asset.uri, mime);
+          const path = await linksStorage.upload(
+            linkId,
+            post.id,
+            asset.uri,
+            mime,
+          );
           setProgress((prev) =>
             prev ? { ...prev, completed: prev.completed + 1 } : null,
           );
@@ -129,30 +140,27 @@ export function useStagedMedia({
         .map((r) => r.value);
       const failures = uploadedResults.length - successes.length;
 
+      for (const item of successes) uploadedPaths.push(item.path);
+
       if (successes.length === 0) {
         await deleteLinkPost(post.id);
-        throw new Error(`${failures} upload(s) failed`);
+        throw new Error(`All uploads failed, post was not created.`);
       }
 
       await Promise.all(
-        successes.map((m) =>
-          createLinkPostMedia({
+        successes.map(async (m) => {
+          const row = await createLinkPostMedia({
             post_id: post.id,
             path: m.path,
             mime: m.mime,
             type: m.type,
             duration_seconds: m.duration_seconds,
-          }),
-        ),
+          });
+          if (row) insertedMediaIds.push(row.id);
+        }),
       );
 
-      if (onUploadComplete) {
-        try {
-          await onUploadComplete(successes);
-        } catch (err) {
-          onError?.(err as Error);
-        }
-      }
+      await onUploadComplete?.(successes);
 
       if (failures > 0) {
         setProgress((prev) => (prev ? { ...prev, failed: failures } : null));
@@ -162,7 +170,15 @@ export function useStagedMedia({
       onSuccess?.();
       setStagedAssets([]);
     } catch (err) {
-      onError?.(err as Error);
+      if (insertedMediaIds.length) {
+        await Promise.all(
+          insertedMediaIds.map((id) => deleteLinkPostMedia(id)),
+        );
+      }
+      if (uploadedPaths.length) {
+        await linksStorage.remove(uploadedPaths);
+      }
+      onError?.(err instanceof Error ? err : new Error('Upload failed'));
     } finally {
       setUploading(false);
       setProgress(null);
