@@ -7,8 +7,7 @@ export async function resolveLink(link: LinkRow): Promise<Link> {
   try {
     const bannerUrlMap = await linksStorage.getUrls([link.banner_path]);
     return { ...link, bannerUrl: bannerUrlMap.get(link.banner_path) ?? null };
-  } catch (err) {
-    console.warn('[resolveLink] banner url failed', link.id, err);
+  } catch {
     return { ...link, bannerUrl: null };
   }
 }
