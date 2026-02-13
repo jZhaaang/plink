@@ -14,7 +14,6 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { usePartyListItems } from '../../parties/hooks/usePartyListItems';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { createLink } from '../../../lib/supabase/queries/links';
-import { createLinkMember } from '../../../lib/supabase/queries/linkMembers';
 import CreateLinkModal from '../components/CreateLinkModal';
 import type { PartyListItem } from '../../../lib/models';
 import { SignedInParamList } from '../../../navigation/types';
