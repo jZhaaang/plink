@@ -30,13 +30,19 @@ function clamp(value: number, min: number, max: number) {
 
 const BANNER_ASPECT_RATIO = 2.5;
 
-function coverFocusToCenterPercent(focusPercent: number, viewportRatio: number) {
+function coverFocusToCenterPercent(
+  focusPercent: number,
+  viewportRatio: number,
+) {
   if (viewportRatio >= 1) return 50;
   const focus = clamp(focusPercent, 0, 100) / 100;
   return (focus * (1 - viewportRatio) + viewportRatio / 2) * 100;
 }
 
-function centerPercentToCoverFocus(centerPercent: number, viewportRatio: number) {
+function centerPercentToCoverFocus(
+  centerPercent: number,
+  viewportRatio: number,
+) {
   if (viewportRatio >= 1) return 50;
   const center = clamp(centerPercent, 0, 100) / 100;
   return ((center - viewportRatio / 2) / (1 - viewportRatio)) * 100;
@@ -103,7 +109,6 @@ export default function EditLinkBannerModal({
   }, [canvasSize, imageAspectRatio]);
 
   const cropRect = useMemo(() => {
-    // This frame exactly represents what a cover-fit banner will show.
     const width =
       imageAspectRatio >= BANNER_ASPECT_RATIO
         ? photoRect.height * BANNER_ASPECT_RATIO
@@ -127,8 +132,8 @@ export default function EditLinkBannerModal({
   }, [photoRect, cropX, cropY, imageAspectRatio]);
 
   useEffect(() => {
-    const marginX = ((cropRect.width / 2) / photoRect.width) * 100;
-    const marginY = ((cropRect.height / 2) / photoRect.height) * 100;
+    const marginX = (cropRect.width / 2 / photoRect.width) * 100;
+    const marginY = (cropRect.height / 2 / photoRect.height) * 100;
     marginRef.current = { x: marginX, y: marginY };
     viewportRatioRef.current = {
       x: cropRect.width / Math.max(photoRect.width, 1),
@@ -157,7 +162,8 @@ export default function EditLinkBannerModal({
           };
         },
         onPanResponderMove: (_, gestureState) => {
-          const dxPercent = (gestureState.dx / Math.max(photoRect.width, 1)) * 100;
+          const dxPercent =
+            (gestureState.dx / Math.max(photoRect.width, 1)) * 100;
           const dyPercent =
             (gestureState.dy / Math.max(photoRect.height, 1)) * 100;
           const marginX = marginRef.current.x;
@@ -250,7 +256,11 @@ export default function EditLinkBannerModal({
           <>
             <View
               className="rounded-2xl overflow-hidden bg-slate-200 border border-slate-200"
-              style={{ width: '100%', aspectRatio: imageAspectRatio, maxHeight: 460 }}
+              style={{
+                width: '100%',
+                aspectRatio: imageAspectRatio,
+                maxHeight: 460,
+              }}
               onLayout={handleCanvasLayout}
               {...panResponder.panHandlers}
             >
@@ -296,7 +306,9 @@ export default function EditLinkBannerModal({
                   left: cropRect.left + cropRect.width,
                   top: cropRect.top,
                   width: Math.max(
-                    photoRect.left + photoRect.width - (cropRect.left + cropRect.width),
+                    photoRect.left +
+                      photoRect.width -
+                      (cropRect.left + cropRect.width),
                     0,
                   ),
                   height: cropRect.height,
@@ -310,7 +322,9 @@ export default function EditLinkBannerModal({
                   top: cropRect.top + cropRect.height,
                   width: photoRect.width,
                   height: Math.max(
-                    photoRect.top + photoRect.height - (cropRect.top + cropRect.height),
+                    photoRect.top +
+                      photoRect.height -
+                      (cropRect.top + cropRect.height),
                     0,
                   ),
                 }}
@@ -334,9 +348,6 @@ export default function EditLinkBannerModal({
                 <Text className="text-[11px] text-white/95">
                   Drag frame to crop
                 </Text>
-                <Text className="text-[11px] text-white/95">
-                  X {Math.round(cropX)}% • Y {Math.round(cropY)}%
-                </Text>
               </View>
             </View>
 
@@ -348,7 +359,9 @@ export default function EditLinkBannerModal({
                 }}
                 className="px-3 py-1 rounded-full bg-white border border-slate-300"
               >
-                <Text className="text-xs font-medium text-slate-700">Reset</Text>
+                <Text className="text-xs font-medium text-slate-700">
+                  Reset
+                </Text>
               </Pressable>
             </View>
           </>
