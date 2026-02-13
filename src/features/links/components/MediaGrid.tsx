@@ -1,13 +1,7 @@
-import {
-  FlatList,
-  Pressable,
-  useWindowDimensions,
-  View,
-  Text,
-} from 'react-native';
-import { Image } from 'expo-image';
+import { FlatList, useWindowDimensions, View, Text } from 'react-native';
 import { LinkPostMedia } from '../../../lib/models';
 import { Feather } from '@expo/vector-icons';
+import MediaTile from '../../../components/MediaTile';
 
 type Props = {
   media: LinkPostMedia[];
@@ -33,7 +27,7 @@ export default function MediaGrid({
   onOverflowPress,
 }: Props) {
   const { width } = useWindowDimensions();
-  const itemSize = (width - 32 - GAP * (columns - 1)) / columns; // 32 = px-4 padding on both sides
+  const itemSize = (width - 32 - GAP * (columns - 1)) / columns;
 
   const hasOverflow = maxItems !== undefined && media.length > maxItems;
   const overflowCount = hasOverflow ? media.length - maxItems : 0;
@@ -53,7 +47,10 @@ export default function MediaGrid({
         const isLastItem = hasOverflow && index === displayedMedia.length - 1;
 
         return (
-          <Pressable
+          <MediaTile
+            uri={item.url}
+            width={itemSize}
+            height={itemSize}
             onPress={() => {
               if (isLastItem && onOverflowPress) {
                 onOverflowPress();
@@ -61,21 +58,18 @@ export default function MediaGrid({
                 onMediaPress?.(item);
               }
             }}
-            className="active:opacity-80"
-          >
-            <>
-              <Image
-                source={{ uri: item.url }}
-                style={{
-                  width: itemSize,
-                  height: itemSize,
-                  borderRadius: 12,
-                }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                transition={200}
-              />
-              {!isLastItem && item.type === 'video' && (
+            renderOverlay={(isLoaded) => {
+              if (!isLoaded) return null;
+
+              if (isLastItem) {
+                return (
+                  <View className="absolute inset-0 bg-black/60 items-center justify-center rounded-xl">
+                    <Text className="text-white text-lg font-semibold">
+                      +{overflowCount}
+                    </Text>
+                  </View>
+                );
+              } else if (item.type === 'video') {
                 <View className="absolute inset-0 items-center justify-center">
                   <View className="w-10 h-10 rounded-full bg-black/50 items-center justify-center">
                     <Feather
@@ -85,17 +79,10 @@ export default function MediaGrid({
                       className="ml-1"
                     />
                   </View>
-                </View>
-              )}
-              {isLastItem && (
-                <View className="absolute inset-0 bg-black/60 items-center justify-center rounded-xl">
-                  <Text className="text-white text-lg font-semibold">
-                    +{overflowCount}
-                  </Text>
-                </View>
-              )}
-            </>
-          </Pressable>
+                </View>;
+              }
+            }}
+          />
         );
       }}
       ListEmptyComponent={<View />}

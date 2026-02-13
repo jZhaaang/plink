@@ -11,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
+import MediaTile from '../../../components/MediaTile';
 
 type Props = {
   post: LinkPostWithMedia;
@@ -105,31 +106,25 @@ export default function PostFeedItem({
           style={{ gap: GAP, marginHorizontal: -GAP / 2 }}
         >
           {post.media.map((media, index) => (
-            <Pressable
+            <MediaTile
               key={media.id}
+              uri={media.url}
+              width={itemSize}
+              height={mediaCount === 1 ? itemSize * 0.75 : itemSize}
+              containerStyle={{ marginHorizontal: GAP / 2 }}
               onPress={() => onMediaPress?.(mediaItems, index)}
-              className="active:opacity-80"
-              style={{ marginHorizontal: GAP / 2 }}
-            >
-              <Image
-                source={{ uri: media.url }}
-                style={{
-                  width: itemSize,
-                  height: mediaCount === 1 ? itemSize * 0.75 : itemSize,
-                  borderRadius: 12,
-                }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                transition={200}
-              />
-              {media.type === 'video' && (
-                <View className="absolute inset-0 items-center justify-center">
-                  <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
-                    <Feather name="play" size={16} color="white" />
+              renderOverlay={(isLoaded) => {
+                if (!isLoaded || media.type !== 'video') return null;
+
+                return (
+                  <View className="absolute inset-0 items-center justify-center">
+                    <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
+                      <Feather name="play" size={16} color="white" />
+                    </View>
                   </View>
-                </View>
-              )}
-            </Pressable>
+                );
+              }}
+            />
           ))}
         </View>
       )}
