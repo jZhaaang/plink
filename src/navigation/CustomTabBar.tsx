@@ -44,7 +44,7 @@ export default function CustomTabBar({
     activeLink: LinkRow | null,
     isOnLinkDetail: boolean,
   ) {
-    if (activeLink && isOnLinkDetail && activeLink) {
+    if (activeLink && isOnLinkDetail) {
       requestUpload();
       return;
     }
