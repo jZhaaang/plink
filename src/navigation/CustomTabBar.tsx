@@ -66,7 +66,7 @@ export default function CustomTabBar({
   return (
     <View
       className="flex-row bg-white border-t border-slate-200 items-end"
-      style={{ paddingBottom: insets.bottom, height: 40 + insets.bottom }}
+      style={{ paddingBottom: 10 + insets.bottom, height: 50 + insets.bottom }}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
