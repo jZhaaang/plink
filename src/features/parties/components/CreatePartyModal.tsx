@@ -5,6 +5,7 @@ import { Pressable, Text, View, ImageBackground } from 'react-native';
 import { Party } from '../../../lib/models';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { pickPartyBannerFromLibrary } from '../../../lib/media/bannerCropper';
 
 type Props = {
   visible: boolean;
@@ -40,14 +41,9 @@ export default function CreatePartyModal({
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [2.5, 1],
-    });
-    if (result.canceled) return;
-    const uri = result.assets[0].uri;
-    setBannerUri(uri);
+    const cropped = await pickPartyBannerFromLibrary();
+    if (!cropped) return;
+    setBannerUri(cropped.uri);
   };
 
   const handleSubmit = async () => {

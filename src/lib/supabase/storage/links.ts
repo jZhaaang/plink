@@ -7,6 +7,10 @@ export const links = {
     return `${linkId}/posts/${postId}/${randomUUID()}.${extFromMime(contentType)}`;
   },
 
+  bannerPath(linkId: string, contentType: string = 'image/jpeg') {
+    return `${linkId}/banner.${extFromMime(contentType)}`;
+  },
+
   async upload(
     linkId: string,
     postId: string,
@@ -18,6 +22,16 @@ export const links = {
       contentType,
       upsert: false,
     });
+    return path;
+  },
+
+  async uploadBanner(
+    linkId: string,
+    uri: string,
+    contentType: string = 'image/jpeg',
+  ) {
+    const path = this.bannerPath(linkId, contentType);
+    await uploadFile('links', path, uri, { contentType, upsert: true });
     return path;
   },
 

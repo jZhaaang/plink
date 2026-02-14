@@ -376,17 +376,18 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }
   };
 
-  const handleSaveBanner = async (
-    bannerPath: string,
-    cropX: number,
-    cropY: number,
-  ) => {
+  const handleSaveBanner = async (croppedUri: string) => {
     setSavingBanner(true);
     try {
+      const bannerPath = await linksStorage.uploadBanner(
+        linkId,
+        croppedUri,
+        'image/jpeg',
+      );
       await updateLinkById(linkId, {
         banner_path: bannerPath,
-        banner_crop_x: cropX,
-        banner_crop_y: cropY,
+        banner_crop_x: 50,
+        banner_crop_y: 42,
       });
       setEditBannerVisible(false);
       refetch();
@@ -677,10 +678,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             onClose={() => setEditBannerVisible(false)}
             images={imageMedia}
             initialPath={link.banner_path}
-            initialCropX={link.banner_crop_x}
-            initialCropY={link.banner_crop_y}
-            onSave={handleSaveBanner}
             saving={savingBanner}
+            onSave={handleSaveBanner}
           />
 
           <UploadProgressModal visible={uploading} progress={progress} />
