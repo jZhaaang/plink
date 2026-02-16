@@ -22,7 +22,7 @@ export function useProfileGate(session: Session | null, ready: boolean) {
         if (!cancelled)
           setGate(profile.name && profile.username ? 'app' : 'needsProfile');
       } catch {
-        if (!cancelled) setGate('app');
+        if (!cancelled) setGate('needsProfile');
       }
     })();
 
