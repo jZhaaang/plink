@@ -1,5 +1,5 @@
 import { randomUUID } from 'expo-crypto';
-import { uploadFile, getUrls, removeFile } from './core';
+import { uploadFile, getUrls, removeFile, getPathsById } from './core';
 import { extFromMime } from '../../utils/extFromMime';
 
 export const links = {
@@ -41,5 +41,9 @@ export const links = {
 
   remove(paths: string[]) {
     return removeFile('links', paths);
+  },
+
+  getPathsById(linkId: string) {
+    return getPathsById('links', linkId);
   },
 };

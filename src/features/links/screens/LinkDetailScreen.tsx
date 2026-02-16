@@ -195,7 +195,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     if (!confirmed) return;
 
     try {
+      const linkPaths = await linksStorage.getPathsById(linkId);
+      await linksStorage.remove(linkPaths);
       await deleteLink(linkId);
+
       refetchActiveLink();
       const parentNavigation = navigation.getParent();
       if (parentNavigation) {

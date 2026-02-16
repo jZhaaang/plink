@@ -20,12 +20,16 @@ import { PartyStackParamList } from '../../../navigation/types';
 import { usePartyDetail } from '../hooks/usePartyDetail';
 import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
-import { createLink } from '../../../lib/supabase/queries/links';
+import {
+  createLink,
+  getLinksByPartyId,
+} from '../../../lib/supabase/queries/links';
 import {
   deleteParty,
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
+import { links as linksStorage } from '../../../lib/supabase/storage/links';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
@@ -171,7 +175,20 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     if (!confirmed) return;
 
     try {
+      const linkIds = (await getLinksByPartyId(partyId)).map((l) => l.id);
+
+      const partyPaths = await partiesStorage.getPathsById(partyId);
+      await partiesStorage.remove(partyPaths);
+
+      await Promise.all(
+        linkIds.map(async (linkId) => {
+          const linkPaths = await linksStorage.getPathsById(linkId);
+          await linksStorage.remove(linkPaths);
+        }),
+      );
+
       await deleteParty(partyId);
+
       navigation.goBack();
     } catch (err) {
       await dialog.error('Error deleting party', getErrorMessage(err));

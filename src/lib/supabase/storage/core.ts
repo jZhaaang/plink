@@ -68,3 +68,56 @@ export async function getUrls(
 
   return new Map(data.map((d) => [d.path!, d.signedUrl]));
 }
+
+export async function getPathsById(
+  bucket: Bucket,
+  id: string,
+): Promise<string[]> {
+  const pageSize = 100;
+  const results: string[] = [];
+
+  async function walk(currentPrefix: string): Promise<void> {
+    let offset = 0;
+
+    while (true) {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .list(currentPrefix, {
+          limit: pageSize,
+          offset,
+          sortBy: { column: 'name', order: 'asc' },
+        });
+
+      if (error) {
+        logger.error(
+          'Error listing storage prefix:',
+          bucket,
+          currentPrefix,
+          error.message,
+        );
+        throw error;
+      }
+
+      if (!data || data.length === 0) break;
+
+      for (const entry of data) {
+        const fullPath = currentPrefix
+          ? `${currentPrefix}/${entry.name}`
+          : entry.name;
+        const isDirectory = entry.id === null; // null id for Supabase folders
+
+        if (isDirectory) {
+          await walk(fullPath);
+        } else {
+          results.push(fullPath);
+        }
+      }
+
+      if (data.length < pageSize) break;
+      offset += data.length;
+    }
+  }
+
+  await walk(id);
+  return results;
+}
