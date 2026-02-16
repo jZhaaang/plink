@@ -67,17 +67,19 @@ export default function ActivityScreen({ navigation }: Props) {
           <ActivityListItem
             item={item}
             onPress={
-              item.link_id
+              item.link_id && item.party_id
                 ? () =>
                     navigation.navigate('Link', {
                       screen: 'LinkDetail',
                       params: { linkId: item.link_id, partyId: item.party_id },
                     })
-                : () =>
-                    navigation.navigate('Party', {
-                      screen: 'PartyDetail',
-                      params: { partyId: item.party_id },
-                    })
+                : item.party_id
+                  ? () =>
+                      navigation.navigate('Party', {
+                        screen: 'PartyDetail',
+                        params: { partyId: item.party_id },
+                      })
+                  : undefined
             }
           />
         )}
