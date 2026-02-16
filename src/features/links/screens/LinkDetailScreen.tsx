@@ -4,7 +4,6 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   GestureResponderEvent,
@@ -38,6 +37,7 @@ import {
   DropdownMenu,
   DropdownMenuItem,
   Card,
+  LoadingScreen,
 } from '../../../components';
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -130,13 +130,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }
   }, [isFocused, uploadRequested]);
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  if (loading) return <LoadingScreen label="Loading..." />;
 
   if (error || !link) {
     return (

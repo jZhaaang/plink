@@ -4,7 +4,6 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   GestureResponderEvent,
@@ -40,6 +39,7 @@ import {
   DropdownMenu,
   DropdownMenuItem,
   Divider,
+  LoadingScreen,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { Image } from 'expo-image';
@@ -71,13 +71,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
   const insets = useSafeAreaInsets();
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  if (loading) <LoadingScreen label="Loading..." />;
 
   if (error || !party) {
     return (

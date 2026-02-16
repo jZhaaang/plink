@@ -1,10 +1,6 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  PressableProps,
-} from 'react-native';
+import { Pressable, Text, PressableProps } from 'react-native';
 import { cn } from './cn';
+import { Spinner } from './Loading';
 
 type Variant = 'primary' | 'outline' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
@@ -48,9 +44,7 @@ export default function Button({
       accessibilityRole="button"
     >
       {loading ? (
-        <ActivityIndicator
-          color={v.text.includes('white') ? '#fff' : '#0f172a'}
-        />
+        <Spinner tone={v.text.includes('white') ? 'inverse' : 'muted'} />
       ) : (
         <Text
           className={cn(

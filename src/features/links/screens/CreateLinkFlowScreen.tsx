@@ -1,14 +1,8 @@
 import { useState } from 'react';
-import {
-  Text,
-  View,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
-} from 'react-native';
+import { Text, View, Pressable, FlatList } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { Modal } from '../../../components';
+import { Modal, Spinner } from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
 import { usePartyListItems } from '../../parties/hooks/usePartyListItems';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
@@ -101,7 +95,7 @@ export default function CreateLinkFlowScreen() {
       </Text>
 
       {partiesLoading ? (
-        <ActivityIndicator className="my-8" />
+        <Spinner />
       ) : parties.length === 0 ? (
         <Text className="text-center text-slate-400 my-8">
           You are not in any parties yet.

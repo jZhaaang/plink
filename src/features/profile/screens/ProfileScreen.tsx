@@ -1,12 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  ScrollView,
-  Image,
-  Pressable,
-} from 'react-native';
+import { View, Text, ScrollView, Image, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,7 +8,7 @@ import {
   searchUserByUsername,
 } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
-import { Button, Divider, TextField } from '../../../components';
+import { Button, Divider, LoadingScreen, TextField } from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
@@ -142,15 +135,7 @@ export default function ProfileScreen() {
     if (confirmed) await signOut();
   }
 
-  if (profileLoading) {
-    return (
-      <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#3b82f6" />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  if (profileLoading) return <LoadingScreen label="Loading..." />;
 
   if (!profile) {
     return (

@@ -13,17 +13,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { logger } from '../../../lib/supabase/logger';
-import {
-  ActivityIndicator,
-  View,
-  Text,
-  StatusBar,
-  Pressable,
-  Modal,
-} from 'react-native';
+import { View, Text, StatusBar, Pressable, Modal } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { LoadingScreen, Spinner } from '../../../components';
 
 type CapturedAsset = {
   uri: string;
@@ -197,13 +191,8 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
     transform: [{ scale: recordingScale.value }],
   }));
 
-  if (!cameraPermission || !micPermission) {
-    return (
-      <View className="flex-1 bg-black items-center justify-center">
-        <ActivityIndicator size="large" color="white" />
-      </View>
-    );
-  }
+  if (!cameraPermission || !micPermission)
+    return <LoadingScreen label="Waiting for permissions..." />;
 
   if (!cameraPermission.granted || !micPermission.granted) {
     return (
@@ -330,7 +319,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
           />
         ) : (
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="white" />
+            <Spinner size="large" tone="inverse" />
           </View>
         )}
       </View>

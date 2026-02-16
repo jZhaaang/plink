@@ -1,10 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, TextField } from '../../../components';
+import { Button, LoadingScreen, TextField } from '../../../components';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -118,12 +118,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
   }
 
-  if (!ready)
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="large" />
-      </View>
-    );
+  if (!ready) return <LoadingScreen label="Loading..." />;
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">

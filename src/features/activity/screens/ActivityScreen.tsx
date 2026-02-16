@@ -1,9 +1,9 @@
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { TabsParamList } from '../../../navigation/types';
 import { useActivityFeed } from '../hooks/useActivityFeed';
-import { ActivityIndicator, View, Text, SectionList } from 'react-native';
+import { Text, SectionList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, EmptyState } from '../../../components';
+import { Button, EmptyState, LoadingScreen } from '../../../components';
 import ActivityListItem from '../components/ActivityListItem';
 import { useAuth } from '../../../providers/AuthProvider';
 
@@ -13,13 +13,7 @@ export default function ActivityScreen({ navigation }: Props) {
   const { userId } = useAuth();
   const { sections, loading, error, refetch } = useActivityFeed(userId);
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator />
-      </View>
-    );
-  }
+  if (loading) return <LoadingScreen label="Loading..." />;
 
   if (error) {
     return (

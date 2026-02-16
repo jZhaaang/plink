@@ -2,17 +2,16 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  FlatList,
-  View,
-  Text,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
+import { FlatList, View, Text, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PartyCard } from '../components/PartyCard';
 import { Feather } from '@expo/vector-icons';
-import { Button, Divider, EmptyState } from '../../../components';
+import {
+  Button,
+  Divider,
+  EmptyState,
+  LoadingScreen,
+} from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useState } from 'react';
 import CreatePartyModal from '../components/CreatePartyModal';
@@ -71,13 +70,7 @@ export default function PartyListScreen({ navigation }: Props) {
     }
   };
 
-  if (partiesLoading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
-    );
-  }
+  if (partiesLoading) return <LoadingScreen label="Loading..." />;
 
   if (error) {
     return (

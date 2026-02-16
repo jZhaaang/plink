@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaGrid from '../components/MediaGrid';
 import { LinkPostMedia } from '../../../lib/models';
+import { LoadingScreen } from '../../../components';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
@@ -34,13 +35,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
     });
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" />
-      </SafeAreaView>
-    );
-  }
+  if (loading) return <LoadingScreen label="Loading..." />;
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">

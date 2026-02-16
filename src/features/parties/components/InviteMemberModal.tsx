@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
-import { Button, Modal, TextField } from '../../../components';
+import { Button, Modal, Spinner, TextField } from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
 import { resolveProfile } from '../../../lib/resolvers/profile';
 
@@ -107,7 +107,7 @@ export default function InviteMemberModal({
       {/* Search Result - User Preview Card */}
       {state.status === 'searching' && (
         <View className="mt-4 p-4 items-center">
-          <ActivityIndicator />
+          <Spinner />
         </View>
       )}
 
