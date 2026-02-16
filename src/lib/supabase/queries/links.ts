@@ -61,7 +61,8 @@ export async function getActiveLinkByUserId(
     throw error;
   }
 
-  return data ? data[0].links : null;
+  if (!data || data.length === 0 || !data[0]?.links) return null;
+  return data[0].links;
 }
 
 export async function createLink(link: LinkInsert): Promise<LinkRow | null> {
