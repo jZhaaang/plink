@@ -5,6 +5,7 @@ import AuthStack from './AuthStack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useProfileGate } from '../lib/supabase/hooks/useProfileGate';
 import SignedInStack from './SignedInStack';
+import { ActivityIndicator, View, Text } from 'react-native';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
@@ -12,7 +13,13 @@ export default function AppNavigator() {
   const { session, ready } = useAuth();
   const gate = useProfileGate(session, ready);
 
-  if (!ready || gate === 'loading') return null;
+  if (!ready || gate === 'loading')
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="mt-3 text-slate-500">Loading...</Text>
+      </View>
+    );
 
   return (
     <NavigationContainer>
