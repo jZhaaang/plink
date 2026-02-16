@@ -70,16 +70,18 @@ export default function MediaGrid({
                   </View>
                 );
               } else if (item.type === 'video') {
-                <View className="absolute inset-0 items-center justify-center">
-                  <View className="w-10 h-10 rounded-full bg-black/50 items-center justify-center">
-                    <Feather
-                      name="play"
-                      size={20}
-                      color="white"
-                      className="ml-1"
-                    />
+                return (
+                  <View className="absolute inset-0 items-center justify-center">
+                    <View className="w-10 h-10 rounded-full bg-black/50 items-center justify-center">
+                      <Feather
+                        name="play"
+                        size={20}
+                        color="white"
+                        className="ml-1"
+                      />
+                    </View>
                   </View>
-                </View>;
+                );
               }
             }}
           />
