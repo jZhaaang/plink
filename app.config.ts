@@ -13,4 +13,5 @@ export default {
   android: {
     package: 'com.anonymous.plink',
   },
+  plugins: ['expo-font', 'expo-video'],
 } satisfies ExpoConfig;
