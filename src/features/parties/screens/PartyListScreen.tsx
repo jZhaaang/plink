@@ -1,6 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -24,12 +23,12 @@ import {
 import { usePartyListItems } from '../hooks/usePartyListItems';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { useAuth } from '../../../providers/AuthProvider';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
 export default function PartyListScreen({ navigation }: Props) {
-  const { session, ready } = useAuth();
-  const userId = session?.user?.id ?? undefined;
+  const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
 
@@ -72,7 +71,7 @@ export default function PartyListScreen({ navigation }: Props) {
     }
   };
 
-  if (partiesLoading || !ready) {
+  if (partiesLoading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator />

@@ -1,17 +1,16 @@
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { TabsParamList } from '../../../navigation/types';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useActivityFeed } from '../hooks/useActivityFeed';
 import { ActivityIndicator, View, Text, SectionList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, EmptyState } from '../../../components';
 import ActivityListItem from '../components/ActivityListItem';
+import { useAuth } from '../../../providers/AuthProvider';
 
 type Props = BottomTabScreenProps<TabsParamList, 'Activity'>;
 
 export default function ActivityScreen({ navigation }: Props) {
-  const { session } = useAuth();
-  const userId = session?.user?.id ?? null;
+  const { userId } = useAuth();
   const { sections, loading, error, refetch } = useActivityFeed(userId);
 
   if (loading) {

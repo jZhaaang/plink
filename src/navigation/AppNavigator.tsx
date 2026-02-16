@@ -1,11 +1,11 @@
 import { NavigationContainer } from '@react-navigation/native';
 import type { RootStackParamList } from './types';
-import { useAuth } from '../lib/supabase/hooks/useAuth';
 import AuthStack from './AuthStack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useProfileGate } from '../lib/supabase/hooks/useProfileGate';
 import SignedInStack from './SignedInStack';
 import { ActivityIndicator, View, Text } from 'react-native';
+import { useAuth } from '../providers/AuthProvider';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 

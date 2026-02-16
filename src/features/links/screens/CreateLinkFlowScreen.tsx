@@ -9,7 +9,6 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Modal } from '../../../components';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import { usePartyListItems } from '../../parties/hooks/usePartyListItems';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
@@ -19,10 +18,10 @@ import type { PartyListItem } from '../../../lib/models';
 import { SignedInParamList } from '../../../navigation/types';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { useAuth } from '../../../providers/AuthProvider';
 
 export default function CreateLinkFlowScreen() {
-  const { session } = useAuth();
-  const userId = session?.user?.id;
+  const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
   const navigation = useNavigation<NavigationProp<SignedInParamList>>();

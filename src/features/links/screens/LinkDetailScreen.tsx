@@ -16,7 +16,6 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import {
   endLink,
@@ -58,13 +57,13 @@ import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { useAuth } from '../../../providers/AuthProvider';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
-  const { session } = useAuth();
-  const userId = session?.user?.id;
+  const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
 

@@ -17,7 +17,6 @@ import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
 import { usePartyDetail } from '../hooks/usePartyDetail';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useDialog } from '../../../providers/DialogProvider';
 import {
   createLink,
@@ -48,13 +47,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { useAuth } from '../../../providers/AuthProvider';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
 export default function PartyDetailScreen({ route, navigation }: Props) {
   const { partyId } = route.params;
-  const { session } = useAuth();
-  const userId = session?.user?.id;
+  const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
 

@@ -1,11 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from './useAuth';
 import { queryKeys } from '../../queryKeys';
+import { useAuth } from '../../../providers/AuthProvider';
 
 export function useInvalidate() {
   const queryClient = useQueryClient();
-  const { session } = useAuth();
-  const userId = session?.user?.id;
+  const { userId } = useAuth();
 
   return {
     parties: () => {

@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, TextField } from '../../../components';
@@ -10,13 +10,13 @@ import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
+import { useAuth } from '../../../providers/AuthProvider';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
 export default function CompleteProfileScreen({ navigation }: Props) {
-  const { session, ready } = useAuth();
+  const { userId, ready } = useAuth();
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -66,7 +66,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   }
 
   async function save() {
-    if (!session?.user) {
+    if (!userId) {
       await dialog.error('Session Error', 'Please sign in again');
       return;
     }
@@ -95,16 +95,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       let avatarPath = null;
 
       if (imageUri) {
-        avatarPath = await avatars.upload(session.user.id, imageUri);
+        avatarPath = await avatars.upload(userId, imageUri);
       } else {
         const encodedName = encodeURIComponent(name.trim());
         avatarPath = await avatars.upload(
-          session.user.id,
+          userId,
           `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg`,
         );
       }
 
-      await updateUserProfile(session.user.id, {
+      await updateUserProfile(userId, {
         name: name.trim(),
         username: trimmedUsername,
         avatar_path: avatarPath,
@@ -118,7 +118,12 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     }
   }
 
-  if (!ready || !session?.user) return null;
+  if (!ready)
+    return (
+      <View className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="large" />
+      </View>
+    );
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">

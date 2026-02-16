@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { getActiveLinkByUserId } from '../../../lib/supabase/queries/links';
 import { queryKeys } from '../../../lib/queryKeys';
+import { useAuth } from '../../../providers/AuthProvider';
 
 export function useActiveLink() {
-  const { session } = useAuth();
-  const userId = session?.user?.id;
+  const { userId } = useAuth();
 
   const { data, ...rest } = useQuery({
     queryKey: queryKeys.links.active(userId),

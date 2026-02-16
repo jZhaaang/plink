@@ -8,7 +8,6 @@ import {
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../lib/supabase/hooks/useAuth';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -23,10 +22,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../hooks/useProfile';
 import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { useAuth } from '../../../providers/AuthProvider';
 
 export default function ProfileScreen() {
-  const { session } = useAuth();
-  const userId = session?.user?.id ?? null;
+  const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
 
@@ -77,7 +76,7 @@ export default function ProfileScreen() {
   }
 
   async function handleSave() {
-    if (!session?.user) {
+    if (!userId) {
       await dialog.error('Session Error', 'Please sign in again');
       return;
     }
@@ -99,7 +98,7 @@ export default function ProfileScreen() {
     try {
       if (trimmedUsername && trimmedUsername !== profile.username) {
         const existingUser = await searchUserByUsername(trimmedUsername);
-        if (existingUser && existingUser.id !== session.user.id) {
+        if (existingUser && existingUser.id !== userId) {
           await dialog.error(
             'Username taken',
             'This username is already in use',
@@ -112,13 +111,13 @@ export default function ProfileScreen() {
       let avatarPath = profile.avatar_path;
 
       if (imageUri) {
-        const newPath = await avatars.upload(session.user.id, imageUri);
+        const newPath = await avatars.upload(userId, imageUri);
         const oldPath = avatarPath;
         avatarPath = newPath;
         if (oldPath) await avatars.remove([oldPath]);
       }
 
-      await updateUserProfile(session.user.id, {
+      await updateUserProfile(userId, {
         name: name.trim(),
         username: trimmedUsername || null,
         avatar_path: avatarPath,
