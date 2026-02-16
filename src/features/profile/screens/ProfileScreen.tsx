@@ -20,29 +20,23 @@ import { Button, Divider, TextField } from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
 import { avatars } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
-import { useProfile } from '../../../lib/supabase/hooks/useProfile';
+import { useProfile } from '../hooks/useProfile';
 import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 
 export default function ProfileScreen() {
   const { session } = useAuth();
   const userId = session?.user?.id ?? null;
   const dialog = useDialog();
+  const invalidate = useInvalidate();
 
-  const {
-    profile,
-    loading: profileLoading,
-    refetch: reloadProfile,
-  } = useProfile(userId);
+  const { profile, loading: profileLoading } = useProfile(userId);
   const [saving, setSaving] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-
-  useEffect(() => {
-    reloadProfile();
-  }, [session]);
 
   useFocusEffect(
     useCallback(() => {
@@ -130,7 +124,7 @@ export default function ProfileScreen() {
         avatar_path: avatarPath,
       });
 
-      await reloadProfile();
+      invalidate.profile();
       setEditing(false);
       setImageUri(null);
     } catch (err) {

@@ -11,7 +11,6 @@ import { useActiveLink } from '../features/links/hooks/useActiveLink';
 type ActiveLinkContextValue = {
   activeLink: LinkRow | null;
   loading: boolean;
-  refetch: () => Promise<void>;
 
   createLinkVisible: boolean;
   openCreateLink: () => void;
@@ -25,7 +24,6 @@ type ActiveLinkContextValue = {
 const ActiveLinkContext = createContext<ActiveLinkContextValue>({
   activeLink: null,
   loading: true,
-  refetch: async () => {},
   createLinkVisible: false,
   openCreateLink: () => {},
   closeCreateLink: () => {},
@@ -35,7 +33,7 @@ const ActiveLinkContext = createContext<ActiveLinkContextValue>({
 });
 
 export function ActiveLinkProvider({ children }: { children: ReactNode }) {
-  const { activeLink, loading, refetch } = useActiveLink();
+  const { activeLink, loading } = useActiveLink();
   const [createLinkVisible, setCreateLinkVisible] = useState(false);
   const [uploadRequested, setUploadRequested] = useState(false);
 
@@ -49,7 +47,6 @@ export function ActiveLinkProvider({ children }: { children: ReactNode }) {
       value={{
         activeLink,
         loading,
-        refetch,
         createLinkVisible,
         openCreateLink,
         closeCreateLink,

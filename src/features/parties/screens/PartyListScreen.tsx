@@ -23,6 +23,7 @@ import {
 } from '../../../lib/supabase/queries/parties';
 import { usePartyListItems } from '../hooks/usePartyListItems';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -30,6 +31,7 @@ export default function PartyListScreen({ navigation }: Props) {
   const { session, ready } = useAuth();
   const userId = session?.user?.id ?? undefined;
   const dialog = useDialog();
+  const invalidate = useInvalidate();
 
   const {
     parties,
@@ -61,7 +63,7 @@ export default function PartyListScreen({ navigation }: Props) {
       }
 
       await updatePartyById(party.id, { banner_path });
-      refetch();
+      invalidate.parties();
     } catch (err) {
       await dialog.error('Error creating party', getErrorMessage(err));
     } finally {

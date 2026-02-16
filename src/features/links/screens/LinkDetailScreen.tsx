@@ -57,6 +57,7 @@ import { CommonActions, useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -65,9 +66,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
+  const invalidate = useInvalidate();
 
   const { link, loading, error, refetch } = useLinkDetail(linkId);
-  const { refetch: refetchActiveLink } = useActiveLinkContext();
 
   const {
     stagedAssets,
@@ -82,7 +83,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   } = useStagedMedia({
     linkId,
     userId,
-    onSuccess: refetch,
+    onSuccess: () => invalidate.linkDetail(linkId),
     onError: (error) => dialog.error('Upload failed', error.message),
     onUploadComplete: async (uploaded) => {
       if (link?.banner_path) return;
@@ -93,6 +94,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         banner_crop_x: 50,
         banner_crop_y: 42,
       });
+      invalidate.linkDetail(linkId);
+      invalidate.partyDetail(partyId);
     },
   });
 
@@ -142,7 +145,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         <Text className="text-center text-neutral-600 mb-4">
           Failed to load link details.
         </Text>
-        <Button title="Retry" variant="outline" onPress={refetch} />
+        <Button title="Retry" variant="outline" onPress={() => refetch} />
       </SafeAreaView>
     );
   }
@@ -168,8 +171,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await endLink(linkId);
-      refetch();
-      refetchActiveLink();
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
+      invalidate.partyDetail(partyId);
+      invalidate.activity();
     } catch (err) {
       await dialog.error('Error ending link', getErrorMessage(err));
     }
@@ -179,7 +184,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     try {
       await updateLinkById(linkId, { name: newName });
       setEditModalVisible(false);
-      refetch();
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
+      invalidate.partyDetail(partyId);
+      invalidate.activity();
     } catch (err) {
       await dialog.error('Error updating link', getErrorMessage(err));
     }
@@ -198,8 +206,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       const linkPaths = await linksStorage.getPathsById(linkId);
       await linksStorage.remove(linkPaths);
       await deleteLink(linkId);
-
-      refetchActiveLink();
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
+      invalidate.partyDetail(partyId);
+      invalidate.activity();
       const parentNavigation = navigation.getParent();
       if (parentNavigation) {
         parentNavigation.dispatch(
@@ -227,7 +237,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await createLinkMember({ link_id: linkId, user_id: userId });
-      refetch();
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
     } catch (err) {
       await dialog.error('Error joining link', getErrorMessage(err));
     }
@@ -246,7 +257,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await deleteLinkMember(linkId, userId);
-      refetchActiveLink();
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
+      invalidate.partyDetail(partyId);
       navigation.goBack();
     } catch (err) {
       await dialog.error('Error leaving link', getErrorMessage(err));
@@ -373,7 +386,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         });
       }
 
-      refetch();
+      invalidate.linkDetail(linkId);
     } catch (err) {
       dialog.error('Delete failed', getErrorMessage(err));
     }
@@ -393,7 +406,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         banner_crop_y: 42,
       });
       setEditBannerVisible(false);
-      refetch();
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
+      invalidate.partyDetail(partyId);
     } catch (err) {
       await dialog.error('Error updating banner', getErrorMessage(err));
     } finally {

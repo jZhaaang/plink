@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { ActivityFeedItem } from '../../../lib/models';
-import { useAsync } from '../../../lib/supabase/hooks/useAync';
 import {
   getActivityFeedByUserId,
   markActivityEventsRead,
 } from '../../../lib/supabase/queries/activity';
 import { formatDaySectionTitle, toDayKey } from '../../../lib/utils/formatTime';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '../../../lib/queryKeys';
 
 export type ActivitySection = {
   title: string;
@@ -33,23 +34,27 @@ export function activityLine(item: ActivityFeedItem): string {
 }
 
 export function useActivityFeed(userId: string | null) {
-  const { data, ...rest } = useAsync(async () => {
-    if (!userId) return [];
+  const { data, ...rest } = useQuery({
+    queryKey: queryKeys.activity.feed(userId),
+    queryFn: async () => {
+      if (!userId) return [];
 
-    const items = await getActivityFeedByUserId(userId);
-    const unreadIds = items.filter((i) => !i.read_at).map((i) => i.id);
+      const items = await getActivityFeedByUserId(userId);
+      const unreadIds = items.filter((i) => !i.read_at).map((i) => i.id);
 
-    if (unreadIds.length) {
-      await markActivityEventsRead(unreadIds);
-      return items.map((item) =>
-        unreadIds.includes(item.id)
-          ? { ...item, read_at: new Date().toISOString() }
-          : item,
-      );
-    }
+      if (unreadIds.length) {
+        await markActivityEventsRead(unreadIds);
+        return items.map((item) =>
+          unreadIds.includes(item.id)
+            ? { ...item, read_at: new Date().toISOString() }
+            : item,
+        );
+      }
 
-    return items;
-  }, [userId]);
+      return items;
+    },
+    enabled: !!userId,
+  });
 
   const sections = useMemo<ActivitySection[]>(() => {
     const groups = new Map<string, ActivityFeedItem[]>();
@@ -70,6 +75,8 @@ export function useActivityFeed(userId: string | null) {
   return {
     items: data ?? [],
     sections,
-    ...rest,
+    loading: rest.isLoading,
+    error: rest.error,
+    refetch: rest.refetch,
   };
 }

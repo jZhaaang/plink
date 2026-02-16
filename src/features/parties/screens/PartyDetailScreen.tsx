@@ -1,6 +1,5 @@
-import { ComponentProps, useCallback, useRef, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -48,7 +47,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
-import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -57,11 +56,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
+  const invalidate = useInvalidate();
 
   const { party, loading, error, refetch } = usePartyDetail(partyId);
-  const { refetch: refetchActiveLink } = useActiveLinkContext();
 
-  const hasFocusedRef = useRef(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -73,16 +71,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const [editLoading, setEditLoading] = useState(false);
 
   const insets = useSafeAreaInsets();
-
-  useFocusEffect(
-    useCallback(() => {
-      if (hasFocusedRef.current) {
-        refetch();
-      } else {
-        hasFocusedRef.current = true;
-      }
-    }, [refetch]),
-  );
 
   if (loading) {
     return (
@@ -101,7 +89,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         <Text className="text-center text-xs text-red-500 mb-4">
           {error?.message}
         </Text>
-        <Button title="Retry" variant="outline" onPress={refetch} />
+        <Button title="Retry" variant="outline" onPress={() => refetch} />
       </SafeAreaView>
     );
   }
@@ -123,8 +111,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       if (link) {
         setCreateModalVisible(false);
-        refetch();
-        refetchActiveLink();
+        invalidate.partyDetail(partyId);
+        invalidate.activeLink();
+        invalidate.parties();
+        invalidate.activity();
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });
       }
     } catch (err) {
@@ -157,7 +147,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       }
 
       setEditModalVisible(false);
-      refetch();
+      invalidate.partyDetail(partyId);
+      invalidate.parties();
     } catch (err) {
       await dialog.error('Error updating party', getErrorMessage(err));
     } finally {
@@ -188,7 +179,9 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       );
 
       await deleteParty(partyId);
-
+      invalidate.parties();
+      invalidate.activeLink();
+      invalidate.activity();
       navigation.goBack();
     } catch (err) {
       await dialog.error('Error deleting party', getErrorMessage(err));
@@ -445,7 +438,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             onClose={() => setInviteModalVisible(false)}
             partyId={partyId}
             existingMemberIds={party.members.map((m) => m.id)}
-            onSuccess={refetch}
+            onSuccess={() => {
+              invalidate.partyDetail(partyId);
+              invalidate.activity();
+            }}
           />
         )}
       </View>

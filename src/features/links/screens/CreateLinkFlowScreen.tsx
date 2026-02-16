@@ -18,14 +18,15 @@ import CreateLinkModal from '../components/CreateLinkModal';
 import type { PartyListItem } from '../../../lib/models';
 import { SignedInParamList } from '../../../navigation/types';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 
 export default function CreateLinkFlowScreen() {
   const { session } = useAuth();
   const userId = session?.user?.id;
   const dialog = useDialog();
+  const invalidate = useInvalidate();
   const navigation = useNavigation<NavigationProp<SignedInParamList>>();
-  const { createLinkVisible, closeCreateLink, refetch } =
-    useActiveLinkContext();
+  const { createLinkVisible, closeCreateLink } = useActiveLinkContext();
   const { parties, loading: partiesLoading } = usePartyListItems(
     userId ?? null,
   );
@@ -53,7 +54,10 @@ export default function CreateLinkFlowScreen() {
 
       if (link) {
         handleClose();
-        await refetch();
+        invalidate.activeLink();
+        invalidate.partyDetail(selectedParty.id);
+        invalidate.parties();
+        invalidate.activity();
         navigation.navigate('App', {
           screen: 'Link',
           params: {
