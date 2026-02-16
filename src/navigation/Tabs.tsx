@@ -7,6 +7,7 @@ import ProfileScreen from '../features/profile/screens/ProfileScreen';
 import CustomTabBar from './CustomTabBar';
 import CreateLinkFlowScreen from '../features/links/screens/CreateLinkFlowScreen';
 import LinkStack from './LinkStack';
+import ActivityScreen from '../features/activity/screens/ActivityScreen';
 
 const Tab = createBottomTabNavigator<TabsParamList>();
 
@@ -56,6 +57,19 @@ export default function Tabs() {
           name="Link"
           component={LinkStack}
           listeners={{ tabPress: () => {} }}
+        />
+        <Tab.Screen
+          name="Activity"
+          component={ActivityScreen}
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons
+                name={focused ? 'notifications' : 'notifications-outline'}
+                size={size}
+                color={color}
+              />
+            ),
+          }}
         />
         <Tab.Screen
           name="Profile"

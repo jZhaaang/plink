@@ -29,6 +29,7 @@ export type TabsParamList = {
   Home: undefined;
   Party: NavigatorScreenParams<PartyStackParamList>;
   Link: NavigatorScreenParams<LinkStackParamList>;
+  Activity: undefined;
   Profile: undefined;
 };
 

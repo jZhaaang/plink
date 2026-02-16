@@ -14,6 +14,71 @@ export type Database = {
   };
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          actor_user_id: string | null;
+          created_at: string;
+          id: string;
+          link_id: string | null;
+          metadata: Json;
+          party_id: string | null;
+          read_at: string | null;
+          recipient_user_id: string;
+          type: Database['public']['Enums']['activity_type'];
+        };
+        Insert: {
+          actor_user_id?: string | null;
+          created_at?: string;
+          id?: string;
+          link_id?: string | null;
+          metadata?: Json;
+          party_id?: string | null;
+          read_at?: string | null;
+          recipient_user_id: string;
+          type: Database['public']['Enums']['activity_type'];
+        };
+        Update: {
+          actor_user_id?: string | null;
+          created_at?: string;
+          id?: string;
+          link_id?: string | null;
+          metadata?: Json;
+          party_id?: string | null;
+          read_at?: string | null;
+          recipient_user_id?: string;
+          type?: Database['public']['Enums']['activity_type'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'activity_events_actor_user_id_fkey';
+            columns: ['actor_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'activity_events_link_id_fkey';
+            columns: ['link_id'];
+            isOneToOne: false;
+            referencedRelation: 'links';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'activity_events_party_id_fkey';
+            columns: ['party_id'];
+            isOneToOne: false;
+            referencedRelation: 'parties';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'activity_events_recipient_user_id_fkey';
+            columns: ['recipient_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       link_members: {
         Row: {
           created_at: string | null;
@@ -189,6 +254,8 @@ export type Database = {
       };
       parties: {
         Row: {
+          banner_crop_x: number;
+          banner_crop_y: number;
           banner_path: string | null;
           created_at: string | null;
           id: string;
@@ -197,6 +264,8 @@ export type Database = {
           updated_at: string | null;
         };
         Insert: {
+          banner_crop_x?: number;
+          banner_crop_y?: number;
           banner_path?: string | null;
           created_at?: string | null;
           id?: string;
@@ -205,6 +274,8 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: {
+          banner_crop_x?: number;
+          banner_crop_y?: number;
           banner_path?: string | null;
           created_at?: string | null;
           id?: string;
@@ -290,10 +361,16 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      can_edit_link_banner: {
+        Args: { link_id_text: string };
+        Returns: boolean;
+      };
       can_upload_to_link: { Args: { p_link_id: string }; Returns: boolean };
       create_party_with_owner: {
         Args: { party_name: string; party_owner_id: string };
         Returns: {
+          banner_crop_x: number;
+          banner_crop_y: number;
           banner_path: string | null;
           created_at: string | null;
           id: string;
@@ -317,6 +394,13 @@ export type Database = {
       is_party_owner_of_link: { Args: { p_link_id: string }; Returns: boolean };
     };
     Enums: {
+      activity_type:
+        | 'link_created'
+        | 'link_ended'
+        | 'link_member_joined'
+        | 'link_member_left'
+        | 'party_member_joined'
+        | 'party_member_left';
       media_type: 'image' | 'video';
     };
     CompositeTypes: {
@@ -448,6 +532,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: [
+        'link_created',
+        'link_ended',
+        'link_member_joined',
+        'link_member_left',
+        'party_member_joined',
+        'party_member_left',
+      ],
       media_type: ['image', 'video'],
     },
   },

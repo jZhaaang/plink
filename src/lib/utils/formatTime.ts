@@ -66,3 +66,29 @@ export function formatDuration(
 
   return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
 }
+
+export function toDayKey(dateString: string | null): string {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  const y = d.getFullYear();
+  const m = `${d.getMonth() + 1}`.padStart(2, '0');
+  const day = `${d.getDate()}`.padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function formatDaySectionTitle(dayKey: string): string {
+  if (!dayKey) return '';
+
+  const [y, m, d] = dayKey.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.getTime() === today.getTime()) return 'Today';
+  if (date.getTime() === yesterday.getTime()) return 'Yesterday';
+
+  return formatDateTime(date.toISOString()).date;
+}
