@@ -43,6 +43,10 @@ export async function removeFile(bucket: Bucket, paths: string[]) {
   }
 }
 
+type CachedUrl = { url: string; expiresAt: number };
+const urlCache = new Map<string, CachedUrl>();
+const CACHE_BUFFER = 60_000;
+
 export async function getUrls(
   bucket: Bucket,
   paths: string[],
@@ -50,25 +54,47 @@ export async function getUrls(
 ): Promise<Map<string, string>> {
   if (paths.length === 0) return new Map();
 
+  const now = Date.now();
+  const result = new Map<string, string>();
+  const uncached: string[] = [];
+
+  for (const p of paths) {
+    const key = `${bucket}:${p}`;
+    const cached = urlCache.get(key);
+    if (cached && cached.expiresAt - CACHE_BUFFER > now) {
+      result.set(p, cached.url);
+    } else {
+      uncached.push(p);
+    }
+  }
+
+  if (uncached.length === 0) return result;
+
   if (BUCKET_PRIVACY[bucket] === 'public') {
-    return new Map(
-      paths.map((p) => [
-        p,
-        supabase.storage.from(bucket).getPublicUrl(p).data.publicUrl,
-      ]),
-    );
+    for (const p of uncached) {
+      const url = supabase.storage.from(bucket).getPublicUrl(p).data.publicUrl;
+      result.set(p, url);
+      urlCache.set(`${bucket}:${p}`, { url, expiresAt: now + 3_600_000 });
+    }
+    return result;
   }
 
   const { data, error } = await supabase.storage
     .from(bucket)
-    .createSignedUrls(paths, ttl);
+    .createSignedUrls(uncached, ttl);
 
   if (error) {
     logger.error(' Error creating signed urls:', error.message);
     throw error;
   }
 
-  return new Map(data.map((d) => [d.path!, d.signedUrl]));
+  const expiresAt = now + ttl * 1000;
+  for (const d of data) {
+    result.set(d.path, d.signedUrl);
+    urlCache.set(`${bucket}:${d.path}`, { url: d.signedUrl, expiresAt });
+  }
+
+  return result;
 }
 
 export async function getPathsById(
