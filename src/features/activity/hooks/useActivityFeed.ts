@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ActivityFeedItem } from '../../../lib/models';
 import {
   getActivityFeedByUserId,
@@ -41,23 +41,18 @@ export function useActivityFeed(userId: string | null) {
     queryKey: queryKeys.activity.feed(userId),
     queryFn: async () => {
       if (!userId) return [];
-
-      const items = await getActivityFeedByUserId(userId);
-      const unreadIds = items.filter((i) => !i.read_at).map((i) => i.id);
-
-      if (unreadIds.length) {
-        await markActivityEventsRead(unreadIds);
-        return items.map((item) =>
-          unreadIds.includes(item.id)
-            ? { ...item, read_at: new Date().toISOString() }
-            : item,
-        );
-      }
-
-      return items;
+      return getActivityFeedByUserId(userId);
     },
     enabled: !!userId,
   });
+
+  useEffect(() => {
+    if (!data) return;
+    const unreadIds = data.filter((i) => !i.read_at).map((i) => i.id);
+    if (unreadIds.length) {
+      markActivityEventsRead(unreadIds);
+    }
+  }, [data]);
 
   const sections = useMemo<ActivitySection[]>(() => {
     const groups = new Map<string, ActivityFeedItem[]>();
