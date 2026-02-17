@@ -3,6 +3,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from 'react';
 import { LinkRow } from '../lib/models';
@@ -39,22 +40,34 @@ export function ActiveLinkProvider({ children }: { children: ReactNode }) {
 
   const openCreateLink = useCallback(() => setCreateLinkVisible(true), []);
   const closeCreateLink = useCallback(() => setCreateLinkVisible(false), []);
-  const requestUpload = () => setUploadRequested(true);
-  const clearUploadRequest = () => setUploadRequested(false);
+  const requestUpload = useCallback(() => setUploadRequested(true), []);
+  const clearUploadRequest = useCallback(() => setUploadRequested(false), []);
+
+  const value = useMemo(
+    () => ({
+      activeLink,
+      loading,
+      createLinkVisible,
+      openCreateLink,
+      closeCreateLink,
+      uploadRequested,
+      requestUpload,
+      clearUploadRequest,
+    }),
+    [
+      activeLink,
+      loading,
+      createLinkVisible,
+      openCreateLink,
+      closeCreateLink,
+      uploadRequested,
+      requestUpload,
+      clearUploadRequest,
+    ],
+  );
 
   return (
-    <ActiveLinkContext.Provider
-      value={{
-        activeLink,
-        loading,
-        createLinkVisible,
-        openCreateLink,
-        closeCreateLink,
-        uploadRequested,
-        requestUpload,
-        clearUploadRequest,
-      }}
-    >
+    <ActiveLinkContext.Provider value={value}>
       {children}
     </ActiveLinkContext.Provider>
   );
