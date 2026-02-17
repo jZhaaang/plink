@@ -137,14 +137,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
 
-  useFocusEffect(() => {
+  useFocusEffect(
     useCallback(() => {
       if (uploadRequested) {
         clearUploadRequest();
         setShowCamera(true);
       }
-    }, [uploadRequested, clearUploadRequest]);
-  });
+    }, [uploadRequested, clearUploadRequest]),
+  );
 
   if (loading) return <LoadingScreen label="Loading..." />;
 
