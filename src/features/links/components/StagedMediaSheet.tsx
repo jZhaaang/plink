@@ -201,6 +201,7 @@ export default function StagedMediaSheet({
               >
                 <Image
                   source={{ uri: asset.uri }}
+                  cachePolicy="memory-disk"
                   style={{
                     width: tileSize,
                     height: tileSize,
@@ -260,6 +261,7 @@ export default function StagedMediaSheet({
                 <Image
                   key={asset.uri}
                   source={{ uri: asset.uri }}
+                  cachePolicy="memory-disk"
                   style={{
                     width: 36,
                     height: 36,

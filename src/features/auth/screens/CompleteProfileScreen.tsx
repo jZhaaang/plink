@@ -144,7 +144,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             className="h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-slate-200"
           >
             {imageUri ? (
-              <Image source={{ uri: imageUri }} className="h-28 w-28" />
+              <Image
+                source={{ uri: imageUri }}
+                cachePolicy="memory-disk"
+                className="h-28 w-28"
+              />
             ) : (
               <Ionicons name="camera-outline" size={26} color="#64748b" />
             )}

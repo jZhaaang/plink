@@ -359,6 +359,7 @@ function PreviewView({ asset, onConfirm, onRetake, insets }: PreviewProps) {
         ) : (
           <Image
             source={{ uri: asset.uri }}
+            cachePolicy="memory-disk"
             style={{ width: '100%', height: '100%' }}
             contentFit="contain"
             transition={200}

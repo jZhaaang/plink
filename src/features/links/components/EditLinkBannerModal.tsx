@@ -149,6 +149,7 @@ export default function EditLinkBannerModal({
                   >
                     <Image
                       source={{ uri: image.url }}
+                      cachePolicy="memory-disk"
                       contentFit="cover"
                       style={{ width: '100%', height: '100%' }}
                     />

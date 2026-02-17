@@ -115,6 +115,7 @@ export default function InviteMemberModal({
         <View className="mt-4 flex-row items-center p-3 bg-slate-100 rounded-xl">
           <Image
             source={{ uri: foundUserAvatarUrl ?? undefined }}
+            cachePolicy="memory-disk"
             style={{ width: 44, height: 44, borderRadius: 22 }}
           />
           <View className="ml-3 flex-1">

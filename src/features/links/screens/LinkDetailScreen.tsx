@@ -433,6 +433,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             <>
               <Image
                 source={{ uri: link.bannerUrl }}
+                cachePolicy="memory-disk"
                 contentFit="cover"
                 contentPosition={{
                   left: `${link.banner_crop_x}%`,
@@ -458,6 +459,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             {link.bannerUrl ? (
               <Image
                 source={{ uri: link.bannerUrl }}
+                cachePolicy="memory-disk"
                 contentFit="cover"
                 contentPosition={{
                   left: `${link.banner_crop_x}%`,

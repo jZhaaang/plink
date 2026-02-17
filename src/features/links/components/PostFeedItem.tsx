@@ -69,6 +69,7 @@ export default function PostFeedItem({
         {post.owner.avatarUrl ? (
           <Image
             source={{ uri: post.owner.avatarUrl }}
+            cachePolicy="memory-disk"
             style={{ width: 40, height: 40, borderRadius: 20 }}
             contentFit="cover"
           />

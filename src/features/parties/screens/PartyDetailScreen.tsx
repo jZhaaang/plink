@@ -238,6 +238,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           <>
             <Image
               source={{ uri: party.bannerUrl }}
+              cachePolicy="memory-disk"
               contentFit="cover"
               blurRadius={20}
               style={{ width: '100%', height: insets.top + 40 }}
@@ -269,6 +270,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             {party.bannerUrl ? (
               <Image
                 source={{ uri: party.bannerUrl }}
+                cachePolicy="memory-disk"
                 contentFit="cover"
                 style={{ width: '100%', height: '100%' }}
               />

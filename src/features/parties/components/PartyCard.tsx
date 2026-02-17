@@ -45,6 +45,7 @@ export function PartyCard(props: Props) {
           {bannerUri ? (
             <Image
               source={{ uri: bannerUri }}
+              cachePolicy="memory-disk"
               contentFit="cover"
               style={{ width: '100%', height: '100%' }}
             />

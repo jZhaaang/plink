@@ -27,6 +27,7 @@ export default function LinkCard({ link, onPress }: Props) {
           {link.bannerUrl ? (
             <Image
               source={{ uri: link.bannerUrl }}
+              cachePolicy="memory-disk"
               contentFit="cover"
               contentPosition={{
                 left: `${link.banner_crop_x}%`,
@@ -62,7 +63,10 @@ export default function LinkCard({ link, onPress }: Props) {
           </View>
 
           <View className="absolute bottom-0 left-0 right-0 px-4 pb-3">
-            <Text className="text-base font-semibold text-white" numberOfLines={1}>
+            <Text
+              className="text-base font-semibold text-white"
+              numberOfLines={1}
+            >
               {link.name}
             </Text>
             <Text className="text-xs text-white/80 mt-0.5" numberOfLines={1}>
