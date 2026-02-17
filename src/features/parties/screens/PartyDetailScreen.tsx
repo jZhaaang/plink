@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react';
+import { ComponentProps, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -89,8 +89,25 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   }
 
   const isOwner = party?.owner_id === userId;
-  const activeLink = party.links.find((l) => !l.end_time);
-  const pastLinks = party.links.filter((l) => l.end_time);
+  const activeLink = useMemo(
+    () => party.links.find((l) => !l.end_time),
+    [party.links],
+  );
+  const pastLinks = useMemo(
+    () => party.links.filter((l) => l.end_time),
+    [party.links],
+  );
+  const existingMemberIds = useMemo(
+    () => party.members.map((m) => m.id),
+    [party.members],
+  );
+  const memberAvatars = useMemo(
+    () =>
+      party.members
+        .map((m) => m.avatarUrl)
+        .filter((url): url is string => !!url),
+    [party.members],
+  );
 
   const handleCreateLink = async (name: string) => {
     if (!userId) return;
@@ -225,10 +242,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       variant: 'danger',
     });
   }
-
-  const memberAvatars = party.members
-    .map((m) => m.avatarUrl)
-    .filter((url): url is string => !!url);
 
   return (
     <View className="flex-1 bg-neutral-50">
@@ -436,7 +449,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             visible={inviteModalVisible}
             onClose={() => setInviteModalVisible(false)}
             partyId={partyId}
-            existingMemberIds={party.members.map((m) => m.id)}
+            existingMemberIds={existingMemberIds}
             onSuccess={() => {
               invalidate.partyDetail(partyId);
               invalidate.activity();
