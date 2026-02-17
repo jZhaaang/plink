@@ -72,15 +72,19 @@ export default function PartyListScreen({ navigation }: Props) {
     }
   };
 
-  if (partiesLoading) return <LoadingScreen label="Loading..." />;
+  if (loading) return <LoadingScreen label="Loading..." />;
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-center text-neutral-600">
-          Failed to load parties. Pull to retry.
+      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
+        <Text className="text-center text-neutral-600 mb-4">
+          Failed to load parties.
         </Text>
-      </View>
+        <Text className="text-center text-xs text-red-500 mb-4">
+          {error?.message}
+        </Text>
+        <Button title="Retry" variant="outline" onPress={() => refetch()} />
+      </SafeAreaView>
     );
   }
 

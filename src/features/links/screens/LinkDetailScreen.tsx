@@ -139,6 +139,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         <Text className="text-center text-neutral-600 mb-4">
           Failed to load link details.
         </Text>
+        <Text className="text-center text-xs text-red-500 mb-4">
+          {error?.message}
+        </Text>
         <Button title="Retry" variant="outline" onPress={() => refetch()} />
       </SafeAreaView>
     );
