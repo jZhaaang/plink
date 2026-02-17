@@ -70,6 +70,33 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const { link, loading, error, refetch } = useLinkDetail(linkId);
 
+  const onUploadSuccess = useCallback(() => {
+    invalidate.linkDetail(linkId);
+  }, [invalidate, linkId]);
+
+  const onUploadError = useCallback(
+    (error: Error) => {
+      dialog.error('Upload failed', error.message);
+    },
+    [dialog],
+  );
+
+  const onUploadComplete = useCallback(
+    async (uploaded: { type: string; path: string }[]) => {
+      if (link?.banner_path) return;
+      const firstImage = uploaded.find((item) => item.type === 'image');
+      if (!firstImage) return;
+      await updateLinkById(linkId, {
+        banner_path: firstImage.path,
+        banner_crop_x: 50,
+        banner_crop_y: 42,
+      });
+      invalidate.linkDetail(linkId);
+      invalidate.partyDetail(partyId);
+    },
+    [link?.banner_path, linkId, partyId, invalidate],
+  );
+
   const {
     stagedAssets,
     stageAssets,
@@ -83,20 +110,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   } = useStagedMedia({
     linkId,
     userId,
-    onSuccess: () => invalidate.linkDetail(linkId),
-    onError: (error) => dialog.error('Upload failed', error.message),
-    onUploadComplete: async (uploaded) => {
-      if (link?.banner_path) return;
-      const firstImage = uploaded.find((item) => item.type === 'image');
-      if (!firstImage) return;
-      await updateLinkById(linkId, {
-        banner_path: firstImage.path,
-        banner_crop_x: 50,
-        banner_crop_y: 42,
-      });
-      invalidate.linkDetail(linkId);
-      invalidate.partyDetail(partyId);
-    },
+    onSuccess: onUploadSuccess,
+    onError: onUploadError,
+    onUploadComplete,
   });
 
   const [showCamera, setShowCamera] = useState(false);
