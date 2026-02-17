@@ -28,7 +28,7 @@ export function usePartyListItems(userId: string | null) {
           const prefetchUrls = [resolvedParty.bannerUrl, ...avatarUrls].filter(
             (url): url is string => typeof url === 'string' && url.length > 0,
           );
-          await Promise.all(prefetchUrls.map((url) => Image.prefetch(url)));
+          prefetchUrls.map((url) => Image.prefetch(url));
 
           return { ...resolvedParty, members };
         }),
