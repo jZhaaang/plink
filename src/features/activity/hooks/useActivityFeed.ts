@@ -15,19 +15,22 @@ export type ActivitySection = {
 
 export function activityLine(item: ActivityFeedItem): string {
   const actor = item.actorName ?? 'Someone';
+  const party = item.partyName ?? 'a deleted party';
+  const link = item.linkName ?? 'a deleted link';
+
   switch (item.type) {
     case 'link_created':
-      return `${actor} started a link in ${item.partyName}!`;
+      return `${actor} started a link in ${party}!`;
     case 'link_ended':
-      return `${item.linkName} has ended!`;
+      return `${link} in ${party} has ended!`;
     case 'link_member_joined':
-      return `${actor} joined ${item.linkName}.`;
+      return `${actor} joined ${link} in ${party}!`;
     case 'link_member_left':
-      return `${actor} left ${item.linkName}.`;
+      return `${actor} left ${link} in ${party}.`;
     case 'party_member_joined':
-      return `${actor} joined ${item.partyName}!`;
+      return `${actor} joined ${party}!`;
     case 'party_member_left':
-      return `${actor} left ${item.partyName}.`;
+      return `${actor} left ${party}.`;
     default:
       return `${actor} had activity`;
   }

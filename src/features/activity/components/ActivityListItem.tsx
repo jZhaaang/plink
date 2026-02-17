@@ -46,9 +46,6 @@ export default function ActivityListItem({ item, onPress }: Props) {
           <Text className="text-[15px] font-medium text-slate-900">
             {activityLine(item)}
           </Text>
-          <Text className="text-sm text-slate-500 mt-0.5">
-            {item.partyName ?? 'Activity'}
-          </Text>
           <Text className="text-xs text-slate-400 mt-1">
             {formatRelativeTime(item.created_at)}
           </Text>
