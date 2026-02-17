@@ -502,9 +502,15 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             pointerEvents="box-none"
           >
             <View
-              className="flex-row justify-end px-4 py-2"
+              className="flex-row items-center justify-between px-4 py-2"
               pointerEvents="box-none"
             >
+              <Pressable
+                onPress={() => navigation.goBack()}
+                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
+              >
+                <Feather name="arrow-left" size={20} color="#fff" />
+              </Pressable>
               <Pressable
                 onPress={handleMenuPress}
                 className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
