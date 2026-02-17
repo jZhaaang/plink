@@ -113,14 +113,15 @@ export async function getActivityFeedByUserId(
   const linkMap = new Map((linksRes.data ?? []).map((l) => [l.id, l]));
   const partyMap = new Map((partiesRes.data ?? []).map((p) => [p.id, p]));
 
-  return events.map((event) => ({
-    ...event,
-    actorName: event.actor_user_id
-      ? (profileMap.get(event.actor_user_id)?.name ?? null)
-      : null,
-    linkName: event.link_id ? (linkMap.get(event.link_id)?.name ?? null) : null,
-    partyName: event.party_id
-      ? (partyMap.get(event.party_id)?.name ?? null)
-      : null,
-  }));
+  return events.map((event) => {
+    const meta =
+      (event.metadata as { partyName?: string; linkName?: string }) ?? {};
+
+    return {
+      ...event,
+      actorName: profileMap.get(event.actor_user_id)?.name ?? null,
+      linkName: linkMap.get(event.link_id)?.name ?? meta.linkName ?? null,
+      partyName: partyMap.get(event.party_id)?.name ?? meta.partyName ?? null,
+    };
+  });
 }
