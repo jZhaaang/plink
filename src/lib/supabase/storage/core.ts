@@ -34,6 +34,8 @@ export async function uploadFile(
 }
 
 export async function removeFile(bucket: Bucket, paths: string[]) {
+  if (paths.length === 0) return;
+
   const { error } = await supabase.storage.from(bucket).remove(paths);
   if (error) {
     logger.error('Error removing file:', error.message);
