@@ -41,6 +41,7 @@ export default function ProfileScreen() {
   );
 
   useEffect(() => {
+    if (!editing) return;
     ImagePicker.requestMediaLibraryPermissionsAsync();
     ImagePicker.requestCameraPermissionsAsync();
   }, [editing]);
