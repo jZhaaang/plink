@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useMemo, useState } from 'react';
+import { ComponentProps, useCallback, useMemo, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -52,7 +52,7 @@ import { CardSection } from '../../../components/Card';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
-import { CommonActions, useIsFocused } from '@react-navigation/native';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
@@ -119,17 +119,16 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     [allMedia],
   );
 
-  const isFocused = useIsFocused();
   const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
 
-  useEffect(() => {
-    if (!isFocused) return;
-
-    if (uploadRequested) {
-      clearUploadRequest();
-      setShowCamera(true);
-    }
-  }, [isFocused, uploadRequested]);
+  useFocusEffect(() => {
+    useCallback(() => {
+      if (uploadRequested) {
+        clearUploadRequest();
+        setShowCamera(true);
+      }
+    }, [uploadRequested, clearUploadRequest]);
+  });
 
   if (loading) return <LoadingScreen label="Loading..." />;
 
