@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import AvatarStack from '../../../components/AvatarStack';
+import { memo } from 'react';
 
 type Props = {
   name: string;
@@ -87,4 +88,4 @@ export function PartyCard(props: Props) {
   );
 }
 
-export default PartyCard;
+export default memo(PartyCard);

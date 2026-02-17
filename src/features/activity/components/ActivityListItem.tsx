@@ -3,6 +3,7 @@ import { ActivityFeedItem } from '../../../lib/models';
 import { Pressable, View, Text } from 'react-native';
 import { activityLine } from '../hooks/useActivityFeed';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
+import { memo } from 'react';
 
 type Props = {
   item: ActivityFeedItem;
@@ -30,7 +31,7 @@ function iconForType(
   }
 }
 
-export default function ActivityListItem({ item, onPress }: Props) {
+export function ActivityListItem({ item, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -58,3 +59,5 @@ export default function ActivityListItem({ item, onPress }: Props) {
     </Pressable>
   );
 }
+
+export default memo(ActivityListItem);

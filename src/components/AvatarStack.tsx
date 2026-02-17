@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { memo } from 'react';
 
 type Props = {
   avatarUris: string[];
@@ -8,11 +9,7 @@ type Props = {
   className?: string;
 };
 
-export default function AvatarStack({
-  avatarUris,
-  maxVisible = 5,
-  size = 40,
-}: Props) {
+export function AvatarStack({ avatarUris, maxVisible = 5, size = 40 }: Props) {
   const total = avatarUris.length;
   const visible = Math.min(maxVisible, total);
   const overflow = total - visible;
@@ -53,3 +50,5 @@ export default function AvatarStack({
     </View>
   );
 }
+
+export default memo(AvatarStack);

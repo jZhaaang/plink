@@ -2,6 +2,7 @@ import { Pressable, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { Link } from '../../../lib/models';
+import { memo } from 'react';
 
 type Props = {
   link: Link;
@@ -14,7 +15,7 @@ function formatDate(dateString: string | null): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export default function LinkCard({ link, onPress }: Props) {
+export function LinkCard({ link, onPress }: Props) {
   const isActive = !link.end_time;
 
   return (
@@ -80,3 +81,5 @@ export default function LinkCard({ link, onPress }: Props) {
     </Pressable>
   );
 }
+
+export default memo(LinkCard);
