@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -14,6 +14,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLinkDetail } from '../hooks/useLinkDetail';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'MediaViewer'>;
 
@@ -50,13 +51,18 @@ function VideoItem({ url, width, height, isActive }: VideoProps) {
 }
 
 export default function MediaViewerScreen({ route, navigation }: Props) {
-  const { mediaItems, initialIndex } = route.params;
+  const { linkId, initialIndex } = route.params;
+  const { link } = useLinkDetail(linkId);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
 
   const mediaHeight = height - insets.bottom;
+  const mediaItems = useMemo(() => {
+    if (!link) return [];
+    return link.posts.flatMap((post) => post.media);
+  }, [link]);
 
   return (
     <View className="flex-1 bg-black">

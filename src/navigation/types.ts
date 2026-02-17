@@ -1,5 +1,4 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
-import { LinkPostMedia } from '../lib/models';
 
 export type AuthStackParamList = {
   Landing: undefined;
@@ -14,7 +13,7 @@ export type SignedInParamList = {
 
 export type LinkFlowParamList = {
   LinkDetail: { linkId: string; partyId: string };
-  MediaViewer: { mediaItems: LinkPostMedia[]; initialIndex: number };
+  MediaViewer: { linkId: string; initialIndex: number };
   AllMedia: { linkId: string };
 };
 

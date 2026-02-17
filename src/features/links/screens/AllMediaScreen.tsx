@@ -30,7 +30,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
     navigation.navigate('MediaViewer', {
-      mediaItems: allMedia,
+      linkId,
       initialIndex: index === -1 ? 0 : index,
     });
   };
