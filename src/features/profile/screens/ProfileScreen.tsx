@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
-import { View, Text, ScrollView, Image, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
@@ -167,7 +168,9 @@ export default function ProfileScreen() {
                   {editModeAvatarUri ? (
                     <Image
                       source={{ uri: editModeAvatarUri }}
-                      className="h-28 w-28"
+                      style={{ width: 112, height: 112 }}
+                      cachePolicy="memory-disk"
+                      contentFit="cover"
                     />
                   ) : (
                     ''
@@ -245,7 +248,9 @@ export default function ProfileScreen() {
                   {profile.avatarUrl ? (
                     <Image
                       source={{ uri: profile.avatarUrl }}
-                      className="h-24 w-24 rounded-full"
+                      style={{ width: 96, height: 96, borderRadius: 48 }}
+                      cachePolicy="memory-disk"
+                      contentFit="cover"
                     />
                   ) : (
                     ''
