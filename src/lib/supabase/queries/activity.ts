@@ -83,13 +83,13 @@ export async function getActivityFeedByUserId(
 
   const [profilesRes, linksRes, partiesRes] = await Promise.all([
     actorIds.length
-      ? supabase.from('profiles').select('*').in('id', actorIds)
+      ? supabase.from('profiles').select('id, name').in('id', actorIds)
       : Promise.resolve({ data: [] as ProfileRow[], error: null }),
     linkIds.length
-      ? supabase.from('links').select('*').in('id', linkIds)
+      ? supabase.from('links').select('id, name').in('id', linkIds)
       : Promise.resolve({ data: [] as LinkRow[], error: null }),
     partyIds.length
-      ? supabase.from('parties').select('*').in('id', partyIds)
+      ? supabase.from('parties').select('id, name').in('id', partyIds)
       : Promise.resolve({ data: [] as PartyRow[], error: null }),
   ]);
 
