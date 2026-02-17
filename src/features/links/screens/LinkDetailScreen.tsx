@@ -58,6 +58,7 @@ import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
+import { trackEvent } from '../../../lib/telemetry/analytics';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -164,6 +165,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await endLink(linkId);
+      trackEvent('link_ended', { link_id: linkId });
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
@@ -177,6 +179,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     try {
       await updateLinkById(linkId, { name: newName });
       setEditModalVisible(false);
+      trackEvent('link_updated', { link_id: linkId });
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
@@ -199,7 +202,15 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       const linkPaths = await linksStorage.getPathsById(linkId);
       await linksStorage.remove(linkPaths);
       await deleteLink(linkId);
-      invalidate.linkDetail(linkId);
+      trackEvent('link_deleted', { link_id: linkId });
+      trackEvent('link_post_deleted', {
+        link_id: linkId,
+        posts_count: link.posts.length,
+      });
+      trackEvent('media_deleted', {
+        link_id: linkId,
+        media_count: linkPaths.length,
+      });
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       invalidate.activity();
@@ -230,6 +241,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await createLinkMember({ link_id: linkId, user_id: userId });
+      trackEvent('link_joined', { link_id: linkId });
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
     } catch (err) {

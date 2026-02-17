@@ -4,17 +4,24 @@ import './global.css';
 import AppNavigator from './src/navigation/AppNavigator';
 import { DialogProvider } from './src/providers/DialogProvider';
 import { AuthProvider } from './src/providers/AuthProvider';
+import * as Sentry from '@sentry/react-native';
+import { initMonitoring } from './src/lib/telemetry/monitoring';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
-export default function App() {
+initMonitoring();
+
+export default Sentry.wrap(function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <DialogProvider>
-          <AuthProvider>
-            <AppNavigator />
-          </AuthProvider>
-        </DialogProvider>
+        <ErrorBoundary>
+          <DialogProvider>
+            <AuthProvider>
+              <AppNavigator />
+            </AuthProvider>
+          </DialogProvider>
+        </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-}
+});

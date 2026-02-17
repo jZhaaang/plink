@@ -1,6 +1,6 @@
 import { supabase } from '../client';
 import { PartyMemberRow, PartyMemberInsert } from '../../models';
-import { logger } from '../logger';
+import { logger } from '../../telemetry/logger';
 
 export async function getPartyMembersByPartyId(
   partyId: string,

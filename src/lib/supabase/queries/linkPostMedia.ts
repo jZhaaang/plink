@@ -1,5 +1,5 @@
 import { supabase } from '../client';
-import { logger } from '../logger';
+import { logger } from '../../telemetry/logger';
 import { LinkPostMediaRow, LinkPostMediaInsert } from '../../models';
 
 export async function getMediaByPostId(

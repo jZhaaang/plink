@@ -12,6 +12,7 @@ import { updateUserProfile } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
 import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
+import { trackEvent } from '../../../lib/telemetry/analytics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
@@ -109,6 +110,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         username: trimmedUsername,
         avatar_path: avatarPath,
       });
+      trackEvent('profile_completed');
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
       const error = getErrorMessageForUsername(err);

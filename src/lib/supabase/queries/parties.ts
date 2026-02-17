@@ -1,5 +1,5 @@
 import { supabase } from '../client';
-import { logger } from '../logger';
+import { logger } from '../../telemetry/logger';
 import { PartyRow, PartyInsert, PartyUpdate } from '../../models';
 
 export async function getPartiesByUserId(userId: string): Promise<PartyRow[]> {

@@ -1,5 +1,5 @@
 import { supabase } from '../client';
-import { logger } from '../logger';
+import { logger } from '../../telemetry/logger';
 
 export type Bucket = 'avatars' | 'parties' | 'links';
 export const BUCKET_PRIVACY: Record<Bucket, 'public' | 'private'> = {
@@ -89,12 +89,11 @@ export async function getPathsById(
         });
 
       if (error) {
-        logger.error(
-          'Error listing storage prefix:',
+        logger.error('Error listing storage prefix:', {
           bucket,
-          currentPrefix,
-          error.message,
-        );
+          prefix: currentPrefix,
+          detail: error.message,
+        });
         throw error;
       }
 

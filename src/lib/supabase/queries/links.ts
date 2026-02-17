@@ -1,5 +1,5 @@
 import { supabase } from '../client';
-import { logger } from '../logger';
+import { logger } from '../../telemetry/logger';
 import { LinkRow, LinkInsert, LinkUpdate } from '../../models';
 
 export async function getLinksByUserId(userId: string): Promise<LinkRow[]> {

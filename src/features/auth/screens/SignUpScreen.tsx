@@ -8,6 +8,7 @@ import { Button, TextField } from '../../../components';
 import { signUpWithEmail } from '../../../lib/supabase/queries/auth';
 import { useDialog } from '../../../providers/DialogProvider';
 import { isValidEmail, normalizeEmail } from '../../../lib/utils/validation';
+import { trackEvent } from '../../../lib/telemetry/analytics';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
@@ -41,6 +42,7 @@ export default function SignUpScreen({ navigation }: Props) {
 
     try {
       const { error } = await signUpWithEmail(normalizedEmail.trim(), password);
+      trackEvent('sign_up_completed');
       if (error) {
         await dialog.error('Sign up failed', error.message);
       }

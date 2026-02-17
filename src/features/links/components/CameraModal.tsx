@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { logger } from '../../../lib/supabase/logger';
+import { logger } from '../../../lib/telemetry/logger';
 import { View, Text, StatusBar, Pressable, Modal } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';

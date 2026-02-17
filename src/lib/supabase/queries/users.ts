@@ -1,5 +1,5 @@
 import { supabase } from '../client';
-import { logger } from '../logger';
+import { logger } from '../../telemetry/logger';
 import { ProfileRow, ProfileUpdate } from '../../models';
 
 export async function getUserProfile(

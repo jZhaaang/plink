@@ -7,6 +7,8 @@ import {
   useState,
 } from 'react';
 import { supabase } from '../lib/supabase/client';
+import { clearUser, setUser } from '../lib/telemetry/monitoring';
+import { identifyUser, resetUser } from '../lib/telemetry/analytics';
 
 type AuthContextValue = {
   session: Session | null;
@@ -31,9 +33,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session ?? null);
       setReady(true);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) =>
-      setSession(s),
-    );
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+
+      if (s?.user) {
+        setUser(s.user.id, s.user.email ?? undefined);
+        identifyUser(s.user.id, { email: s.user.email ?? '' });
+      } else {
+        clearUser();
+        resetUser();
+      }
+    });
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();

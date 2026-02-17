@@ -9,6 +9,7 @@ import {
   createLinkPostMedia,
   deleteLinkPostMedia,
 } from '../../../lib/supabase/queries/linkPostMedia';
+import { trackEvent } from '../../../lib/telemetry/analytics';
 
 type UseStagedMediaOpts = {
   linkId: string;
@@ -168,6 +169,10 @@ export function useStagedMedia({
       }
 
       onSuccess?.();
+      trackEvent('media_uploaded', {
+        link_id: linkId,
+        count: successes.length,
+      });
       setStagedAssets([]);
     } catch (err) {
       if (insertedMediaIds.length) {
@@ -178,6 +183,7 @@ export function useStagedMedia({
       if (uploadedPaths.length) {
         await linksStorage.remove(uploadedPaths);
       }
+      trackEvent('media_upload_failed', { link_id: linkId });
       onError?.(err instanceof Error ? err : new Error('Upload failed'));
     } finally {
       setUploading(false);

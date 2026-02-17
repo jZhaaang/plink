@@ -48,6 +48,7 @@ import { StatusBar } from 'expo-status-bar';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
+import { trackEvent } from '../../../lib/telemetry/analytics';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -104,6 +105,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       if (link) {
         setCreateModalVisible(false);
+        trackEvent('link_created', { party_id: partyId, link_id: link.id });
         invalidate.partyDetail(partyId);
         invalidate.activeLink();
         invalidate.parties();
@@ -140,6 +142,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       }
 
       setEditModalVisible(false);
+      trackEvent('party_updated', { party_id: partyId });
       invalidate.partyDetail(partyId);
       invalidate.parties();
     } catch (err) {
@@ -172,6 +175,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       );
 
       await deleteParty(partyId);
+      trackEvent('party_deleted', { party_id: partyId });
       invalidate.parties();
       invalidate.activeLink();
       invalidate.activity();

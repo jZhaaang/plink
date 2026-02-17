@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Profile } from '../../../lib/models';
 import { searchUserByUsername } from '../../../lib/supabase/queries/users';
 import { createPartyMember } from '../../../lib/supabase/queries/partyMembers';
+import { trackEvent } from '../../../lib/telemetry/analytics';
 
 type InviteState =
   | { status: 'idle' }
@@ -50,6 +51,7 @@ export function useInviteMember(partyId: string, existingMemberIds: string[]) {
 
       try {
         await createPartyMember({ party_id: partyId, user_id: userId });
+        trackEvent('party_joined', { party_id: partyId, user_id: userId });
         setState({ status: 'success' });
       } catch (err) {
         setState({ status: 'error', message: `Failed to invite user, ${err}` });
