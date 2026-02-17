@@ -82,7 +82,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         <Text className="text-center text-xs text-red-500 mb-4">
           {error?.message}
         </Text>
-        <Button title="Retry" variant="outline" onPress={() => refetch} />
+        <Button title="Retry" variant="outline" onPress={() => refetch()} />
       </SafeAreaView>
     );
   }

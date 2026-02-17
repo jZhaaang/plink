@@ -21,7 +21,7 @@ export default function ActivityScreen({ navigation }: Props) {
         <Text className="text-center text-neutral-600 mb-4">
           Failed to load activity.
         </Text>
-        <Button title="Retry" variant="outline" onPress={() => refetch} />
+        <Button title="Retry" variant="outline" onPress={() => refetch()} />
       </SafeAreaView>
     );
   }
