@@ -72,7 +72,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
   const insets = useSafeAreaInsets();
 
-  if (loading) <LoadingScreen label="Loading..." />;
+  if (loading) return <LoadingScreen label="Loading..." />;
 
   if (error || !party) {
     return (
