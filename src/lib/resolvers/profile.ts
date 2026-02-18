@@ -1,10 +1,9 @@
 import { Profile, ProfileRow } from '../models';
-import { supabase } from '../supabase/client';
+import { avatars as avatarsStorage } from '../supabase/storage/avatars';
+export async function resolveProfile(profile: ProfileRow): Promise<Profile> {
+  if (!profile.avatar_path) return { ...profile, avatarUrl: undefined };
 
-export function resolveProfile(profile: ProfileRow): Profile {
-  const avatarUrl = profile.avatar_path
-    ? supabase.storage.from('avatars').getPublicUrl(profile.avatar_path).data
-        .publicUrl
-    : undefined;
-  return { ...profile, avatarUrl };
+  const urlMap = await avatarsStorage.getUrls([profile.avatar_path]);
+
+  return { ...profile, avatarUrl: urlMap.get(profile.avatar_path) };
 }
