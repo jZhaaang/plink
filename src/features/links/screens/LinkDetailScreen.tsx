@@ -82,21 +82,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     [dialog],
   );
 
-  const onUploadComplete = useCallback(
-    async (uploaded: { type: string; path: string }[]) => {
-      if (link?.banner_path) return;
-      const firstImage = uploaded.find((item) => item.type === 'image');
-      if (!firstImage) return;
-      await updateLinkById(linkId, {
-        banner_path: firstImage.path,
-        banner_crop_x: 50,
-        banner_crop_y: 42,
-      });
-      invalidate.linkDetail(linkId);
-      invalidate.partyDetail(partyId);
-    },
-    [link?.banner_path, linkId, partyId, invalidate],
-  );
+  const onUploadComplete = useCallback(async () => {
+    invalidate.linkDetail(linkId);
+    invalidate.partyDetail(partyId);
+  }, [link?.banner_path, linkId, partyId, invalidate]);
 
   const {
     stagedAssets,
