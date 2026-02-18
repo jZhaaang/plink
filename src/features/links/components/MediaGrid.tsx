@@ -48,7 +48,7 @@ export default function MediaGrid({
 
         return (
           <MediaTile
-            uri={item.url}
+            uri={item.thumbnailUrl ?? item.url}
             width={itemSize}
             height={itemSize}
             onPress={() => {

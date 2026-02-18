@@ -11,6 +11,11 @@ import {
 } from '../../../lib/supabase/queries/linkPostMedia';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
+import {
+  generateImageThumbnail,
+  generateVideoThumbnail,
+} from '../../../lib/media/thumbnail';
+import { logger } from '@sentry/react-native';
 
 type UseStagedMediaOpts = {
   linkId: string;
@@ -28,6 +33,7 @@ type UploadProgress = {
 
 type UploadedAsset = {
   path: string;
+  thumbnailPath: string | null;
   mime: string;
   type: 'image' | 'video';
   duration_seconds: number | null;
@@ -113,14 +119,34 @@ export function useStagedMedia({
         stagedAssets.map(async (asset): Promise<UploadedAsset> => {
           const mime = asset.mimeType ?? 'image/jpeg';
           const type = asset.type === 'video' ? 'video' : 'image';
+
           const uri =
             type === 'video' ? asset.uri : (await compressImage(asset.uri)).uri;
           const path = await linksStorage.upload(linkId, post.id, uri, mime);
+
+          let thumbnailPath: string | null = null;
+          try {
+            const thumbUri =
+              type === 'video'
+                ? await generateVideoThumbnail(asset.uri)
+                : await generateImageThumbnail(asset.uri);
+
+            thumbnailPath = await linksStorage.upload(
+              linkId,
+              post.id,
+              thumbUri,
+              'image/jpeg',
+            );
+          } catch (error) {
+            logger.error('Error uploading thumbnail:', error.message);
+          }
+
           setProgress((prev) =>
             prev ? { ...prev, completed: prev.completed + 1 } : null,
           );
           return {
             path,
+            thumbnailPath,
             mime,
             type,
             duration_seconds:
@@ -149,6 +175,7 @@ export function useStagedMedia({
           const row = await createLinkPostMedia({
             post_id: post.id,
             path: m.path,
+            thumbnail_path: m.thumbnailPath,
             mime: m.mime,
             type: m.type,
             duration_seconds: m.duration_seconds,

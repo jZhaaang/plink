@@ -30,8 +30,14 @@ export async function resolveLink(link: LinkRow): Promise<Link> {
 export async function resolveLinkPostMediaItems(
   mediaItems: LinkPostMediaRow[],
 ): Promise<Map<string, LinkPostMedia>> {
-  const paths = mediaItems.map((media) => media.path);
-  const urlMap = await linksStorage.getUrls(paths);
+  const allPaths: string[] = [];
+  for (const media of mediaItems) {
+    allPaths.push(media.path);
+    if (media.thumbnail_path) {
+      allPaths.push(media.thumbnail_path);
+    }
+  }
+  const urlMap = await linksStorage.getUrls(allPaths);
 
   const resolved = new Map<string, LinkPostMedia>();
   for (const media of mediaItems) {
@@ -44,7 +50,17 @@ export async function resolveLinkPostMediaItems(
       continue;
     }
 
-    resolved.set(media.id, { ...media, url });
+    const thumbnailUrl = media.thumbnail_path
+      ? (urlMap.get(media.thumbnail_path) ?? null)
+      : null;
+    if (!thumbnailUrl) {
+      logger.warn('Missing resolved media URL for link media thumbnail', {
+        mediaId: media.id,
+        mediaPath: media.path,
+      });
+    }
+
+    resolved.set(media.id, { ...media, url, thumbnailUrl });
   }
 
   return resolved;

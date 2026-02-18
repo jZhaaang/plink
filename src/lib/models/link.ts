@@ -14,7 +14,10 @@ export type LinkPostInsert = TablesInsert<'link_posts'>;
 export type LinkPostUpdate = TablesUpdate<'link_posts'>;
 
 export type LinkPostMediaRow = Tables<'link_post_media'>;
-export type LinkPostMedia = LinkPostMediaRow & { url: string };
+export type LinkPostMedia = LinkPostMediaRow & {
+  url: string;
+  thumbnailUrl: string | null;
+};
 export type LinkPostMediaInsert = TablesInsert<'link_post_media'>;
 export type LinkPostMediaUpdate = TablesUpdate<'link_post_media'>;
 

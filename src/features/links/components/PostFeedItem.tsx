@@ -109,7 +109,7 @@ export function PostFeedItem({
           {post.media.map((media, index) => (
             <MediaTile
               key={media.id}
-              uri={media.url}
+              uri={media.thumbnailUrl ?? media.url}
               width={itemSize}
               height={mediaCount === 1 ? itemSize * 0.75 : itemSize}
               containerStyle={{ marginHorizontal: GAP / 2 }}
