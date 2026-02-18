@@ -22,12 +22,13 @@ export default function InviteMemberModal({
   onSuccess,
 }: Props) {
   const [username, setUsername] = useState('');
+  const [foundUserAvatarUrl, setFoundUserAvatarUrl] = useState<string | null>(
+    null,
+  );
   const { state, searchUser, inviteUser, reset } = useInviteMember(
     partyId,
     existingMemberIds,
   );
-  const foundUserAvatarUrl =
-    state.status === 'found' ? resolveProfile(state.user).avatarUrl : undefined;
 
   useEffect(() => {
     if (!visible) {
@@ -35,6 +36,21 @@ export default function InviteMemberModal({
       reset();
     }
   }, [visible, reset]);
+
+  useEffect(() => {
+    if (state.status !== 'found') {
+      setFoundUserAvatarUrl(null);
+      return;
+    }
+
+    let cancelled = false;
+    resolveProfile(state.user).then((profile) => {
+      if (!cancelled) setFoundUserAvatarUrl(profile.avatarUrl);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [state.status === 'found' ? state.user.id : null]);
 
   const handleSearch = () => {
     const trimmed = username.trim();
