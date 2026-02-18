@@ -5,9 +5,17 @@ import CompleteProfileScreen from '../features/auth/screens/CompleteProfileScree
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { ActiveLinkProvider } from '../providers/ActiveLinkProvider';
 import { QueryProvider } from '../providers/QueryProvider';
+import { useAuth } from '../providers/AuthProvider';
+import { usePushNotifications } from '../features/activity/hooks/usePushNotifications';
 
 const Stack = createNativeStackNavigator<SignedInParamList>();
 type SignedInRoute = RouteProp<RootStackParamList, 'SignedIn'>;
+
+function PushNotificationsBootstrap() {
+  const { userId } = useAuth();
+  usePushNotifications(userId);
+  return null;
+}
 
 export default function SignedInStack() {
   const route = useRoute<SignedInRoute>();
@@ -15,6 +23,7 @@ export default function SignedInStack() {
   return (
     <QueryProvider>
       <ActiveLinkProvider>
+        <PushNotificationsBootstrap />
         <Stack.Navigator
           id={undefined}
           screenOptions={{ headerShown: false }}

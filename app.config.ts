@@ -3,6 +3,7 @@ import type { ExpoConfig } from '@expo/config';
 export default {
   name: 'plink',
   slug: 'plink',
+  scheme: 'plink',
   extra: {
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
@@ -15,9 +16,16 @@ export default {
   android: {
     package: 'com.anonymous.plink',
   },
+  ios: {
+    bundleIdentifier: 'com.jimmy.plink',
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
+  },
   plugins: [
     'expo-font',
     'expo-video',
+    'expo-notifications',
     [
       '@sentry/react-native/expo',
       {
