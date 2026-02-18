@@ -84,7 +84,7 @@ export async function getUrls(
     .createSignedUrls(uncached, ttl);
 
   if (error) {
-    logger.error(' Error creating signed urls:', error.message);
+    logger.error('Error creating signed urls:', error.message);
     throw error;
   }
 
