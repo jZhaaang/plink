@@ -15,7 +15,7 @@ import {
   generateImageThumbnail,
   generateVideoThumbnail,
 } from '../../../lib/media/thumbnail';
-import { logger } from '@sentry/react-native';
+import { logger } from '../../../lib/telemetry/logger';
 
 type UseStagedMediaOpts = {
   linkId: string;
@@ -23,6 +23,13 @@ type UseStagedMediaOpts = {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
   onUploadComplete?: (uploaded: UploadedAsset[]) => Promise<void> | void;
+};
+
+export type StagedAsset = {
+  id: string;
+  asset: ImagePicker.ImagePickerAsset;
+  thumbnailUri: string | null;
+  thumbnailStatus: 'ready' | 'generating' | 'failed';
 };
 
 type UploadProgress = {
@@ -46,14 +53,46 @@ export function useStagedMedia({
   onError,
   onUploadComplete,
 }: UseStagedMediaOpts) {
-  const [stagedAssets, setStagedAssets] = useState<
-    ImagePicker.ImagePickerAsset[]
-  >([]);
+  const [stagedAssets, setStagedAssets] = useState<StagedAsset[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
 
   const stageAssets = useCallback((assets: ImagePicker.ImagePickerAsset[]) => {
-    setStagedAssets((prev) => [...prev, ...assets]);
+    const incoming: StagedAsset[] = assets.map((asset) => {
+      const id = `${asset.uri}-${Date.now()}-${Math.random()}`;
+      const isVideo = asset.type === 'video';
+      return {
+        id,
+        asset,
+        thumbnailUri: isVideo ? null : asset.uri,
+        thumbnailStatus: 'generating',
+      };
+    });
+
+    setStagedAssets((prev) => [...prev, ...incoming]);
+
+    incoming.map(async (item) => {
+      try {
+        let thumbnailUri =
+          item.asset.type === 'video'
+            ? await generateVideoThumbnail(item.asset.uri)
+            : await generateImageThumbnail(item.asset.uri);
+        setStagedAssets((prev) =>
+          prev.map((p) =>
+            p.id === item.id
+              ? { ...p, thumbnailUri, thumbnailStatus: 'ready' }
+              : p,
+          ),
+        );
+      } catch (error) {
+        setStagedAssets((prev) =>
+          prev.map((p) =>
+            p.id === item.id ? { ...p, thumbnailStatus: 'failed' } : p,
+          ),
+        );
+        logger.error('Error generating asset thumbnail:', error.message);
+      }
+    });
   }, []);
 
   const addFromGallery = useCallback(async () => {
@@ -92,7 +131,7 @@ export function useStagedMedia({
   }, [stageAssets]);
 
   const removeAsset = useCallback((uri: string) => {
-    setStagedAssets((prev) => prev.filter((asset) => asset.uri !== uri));
+    setStagedAssets((prev) => prev.filter((item) => item.asset.uri !== uri));
   }, []);
 
   const clearAll = useCallback(() => {
@@ -116,29 +155,26 @@ export function useStagedMedia({
       }
 
       const uploadedResults = await Promise.allSettled(
-        stagedAssets.map(async (asset): Promise<UploadedAsset> => {
-          const mime = asset.mimeType ?? 'image/jpeg';
-          const type = asset.type === 'video' ? 'video' : 'image';
+        stagedAssets.map(async (item): Promise<UploadedAsset> => {
+          const mime = item.asset.mimeType ?? 'image/jpeg';
+          const type = item.asset.type === 'video' ? 'video' : 'image';
 
           const uri =
-            type === 'video' ? asset.uri : (await compressImage(asset.uri)).uri;
+            type === 'video'
+              ? item.asset.uri
+              : (await compressImage(item.asset.uri)).uri;
           const path = await linksStorage.upload(linkId, post.id, uri, mime);
 
           let thumbnailPath: string | null = null;
           try {
-            const thumbUri =
-              type === 'video'
-                ? await generateVideoThumbnail(asset.uri)
-                : await generateImageThumbnail(asset.uri);
-
             thumbnailPath = await linksStorage.upload(
               linkId,
               post.id,
-              thumbUri,
+              item.thumbnailUri,
               'image/jpeg',
             );
           } catch (error) {
-            logger.error('Error uploading thumbnail:', error.message);
+            logger.error('Error uploading asset thumbnail:', error.message);
           }
 
           setProgress((prev) =>
@@ -150,7 +186,7 @@ export function useStagedMedia({
             mime,
             type,
             duration_seconds:
-              type === 'video' ? (asset.duration ?? null) : null,
+              type === 'video' ? (item.asset.duration ?? null) : null,
           };
         }),
       );

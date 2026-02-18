@@ -1,5 +1,5 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
-import { createVideoPlayer } from 'expo-video';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 const THUMB_MAX_DIMENSION = 300;
 const THUMB_QUALITY = 0.5;
@@ -18,24 +18,7 @@ export async function generateImageThumbnail(uri: string): Promise<string> {
 }
 
 export async function generateVideoThumbnail(uri: string): Promise<string> {
-  const player = createVideoPlayer(uri);
+  const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(uri);
 
-  try {
-    const [thumbnail] = await player.generateThumbnailsAsync(0.5, {
-      maxWidth: THUMB_MAX_DIMENSION,
-    });
-
-    const result = await ImageManipulator.manipulate(thumbnail)
-      .resize({ width: THUMB_MAX_DIMENSION })
-      .renderAsync();
-
-    return (
-      await result.saveAsync({
-        compress: THUMB_QUALITY,
-        format: SaveFormat.JPEG,
-      })
-    ).uri;
-  } finally {
-    player.release();
-  }
+  return await generateImageThumbnail(thumbnailUri);
 }

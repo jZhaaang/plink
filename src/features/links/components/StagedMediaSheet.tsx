@@ -1,4 +1,3 @@
-import * as ImagePicker from 'expo-image-picker';
 import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import Animated, {
@@ -15,9 +14,10 @@ import { Pressable, useWindowDimensions, View, Text } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { StagedAsset } from '../hooks/useStagedMedia';
 
 type Props = {
-  assets: ImagePicker.ImagePickerAsset[];
+  assets: StagedAsset[];
   onAddFromGallery: () => void;
   onRemove: (uri: string) => void;
   onClearAll: () => void;
@@ -194,13 +194,13 @@ export default function StagedMediaSheet({
           </View>
 
           <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
-            {assets.map((asset) => (
+            {assets.map((item) => (
               <View
-                key={asset.uri}
+                key={item.asset.uri}
                 style={{ width: tileSize, height: tileSize }}
               >
                 <Image
-                  source={{ uri: asset.uri }}
+                  source={{ uri: item.thumbnailUri ?? item.asset.uri }}
                   cachePolicy="memory-disk"
                   style={{
                     width: tileSize,
@@ -210,8 +210,27 @@ export default function StagedMediaSheet({
                   contentFit="cover"
                   transition={150}
                 />
+                {item.thumbnailStatus === 'generating' && (
+                  <View className="absolute inset-0 items-center justify-center">
+                    <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
+                      <Ionicons name="time-outline" size={14} color="white" />
+                    </View>
+                  </View>
+                )}
+                {item.asset.type === 'video' && (
+                  <View className="absolute inset-0 items-center justify-center">
+                    <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
+                      <Feather
+                        name="play"
+                        size={14}
+                        color="white"
+                        className="ml-1"
+                      />
+                    </View>
+                  </View>
+                )}
                 <Pressable
-                  onPress={() => handleRemove(asset.uri)}
+                  onPress={() => handleRemove(item.asset.uri)}
                   className="absolute -top-2 -right-2 w-6 h-6 bg-black/70 rounded-full items-center justify-center"
                   hitSlop={8}
                 >
@@ -257,10 +276,10 @@ export default function StagedMediaSheet({
         >
           <View className="flex-row items-center gap-3">
             <View className="flex-row items-center">
-              {assets.slice(0, 3).map((asset, index) => (
+              {assets.slice(0, 3).map((item, index) => (
                 <Image
-                  key={asset.uri}
-                  source={{ uri: asset.uri }}
+                  key={item.asset.uri}
+                  source={{ uri: item.thumbnailUri ?? item.asset.uri }}
                   cachePolicy="memory-disk"
                   style={{
                     width: 36,
