@@ -72,6 +72,27 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
   const insets = useSafeAreaInsets();
 
+  const isOwner = party?.owner_id === userId;
+  const activeLink = useMemo(
+    () => party?.links.find((l) => !l.end_time),
+    [party?.links],
+  );
+  const pastLinks = useMemo(
+    () => party?.links.filter((l) => l.end_time),
+    [party?.links],
+  );
+  const existingMemberIds = useMemo(
+    () => party?.members.map((m) => m.id),
+    [party?.members],
+  );
+  const memberAvatars = useMemo(
+    () =>
+      party?.members
+        .map((m) => m.avatarUrl)
+        .filter((url): url is string => !!url),
+    [party?.members],
+  );
+
   if (loading) return <LoadingScreen label="Loading..." />;
 
   if (error || !party) {
@@ -87,27 +108,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       </SafeAreaView>
     );
   }
-
-  const isOwner = party?.owner_id === userId;
-  const activeLink = useMemo(
-    () => party.links.find((l) => !l.end_time),
-    [party.links],
-  );
-  const pastLinks = useMemo(
-    () => party.links.filter((l) => l.end_time),
-    [party.links],
-  );
-  const existingMemberIds = useMemo(
-    () => party.members.map((m) => m.id),
-    [party.members],
-  );
-  const memberAvatars = useMemo(
-    () =>
-      party.members
-        .map((m) => m.avatarUrl)
-        .filter((url): url is string => !!url),
-    [party.members],
-  );
 
   const handleCreateLink = async (name: string) => {
     if (!userId) return;
