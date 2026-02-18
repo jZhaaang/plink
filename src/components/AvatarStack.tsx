@@ -22,6 +22,7 @@ export function AvatarStack({ avatarUris, maxVisible = 5, size = 40 }: Props) {
         <Image
           key={i}
           source={{ uri }}
+          cachePolicy="memory-disk"
           style={{
             width: size,
             height: size,
