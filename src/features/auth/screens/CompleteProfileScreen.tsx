@@ -5,7 +5,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, LoadingScreen, TextField } from '../../../components';
-import { avatars } from '../../../lib/supabase/storage/avatars';
+import { avatars as avatarsStorage } from '../../../lib/supabase/storage/avatars';
 import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
@@ -13,6 +13,7 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
+import { compressImage } from '../../../lib/media/compress';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
@@ -38,7 +39,6 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 3],
-      quality: 1,
     });
     if (!result.canceled) setImageUri(result.assets[0].uri);
   }
@@ -57,7 +57,6 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 3],
-      quality: 1,
     });
     if (!result.canceled) setImageUri(result.assets[0].uri);
   }
@@ -96,12 +95,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       let avatarPath = null;
 
       if (imageUri) {
-        avatarPath = await avatars.upload(userId, imageUri);
+        const compressed = await compressImage(imageUri, 512, 0.6);
+        avatarPath = await avatarsStorage.upload(userId, compressed.uri);
       } else {
         const encodedName = encodeURIComponent(name.trim());
-        avatarPath = await avatars.upload(
+        avatarPath = await avatarsStorage.upload(
           userId,
-          `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg`,
+          `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg&size=128`,
         );
       }
 

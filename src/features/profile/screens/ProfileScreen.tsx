@@ -11,12 +11,13 @@ import {
 import { useDialog } from '../../../providers/DialogProvider';
 import { Button, Divider, LoadingScreen, TextField } from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
-import { avatars } from '../../../lib/supabase/storage/avatars';
+import { avatars as avatarsStorage } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../hooks/useProfile';
 import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
+import { compressImage } from '../../../lib/media/compress';
 
 export default function ProfileScreen() {
   const { userId } = useAuth();
@@ -65,7 +66,6 @@ export default function ProfileScreen() {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 3],
-      quality: 1,
     });
     if (!result.canceled) setImageUri(result.assets[0].uri);
   }
@@ -106,10 +106,11 @@ export default function ProfileScreen() {
       let avatarPath = profile.avatar_path;
 
       if (imageUri) {
-        const newPath = await avatars.upload(userId, imageUri);
+        const compressed = await compressImage(imageUri, 512, 0.6);
+        const newPath = await avatarsStorage.upload(userId, compressed.uri);
         const oldPath = avatarPath;
         avatarPath = newPath;
-        if (oldPath) await avatars.remove([oldPath]);
+        if (oldPath) await avatarsStorage.remove([oldPath]);
       }
 
       await updateUserProfile(userId, {

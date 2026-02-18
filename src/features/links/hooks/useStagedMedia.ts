@@ -10,6 +10,7 @@ import {
   deleteLinkPostMedia,
 } from '../../../lib/supabase/queries/linkPostMedia';
 import { trackEvent } from '../../../lib/telemetry/analytics';
+import { compressImage } from '../../../lib/media/compress';
 
 type UseStagedMediaOpts = {
   linkId: string;
@@ -59,7 +60,6 @@ export function useStagedMedia({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images', 'videos'],
       allowsMultipleSelection: true,
-      quality: 1,
       exif: false,
     });
 
@@ -77,7 +77,6 @@ export function useStagedMedia({
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images', 'videos'],
-      quality: 1,
       exif: false,
     });
 
@@ -114,12 +113,9 @@ export function useStagedMedia({
         stagedAssets.map(async (asset): Promise<UploadedAsset> => {
           const mime = asset.mimeType ?? 'image/jpeg';
           const type = asset.type === 'video' ? 'video' : 'image';
-          const path = await linksStorage.upload(
-            linkId,
-            post.id,
-            asset.uri,
-            mime,
-          );
+          const uri =
+            type === 'video' ? asset.uri : (await compressImage(asset.uri)).uri;
+          const path = await linksStorage.upload(linkId, post.id, uri, mime);
           setProgress((prev) =>
             prev ? { ...prev, completed: prev.completed + 1 } : null,
           );

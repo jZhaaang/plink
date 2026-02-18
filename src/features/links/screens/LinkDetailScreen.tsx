@@ -59,6 +59,7 @@ import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
+import { compressImage } from '../../../lib/media/compress';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -418,9 +419,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const handleSaveBanner = async (croppedUri: string) => {
     setSavingBanner(true);
     try {
+      const compressed = await compressImage(croppedUri);
       const bannerPath = await linksStorage.uploadBanner(
         linkId,
-        croppedUri,
+        compressed.uri,
         'image/jpeg',
       );
       await updateLinkById(linkId, {

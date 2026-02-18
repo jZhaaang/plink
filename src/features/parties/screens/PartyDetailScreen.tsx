@@ -49,6 +49,7 @@ import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
+import { compressImage } from '../../../lib/media/compress';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -150,7 +151,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       }
 
       if (bannerUri && bannerUri !== party?.bannerUrl) {
-        const banner_path = await partiesStorage.upload(partyId, bannerUri);
+        const compressed = await compressImage(bannerUri);
+        const banner_path = await partiesStorage.upload(
+          partyId,
+          compressed.uri,
+        );
         updates.banner_path = banner_path;
       }
 

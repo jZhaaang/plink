@@ -31,6 +31,7 @@ export async function pickPartyBannerFromLibrary(): Promise<CroppedBannerAsset |
       height: TARGET_HEIGHT,
       forceJpg: true,
       cropperToolbarTitle: 'Crop Party Banner',
+      compressImageQuality: 0.7,
     });
     return toCroppedAsset(image);
   } catch {

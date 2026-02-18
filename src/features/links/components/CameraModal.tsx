@@ -18,6 +18,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { LoadingScreen, Spinner } from '../../../components';
+import { compressImage } from '../../../lib/media/compress';
 
 type CapturedAsset = {
   uri: string;
@@ -89,11 +90,14 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
     try {
       const photo = await cameraRef.current.takePictureAsync({
         exif: false,
+        imageType: 'jpg',
+        skipProcessing: true,
       });
 
       if (photo) {
+        const compressed = await compressImage(photo.uri);
         setCapturedAsset({
-          uri: photo.uri,
+          uri: compressed.uri,
           type: 'image',
           width: photo.width,
           height: photo.height,
@@ -113,7 +117,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
 
     try {
       const video = await cameraRef.current.recordAsync({
-        maxDuration: 120,
+        maxDuration: 60,
       });
 
       if (video) {
@@ -239,6 +243,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
                 style={{ width: '100%', aspectRatio: 3 / 4 }}
                 facing={facing}
                 mode={mode}
+                videoQuality="720p"
               />
             </View>
 
