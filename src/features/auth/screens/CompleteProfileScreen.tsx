@@ -10,20 +10,24 @@ import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
-import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
+import { isValidUsername, normalize } from '../../../lib/utils/validation';
+import { logger } from '../../../lib/telemetry/logger';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
 export default function CompleteProfileScreen({ navigation }: Props) {
   const { userId, ready } = useAuth();
+  const dialog = useDialog();
+
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
-  const dialog = useDialog();
 
   async function choosePhoto() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -76,16 +80,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       return;
     }
 
-    const trimmedUsername = username.trim().toLowerCase();
-    if (!trimmedUsername) {
+    const normalizedUsername = normalize(username);
+    if (!normalizedUsername) {
       await dialog.error('Missing info', 'Username is required');
       return;
     }
 
-    if (!/^[a-z0-9_]{3,12}$/.test(trimmedUsername)) {
+    if (!isValidUsername(username)) {
       await dialog.error(
         'Invalid username',
-        'Username must be 3-12 characters: lowercase letters, numbers, and underscores',
+        'Username must be 4-12 characters: lowercase letters, numbers, and underscores',
       );
       return;
     }
@@ -107,14 +111,14 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
       await updateUserProfile(userId, {
         name: name.trim(),
-        username: trimmedUsername,
+        username: normalizedUsername,
         avatar_path: avatarPath,
       });
       trackEvent('profile_completed');
       navigation.replace('SignedIn', { needsProfile: false });
     } catch (err) {
-      const error = getErrorMessageForUsername(err);
-      await dialog.error(error.title, error.message);
+      logger.error('Error updating user profile:', { err });
+      await dialog.error('Failed to Save Profile', getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -204,7 +208,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             onSubmitEditing={save}
           />
           <Text className="pl-1 text-[11px] text-slate-500">
-            3-12 characters. Others will find you by this.
+            4-12 characters. Others will find you by this.
           </Text>
         </View>
 

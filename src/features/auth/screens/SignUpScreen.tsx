@@ -7,45 +7,49 @@ import type { AuthStackParamList } from '../../../navigation/types';
 import { Button, TextField } from '../../../components';
 import { signUpWithEmail } from '../../../lib/supabase/queries/auth';
 import { useDialog } from '../../../providers/DialogProvider';
-import { isValidEmail, normalizeEmail } from '../../../lib/utils/validation';
+import { isValidEmail, normalize } from '../../../lib/utils/validation';
 import { trackEvent } from '../../../lib/telemetry/analytics';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { logger } from '../../../lib/telemetry/logger';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
 export default function SignUpScreen({ navigation }: Props) {
+  const dialog = useDialog();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [secure, setSecure] = useState(true);
+
   const [loading, setLoading] = useState(false);
-  const dialog = useDialog();
 
   async function onSignUp() {
     if (loading) return;
 
-    const normalizedEmail = normalizeEmail(email);
+    const normalizedEmail = normalize(email);
     if (!isValidEmail(normalizedEmail)) {
-      await dialog.error('Sign up failed', 'Enter a valid email.');
+      await dialog.error('Invalid Form', 'Enter a valid email.');
       return;
     } else if (password.length < 6) {
       await dialog.error(
-        'Sign up failed',
+        'Invalid Form',
         'Password must be at least 6 characters long',
       );
       return;
     } else if (password !== confirmPassword) {
-      await dialog.error('Sign up failed', 'Passwords do not match');
+      await dialog.error('Invalid Form', 'Passwords do not match');
       return;
     }
 
     setLoading(true);
 
     try {
-      const { error } = await signUpWithEmail(normalizedEmail.trim(), password);
+      await signUpWithEmail(normalizedEmail.trim(), password);
       trackEvent('sign_up_completed');
-      if (error) {
-        await dialog.error('Sign up failed', error.message);
-      }
+    } catch (err) {
+      logger.error('Error signing up with email:', { err });
+      await dialog.error('Sign Up Failed', getErrorMessage(err));
     } finally {
       setLoading(false);
     }

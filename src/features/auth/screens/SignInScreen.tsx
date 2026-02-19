@@ -7,21 +7,25 @@ import type { AuthStackParamList } from '../../../navigation/types';
 import { Button, TextField } from '../../../components';
 import { signInWithEmail } from '../../../lib/supabase/queries/auth';
 import { useDialog } from '../../../providers/DialogProvider';
-import { normalizeEmail } from '../../../lib/utils/validation';
+import { normalize } from '../../../lib/utils/validation';
+import { logger } from '../../../lib/telemetry/logger';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
 export default function SignInScreen({ navigation }: Props) {
+  const dialog = useDialog();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secure, setSecure] = useState(true);
+
   const [loading, setLoading] = useState(false);
-  const dialog = useDialog();
 
   async function onSignIn() {
     if (loading) return;
 
-    const normalizedEmail = normalizeEmail(email);
+    const normalizedEmail = normalize(email);
     if (!normalizedEmail || !password) {
       if (__DEV__ && Platform.OS === 'android') {
         await signInWithEmail('jimmy.zhaang@gmail.com', 'testing');
@@ -36,10 +40,10 @@ export default function SignInScreen({ navigation }: Props) {
 
     setLoading(true);
     try {
-      const { error } = await signInWithEmail(normalizedEmail, password);
-      if (error) {
-        await dialog.error('Login failed', error.message);
-      }
+      await signInWithEmail(normalizedEmail, password);
+    } catch (err) {
+      logger.error('Error signing in with email:', { err });
+      await dialog.error('Sign In Failed', getErrorMessage(err));
     } finally {
       setLoading(false);
     }
