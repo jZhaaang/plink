@@ -342,10 +342,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   }
 
-  const handlePostMediaPress = (
-    postMediaItems: LinkPostMedia[],
-    index: number,
-  ) => {
+  const handlePostMediaPress = (index: number) => {
     navigation.navigate('MediaViewer', {
       linkId,
       initialIndex: index,

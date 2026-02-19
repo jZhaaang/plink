@@ -6,8 +6,8 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
-import { memo, useMemo, useState } from 'react';
+import { LinkPostWithMedia } from '../../../lib/models';
+import { memo, useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
@@ -15,7 +15,7 @@ import MediaTile from '../../../components/MediaTile';
 
 type Props = {
   post: LinkPostWithMedia;
-  onMediaPress?: (mediaItems: LinkPostMedia[], index: number) => void;
+  onMediaPress?: (index: number) => void;
   currentUserId?: string;
   onDeletePost?: (postId: string) => void;
 };
@@ -38,7 +38,6 @@ export function PostFeedItem({
   const contentWidth = screenWidth - 66;
 
   const mediaCount = post.media.length;
-  const mediaItems = useMemo(() => post.media, [post.media]);
 
   const getItemSize = () => {
     if (mediaCount === 1) return contentWidth;
@@ -113,7 +112,7 @@ export function PostFeedItem({
               width={itemSize}
               height={mediaCount === 1 ? itemSize * 0.75 : itemSize}
               containerStyle={{ marginHorizontal: GAP / 2 }}
-              onPress={() => onMediaPress?.(mediaItems, index)}
+              onPress={() => onMediaPress?.(index)}
               renderOverlay={(isLoaded) => {
                 if (!isLoaded || media.type !== 'video') return null;
 
