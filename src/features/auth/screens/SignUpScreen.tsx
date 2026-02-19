@@ -24,7 +24,7 @@ export default function SignUpScreen({ navigation }: Props) {
 
   const [loading, setLoading] = useState(false);
 
-  async function onSignUp() {
+  const handleSignUp = async () => {
     if (loading) return;
 
     const normalizedEmail = normalize(email);
@@ -53,7 +53,7 @@ export default function SignUpScreen({ navigation }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
@@ -136,7 +136,7 @@ export default function SignUpScreen({ navigation }: Props) {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               returnKeyType="done"
-              onSubmitEditing={onSignUp}
+              onSubmitEditing={handleSignUp}
             />
           </View>
 
@@ -144,7 +144,7 @@ export default function SignUpScreen({ navigation }: Props) {
             title="Create Account"
             size="lg"
             disabled={loading}
-            onPress={onSignUp}
+            onPress={handleSignUp}
           />
         </View>
 

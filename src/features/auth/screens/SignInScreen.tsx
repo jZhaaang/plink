@@ -22,7 +22,7 @@ export default function SignInScreen({ navigation }: Props) {
 
   const [loading, setLoading] = useState(false);
 
-  async function onSignIn() {
+  const handleSignIn = async () => {
     if (loading) return;
 
     const normalizedEmail = normalize(email);
@@ -47,7 +47,7 @@ export default function SignInScreen({ navigation }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
@@ -95,7 +95,7 @@ export default function SignInScreen({ navigation }: Props) {
               value={password}
               onChangeText={setPassword}
               returnKeyType="done"
-              onSubmitEditing={onSignIn}
+              onSubmitEditing={handleSignIn}
               right={
                 <Pressable hitSlop={8} onPress={() => setSecure((s) => !s)}>
                   <Ionicons
@@ -113,7 +113,7 @@ export default function SignInScreen({ navigation }: Props) {
             size="lg"
             loading={loading}
             disabled={loading}
-            onPress={onSignIn}
+            onPress={handleSignIn}
           />
         </View>
 

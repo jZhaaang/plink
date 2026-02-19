@@ -29,7 +29,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
   const [loading, setLoading] = useState(false);
 
-  async function choosePhoto() {
+  const handleChoosePhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       await dialog.error(
@@ -44,10 +44,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       allowsEditing: true,
       aspect: [3, 3],
     });
-    if (!result.canceled) setImageUri(result.assets[0].uri);
-  }
 
-  async function takePhoto() {
+    if (!result.canceled) setImageUri(result.assets[0].uri);
+  };
+
+  const handleTakePhoto = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
       await dialog.error(
@@ -62,14 +63,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
       allowsEditing: true,
       aspect: [3, 3],
     });
+
     if (!result.canceled) setImageUri(result.assets[0].uri);
-  }
+  };
 
-  function removePhoto() {
-    setImageUri(null);
-  }
-
-  async function save() {
+  const handleSave = async () => {
     if (!userId) {
       await dialog.error('Session Error', 'Please sign in again');
       return;
@@ -122,7 +120,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   if (!ready) return <LoadingScreen label="Loading..." />;
 
@@ -144,7 +142,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
         <View className="items-center gap-3">
           <Pressable
-            onPress={choosePhoto}
+            onPress={handleChoosePhoto}
             className="h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-slate-200"
           >
             {imageUri ? (
@@ -163,21 +161,21 @@ export default function CompleteProfileScreen({ navigation }: Props) {
               title="Choose photo"
               variant="outline"
               size="sm"
-              onPress={choosePhoto}
+              onPress={handleChoosePhoto}
               textClassName="text-sm font-normal text-slate-600"
             />
             <Button
               title="Take photo"
               variant="outline"
               size="sm"
-              onPress={takePhoto}
+              onPress={handleTakePhoto}
               textClassName="text-sm font-normal text-slate-600"
             />
             <Button
               title="Remove photo"
               variant="outline"
               size="sm"
-              onPress={removePhoto}
+              onPress={() => setImageUri(null)}
               textClassName="text-sm font-normal text-slate-600"
             />
           </View>
@@ -191,7 +189,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             value={name}
             onChangeText={setName}
             returnKeyType="done"
-            onSubmitEditing={save}
+            onSubmitEditing={handleSave}
           />
           <TextField
             header="Username"
@@ -205,7 +203,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             autoCorrect={false}
             maxLength={12}
             returnKeyType="done"
-            onSubmitEditing={save}
+            onSubmitEditing={handleSave}
           />
           <Text className="pl-1 text-[11px] text-slate-500">
             4-12 characters. Others will find you by this.
@@ -216,7 +214,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
           title="Save"
           size="lg"
           disabled={loading || !name.trim() || !username.trim()}
-          onPress={save}
+          onPress={handleSave}
         />
       </View>
     </SafeAreaView>
