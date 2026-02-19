@@ -1,20 +1,15 @@
 import { supabase } from '../client';
-import { logger } from '../../telemetry/logger';
 import { ProfileRow, ProfileUpdate } from '../../models';
+import { normalize } from '../../utils/validation';
 
-export async function getUserProfile(
-  userId: string,
-): Promise<ProfileRow | null> {
+export async function getUserProfile(userId: string): Promise<ProfileRow> {
   const { data, error } = await supabase
     .from('profiles')
     .select()
     .eq('id', userId)
     .single();
 
-  if (error) {
-    logger.error('Error getting user profile:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -22,7 +17,7 @@ export async function getUserProfile(
 export async function updateUserProfile(
   userId: string,
   profileUpdate: ProfileUpdate,
-): Promise<ProfileRow | null> {
+): Promise<ProfileRow> {
   const { data, error } = await supabase
     .from('profiles')
     .update(profileUpdate)
@@ -30,31 +25,24 @@ export async function updateUserProfile(
     .select()
     .single();
 
-  if (error) {
-    logger.error('Error updating user profile:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
 
-export async function deleteUserProfile(userId: string) {
+export async function deleteUserProfile(userId: string): Promise<void> {
   const { error } = await supabase.from('profiles').delete().eq('id', userId);
 
-  if (error) {
-    logger.error('Error deleting user profile:', error.message);
-    throw error;
-  }
+  if (error) throw error;
+
+  return;
 }
 
 export async function searchUserByUsername(
   username: string,
 ): Promise<ProfileRow | null> {
-  const normalizedUsername = username.toLowerCase().trim().replace(/^@/, '');
-
-  if (!normalizedUsername) {
-    return null;
-  }
+  const normalizedUsername = normalize(username).replace(/^@/, '');
+  if (!normalizedUsername) return null;
 
   const { data, error } = await supabase
     .from('profiles')
@@ -62,10 +50,8 @@ export async function searchUserByUsername(
     .eq('username', normalizedUsername)
     .single();
 
-  if (error || !data) {
-    if (error && error.code !== 'PGRST116') {
-      logger.error('Error searching user by username:', error.message);
-    }
+  if (error) {
+    if (error && error.code !== 'PGRST116') throw error;
     return null;
   }
 

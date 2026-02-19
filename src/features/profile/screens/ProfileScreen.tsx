@@ -4,33 +4,42 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  updateUserProfile,
-  searchUserByUsername,
-} from '../../../lib/supabase/queries/users';
+import { updateUserProfile } from '../../../lib/supabase/queries/users';
 import { useDialog } from '../../../providers/DialogProvider';
-import { Button, Divider, LoadingScreen, TextField } from '../../../components';
+import {
+  Button,
+  DataFallbackScreen,
+  Divider,
+  LoadingScreen,
+  TextField,
+} from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
 import { avatars as avatarsStorage } from '../../../lib/supabase/storage/avatars';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../hooks/useProfile';
-import { getErrorMessageForUsername } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import { compressImage } from '../../../lib/media/compress';
+import { isValidUsername, normalize } from '../../../lib/utils/validation';
+import { logger } from '../../../lib/telemetry/logger';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 export default function ProfileScreen() {
   const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
 
-  const { profile, loading: profileLoading } = useProfile(userId);
-  const [saving, setSaving] = useState(false);
-
+  const {
+    profile,
+    loading: profileLoading,
+    error: profileError,
+    refetch: refetchProfile,
+  } = useProfile(userId);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,30 +56,51 @@ export default function ProfileScreen() {
     ImagePicker.requestCameraPermissionsAsync();
   }, [editing]);
 
-  function handleEdit() {
+  if (profileLoading) {
+    return <LoadingScreen label="Loading..." />;
+  }
+  if (profileError || !profile) {
+    return <DataFallbackScreen onAction={refetchProfile} />;
+  }
+
+  const editModeAvatarUri = imageUri || profile.avatarUrl;
+
+  const handleEdit = () => {
     setEditing(true);
     setName(profile.name || '');
     setUsername(profile.username || '');
     setImageUri(null);
-  }
+  };
 
-  function handleCancel() {
+  const handleCancel = () => {
     setEditing(false);
     setName(profile.name || '');
     setUsername(profile.username || '');
     setImageUri(null);
-  }
+  };
 
-  async function choosePhoto() {
+  const handleChoosePhoto = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      await dialog.error(
+        'Permission needed',
+        'Allow photo access to choose an avatar.',
+      );
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 3],
     });
-    if (!result.canceled) setImageUri(result.assets[0].uri);
-  }
 
-  async function handleSave() {
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const handleSave = async () => {
     if (!userId) {
       await dialog.error('Session Error', 'Please sign in again');
       return;
@@ -81,30 +111,25 @@ export default function ProfileScreen() {
       return;
     }
 
-    const trimmedUsername = username.trim().toLowerCase();
-    if (trimmedUsername && !/^[a-z0-9_]{3,12}$/.test(trimmedUsername)) {
+    const normalizedUsername = normalize(username);
+    if (!isValidUsername(username)) {
       await dialog.error(
         'Invalid username',
-        'Username must be 3-12 characters, lowercase letters, numbers, and underscores only',
+        'Username must be 4-12 characters, lowercase letters, numbers, and underscores only',
       );
       return;
     }
 
     try {
-      if (trimmedUsername && trimmedUsername !== profile.username) {
-        const existingUser = await searchUserByUsername(trimmedUsername);
-        if (existingUser && existingUser.id !== userId) {
-          await dialog.error(
-            'Username taken',
-            'This username is already in use',
-          );
-          return;
-        }
-      }
-      setSaving(true);
+      const hasProfileChanges =
+        name.trim() !== profile.name ||
+        normalizedUsername !== profile.username ||
+        imageUri !== null;
+      if (!hasProfileChanges) return;
+
+      setLoading(true);
 
       let avatarPath = profile.avatar_path;
-
       if (imageUri) {
         const compressed = await compressImage(imageUri, 512, 0.6);
         const newPath = await avatarsStorage.upload(userId, compressed.uri);
@@ -115,7 +140,7 @@ export default function ProfileScreen() {
 
       await updateUserProfile(userId, {
         name: name.trim(),
-        username: trimmedUsername || null,
+        username: normalizedUsername || null,
         avatar_path: avatarPath,
       });
 
@@ -123,34 +148,27 @@ export default function ProfileScreen() {
       setEditing(false);
       setImageUri(null);
     } catch (err) {
-      const error = getErrorMessageForUsername(err);
-      await dialog.error(error.title, error.message);
+      logger.error('Error updating user profile', { err });
+      await dialog.error('Failed to Update Profile', getErrorMessage(err));
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
-  }
+  };
 
-  async function handleSignOut() {
+  const handleSignOut = async () => {
     const confirmed = await dialog.confirmAsk(
       'Sign Out',
       'Are you sure you want to sign out?',
     );
-    if (confirmed) await signOut();
-  }
-
-  if (profileLoading) return <LoadingScreen label="Loading..." />;
-
-  if (!profile) {
-    return (
-      <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-slate-500">No profile found</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const editModeAvatarUri = imageUri || profile.avatarUrl;
+    if (confirmed) {
+      try {
+        await signOut();
+      } catch (err) {
+        logger.error('Error signing out', { err });
+        await dialog.error('Failed to Sign Out', getErrorMessage(err));
+      }
+    }
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
@@ -164,7 +182,7 @@ export default function ProfileScreen() {
               {/* Avatar Editor */}
               <View className="items-center gap-2">
                 <Pressable
-                  onPress={choosePhoto}
+                  onPress={handleChoosePhoto}
                   className="relative h-28 w-28 overflow-hidden rounded-full"
                 >
                   {editModeAvatarUri ? (
@@ -226,13 +244,13 @@ export default function ProfileScreen() {
                 <Button
                   title="Save"
                   onPress={handleSave}
-                  disabled={saving || !name.trim()}
+                  disabled={loading || !name.trim()}
                 />
                 <Button
                   title="Cancel"
                   variant="outline"
                   onPress={handleCancel}
-                  disabled={saving}
+                  disabled={loading}
                 />
               </View>
             </View>

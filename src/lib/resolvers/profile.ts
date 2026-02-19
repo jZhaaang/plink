@@ -18,7 +18,7 @@ export async function resolveProfile(profile: ProfileRow): Promise<Profile> {
 
     return { ...profile, avatarUrl };
   } catch (error) {
-    logger.error('Failed to resolve profile avatar URL', {
+    logger.error('Error resolving profile avatar URL', {
       profileId: profile.id,
       avatarPath: profile.avatar_path,
       error,
