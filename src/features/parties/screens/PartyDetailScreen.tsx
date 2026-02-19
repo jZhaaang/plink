@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -8,10 +8,7 @@ import {
   RefreshControl,
   GestureResponderEvent,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
@@ -40,6 +37,7 @@ import {
   DropdownMenuItem,
   Divider,
   LoadingScreen,
+  DataFallbackScreen,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { Image } from 'expo-image';
@@ -50,6 +48,7 @@ import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
+import { logger } from '../../../lib/telemetry/logger';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -58,9 +57,14 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
+  const insets = useSafeAreaInsets();
 
-  const { party, loading, error, refetch } = usePartyDetail(partyId);
-
+  const {
+    party,
+    loading: partyLoading,
+    error: partyError,
+    refetch: refetchParty,
+  } = usePartyDetail(partyId);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -71,44 +75,17 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
-  const insets = useSafeAreaInsets();
-
   const isOwner = party?.owner_id === userId;
-  const activeLink = useMemo(
-    () => party?.links.find((l) => !l.end_time),
-    [party?.links],
-  );
-  const pastLinks = useMemo(
-    () => party?.links.filter((l) => l.end_time),
-    [party?.links],
-  );
-  const existingMemberIds = useMemo(
-    () => party?.members.map((m) => m.id),
-    [party?.members],
-  );
-  const memberAvatars = useMemo(
-    () =>
-      party?.members
-        .map((m) => m.avatarUrl)
-        .filter((url): url is string => !!url),
-    [party?.members],
-  );
+  const activeLink = party?.links.find((l) => !l.end_time);
+  const pastLinks = party?.links.filter((l) => l.end_time);
+  const existingMemberIds = party?.members.map((m) => m.id);
+  const memberAvatars = party?.members
+    .map((m) => m.avatarUrl)
+    .filter((url): url is string => !!url);
 
-  if (loading) return <LoadingScreen label="Loading..." />;
-
-  if (error || !party) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
-        <Text className="text-center text-neutral-600 mb-4">
-          Failed to load party details.
-        </Text>
-        <Text className="text-center text-xs text-red-500 mb-4">
-          {error?.message}
-        </Text>
-        <Button title="Retry" variant="outline" onPress={() => refetch()} />
-      </SafeAreaView>
-    );
-  }
+  if (partyLoading) return <LoadingScreen label="Loading..." />;
+  if (partyError || !party)
+    return <DataFallbackScreen onAction={refetchParty} />;
 
   const handleCreateLink = async (name: string) => {
     if (!userId) return;
@@ -168,7 +145,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       invalidate.partyDetail(partyId);
       invalidate.parties();
     } catch (err) {
-      await dialog.error('Error updating party', getErrorMessage(err));
+      logger.error('Error updating party', { err });
+      await dialog.error('Failed to Update Party', getErrorMessage(err));
     } finally {
       setEditLoading(false);
     }
@@ -203,7 +181,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       invalidate.activity();
       navigation.goBack();
     } catch (err) {
-      await dialog.error('Error deleting party', getErrorMessage(err));
+      logger.error('Error deleting party', { err });
+      await dialog.error('Failed to Delete Party', getErrorMessage(err));
     }
   };
 
@@ -280,7 +259,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         <ScrollView
           className="flex-1"
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={refetch} />
+            <RefreshControl
+              refreshing={partyLoading}
+              onRefresh={refetchParty}
+            />
           }
         >
           {/* Hero Banner */}

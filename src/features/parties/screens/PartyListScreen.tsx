@@ -8,6 +8,7 @@ import { PartyCard } from '../components/PartyCard';
 import { Feather } from '@expo/vector-icons';
 import {
   Button,
+  DataFallbackScreen,
   Divider,
   EmptyState,
   LoadingScreen,
@@ -25,6 +26,7 @@ import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
+import { logger } from '../../../lib/telemetry/logger';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -36,11 +38,14 @@ export default function PartyListScreen({ navigation }: Props) {
   const {
     parties,
     loading: partiesLoading,
-    error,
-    refetch,
+    error: partiesError,
+    refetch: refetchParties,
   } = usePartyListItems(userId);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  if (partiesLoading) return <LoadingScreen label="Loading..." />;
+  if (partiesError) return <DataFallbackScreen onAction={refetchParties} />;
 
   const handleSubmit = async (name: string, bannerUri: string | null) => {
     if (!name.trim()) {
@@ -51,13 +56,12 @@ export default function PartyListScreen({ navigation }: Props) {
       await dialog.error('Missing info', 'Choose a banner image');
       return;
     }
-    setLoading(true);
 
+    setLoading(true);
     try {
       const party = await createParty({ name, owner_id: userId });
 
       let banner_path = null;
-
       if (bannerUri) {
         const compressed = await compressImage(bannerUri);
         banner_path = await partiesStorage.upload(party.id, compressed.uri);
@@ -67,28 +71,13 @@ export default function PartyListScreen({ navigation }: Props) {
       trackEvent('party_created', { party_id: party.id });
       invalidate.parties();
     } catch (err) {
-      await dialog.error('Error creating party', getErrorMessage(err));
+      logger.error('Error creating party', { err });
+      await dialog.error('Failed to Create a Party', getErrorMessage(err));
     } finally {
       setLoading(false);
       setModalVisible(false);
     }
   };
-
-  if (loading) return <LoadingScreen label="Loading..." />;
-
-  if (error) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
-        <Text className="text-center text-neutral-600 mb-4">
-          Failed to load parties.
-        </Text>
-        <Text className="text-center text-xs text-red-500 mb-4">
-          {error?.message}
-        </Text>
-        <Button title="Retry" variant="outline" onPress={() => refetch()} />
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
@@ -100,7 +89,7 @@ export default function PartyListScreen({ navigation }: Props) {
           keyExtractor={(p) => p.id}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           refreshing={partiesLoading}
-          onRefresh={refetch}
+          onRefresh={refetchParties}
           renderItem={({ item }) => (
             <PartyCard
               name={item.name}
