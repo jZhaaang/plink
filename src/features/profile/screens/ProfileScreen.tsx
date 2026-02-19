@@ -56,12 +56,9 @@ export default function ProfileScreen() {
     ImagePicker.requestCameraPermissionsAsync();
   }, [editing]);
 
-  if (profileLoading) {
-    return <LoadingScreen label="Loading..." />;
-  }
-  if (profileError || !profile) {
+  if (profileLoading) return <LoadingScreen label="Loading..." />;
+  if (profileError || !profile)
     return <DataFallbackScreen onAction={refetchProfile} />;
-  }
 
   const editModeAvatarUri = imageUri || profile.avatarUrl;
 
@@ -95,9 +92,7 @@ export default function ProfileScreen() {
       aspect: [3, 3],
     });
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
-    }
+    if (!result.canceled) setImageUri(result.assets[0].uri);
   };
 
   const handleSave = async () => {
@@ -120,14 +115,13 @@ export default function ProfileScreen() {
       return;
     }
 
+    setLoading(true);
     try {
       const hasProfileChanges =
         name.trim() !== profile.name ||
         normalizedUsername !== profile.username ||
         imageUri !== null;
       if (!hasProfileChanges) return;
-
-      setLoading(true);
 
       let avatarPath = profile.avatar_path;
       if (imageUri) {
