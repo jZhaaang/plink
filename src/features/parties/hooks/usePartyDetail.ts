@@ -15,10 +15,6 @@ export function usePartyDetail(partyId: string) {
 
       const rawParty = await getPartyDetailById(partyId);
 
-      if (!rawParty) {
-        throw new Error('Party not found');
-      }
-
       const [resolvedParty, members, resolvedLinks] = await Promise.all([
         resolveParty(rawParty),
         Promise.all(
