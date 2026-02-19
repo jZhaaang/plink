@@ -1,5 +1,4 @@
 import { supabase } from '../client';
-import { logger } from '../../telemetry/logger';
 import { LinkRow, LinkInsert, LinkUpdate } from '../../models';
 
 export async function getLinksByUserId(userId: string): Promise<LinkRow[]> {
@@ -8,41 +7,30 @@ export async function getLinksByUserId(userId: string): Promise<LinkRow[]> {
     .select('links (*)')
     .eq('user_id', userId);
 
-  if (error) {
-    logger.error('Error fetching user links:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data.map((userLinks) => userLinks.links);
 }
 
-export async function getLinkById(linkId: string): Promise<LinkRow | null> {
+export async function getLinkById(linkId: string): Promise<LinkRow> {
   const { data, error } = await supabase
     .from('links')
     .select('*')
     .eq('id', linkId)
     .single();
 
-  if (error) {
-    logger.error('Error fetching link:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
 
-export async function getLinksByPartyId(
-  partyId: string,
-): Promise<LinkRow[] | null> {
+export async function getLinksByPartyId(partyId: string): Promise<LinkRow[]> {
   const { data, error } = await supabase
     .from('links')
     .select('*')
     .eq('party_id', partyId);
 
-  if (error) {
-    logger.error('Error fetching links:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -56,26 +44,20 @@ export async function getActiveLinkByUserId(
     .eq('user_id', userId)
     .is('links.end_time', null);
 
-  if (error) {
-    logger.error('Error fetching active link:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   if (!data || data.length === 0 || !data[0]?.links) return null;
   return data[0].links;
 }
 
-export async function createLink(link: LinkInsert): Promise<LinkRow | null> {
+export async function createLink(link: LinkInsert): Promise<LinkRow> {
   const { data, error } = await supabase
     .from('links')
     .insert(link)
     .select()
     .single();
 
-  if (error) {
-    logger.error('Error creating link:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -83,7 +65,7 @@ export async function createLink(link: LinkInsert): Promise<LinkRow | null> {
 export async function updateLinkById(
   linkId: string,
   linkUpdate: LinkUpdate,
-): Promise<LinkRow | null> {
+): Promise<LinkRow> {
   const { data, error } = await supabase
     .from('links')
     .update(linkUpdate)
@@ -91,24 +73,20 @@ export async function updateLinkById(
     .select()
     .single();
 
-  if (error) {
-    logger.error('Error updating link:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
 
-export async function deleteLink(linkId: string) {
+export async function deleteLink(linkId: string): Promise<void> {
   const { error } = await supabase.from('links').delete().eq('id', linkId);
 
-  if (error) {
-    logger.error('Error deleting link:', error.message);
-    throw error;
-  }
+  if (error) throw error;
+
+  return;
 }
 
-export async function endLink(linkId: string): Promise<LinkRow | null> {
+export async function endLink(linkId: string): Promise<LinkRow> {
   const { data, error } = await supabase
     .from('links')
     .update({ end_time: new Date().toISOString() })
@@ -116,10 +94,7 @@ export async function endLink(linkId: string): Promise<LinkRow | null> {
     .select()
     .single();
 
-  if (error) {
-    logger.error('Error ending link:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -134,10 +109,7 @@ export async function getLinkDetailById(linkId: string) {
     .order('created_at', { referencedTable: 'link_posts', ascending: false })
     .single();
 
-  if (error) {
-    logger.error('Error fetching link detail:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
