@@ -10,3 +10,4 @@ export { default as SectionHeader } from './SectionHeader';
 export { default as EmptyState } from './EmptyState';
 export { default as DropdownMenu, DropdownMenuItem } from './DropdownMenu';
 export { Spinner, LoadingScreen } from './Loading';
+export { default as DataFallbackScreen } from './DataFallbackScreen';
