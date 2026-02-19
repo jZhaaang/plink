@@ -4,22 +4,24 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-import { captureError } from '../lib/telemetry/monitoring';
+import { logger } from '../lib/telemetry/logger';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
-      captureError(error, {
+      logger.error('React Query error', {
         source: 'react-query',
         queryKey: JSON.stringify(query.queryKey),
+        error,
       });
     },
   }),
   mutationCache: new MutationCache({
     onError: (error, _variables, _context, mutation) => {
-      captureError(error, {
+      logger.error('React Query mutation error', {
         source: 'react-query-mutation',
         mutationKey: JSON.stringify(mutation.options.mutationKey ?? 'unknown'),
+        error,
       });
     },
   }),
