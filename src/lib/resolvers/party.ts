@@ -18,7 +18,7 @@ export async function resolveParty(party: PartyRow): Promise<Party> {
 
     return { ...party, bannerUrl };
   } catch (error) {
-    logger.error('Failed to resolve party banner URL', {
+    logger.error('Error resolving party banner URL', {
       partyId: party.id,
       bannerPath: party.banner_path,
       error,

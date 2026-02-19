@@ -18,7 +18,7 @@ export async function resolveLink(link: LinkRow): Promise<Link> {
 
     return { ...link, bannerUrl };
   } catch (error) {
-    logger.error('Failed to resolve link banner URL', {
+    logger.error('Error resolving link banner URL', {
       linkId: link.id,
       bannerPath: link.banner_path,
       error,
