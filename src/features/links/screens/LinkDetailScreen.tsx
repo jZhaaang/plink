@@ -12,16 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
+import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
 import { useDialog } from '../../../providers/DialogProvider';
-import {
-  endLink,
-  deleteLink,
-  updateLinkById,
-} from '../../../lib/supabase/queries/links';
-import {
-  createLinkMember,
-  deleteLinkMember,
-} from '../../../lib/supabase/queries/linkMembers';
 import AvatarStack from '../../../components/AvatarStack';
 import MediaGrid from '../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
@@ -39,9 +31,6 @@ import {
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import StagedMediaSheet from '../components/StagedMediaSheet';
 import UploadProgressModal from '../../../components/UploadProgressModal';
-import { links as linksStorage } from '../../../lib/supabase/storage/links';
-import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
-import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -53,11 +42,7 @@ import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
-import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
-import { trackEvent } from '../../../lib/telemetry/analytics';
-import { compressImage } from '../../../lib/media/compress';
-import { logger } from '../../../lib/telemetry/logger';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -65,7 +50,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
   const dialog = useDialog();
-  const invalidate = useInvalidate();
   const insets = useSafeAreaInsets();
 
   const {
@@ -74,6 +58,27 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     error: linkError,
     refetch: refetchLink,
   } = useLinkDetail(linkId);
+
+  const linkActions = useLinkDetailActions({
+    linkId,
+    partyId,
+    link,
+    onDelete: () => {
+      const parentNavigation = navigation.getParent();
+      if (parentNavigation) {
+        parentNavigation.dispatch(
+          CommonActions.navigate('Party', {
+            screen: 'PartyDetail',
+            params: { partyId },
+          }),
+        );
+        return;
+      }
+      navigation.goBack();
+    },
+    onLeave: () => navigation.goBack(),
+  });
+
   const { uploadAction, clearUploadAction } = useActiveLinkContext();
 
   const onUploadError = useCallback(
@@ -104,12 +109,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     null,
   );
   const [menuVisible, setMenuVisible] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [menuAnchor, setMenuAnchor] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editBannerVisible, setEditBannerVisible] = useState(false);
-  const [savingBanner, setSavingBanner] = useState(false);
 
   const allMedia = useMemo(() => {
     if (!link) return [];
@@ -152,167 +157,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     .filter((url): url is string => !!url);
   const owner = link.members.find((m) => m.id === link.owner_id);
 
-  /* ----------------------- 
-      Link Actions
-     -----------------------*/
-  const handleEndLink = async () => {
-    setMenuVisible(false);
-    const confirmed = await dialog.confirmDanger(
-      'End Link?',
-      'This will end the link. Members can still view media but cannot add more.',
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await endLink(linkId);
-      trackEvent('link_ended', { link_id: linkId });
-      invalidate.linkDetail(linkId);
-      invalidate.activeLink();
-      invalidate.partyDetail(partyId);
-      invalidate.activity();
-    } catch (err) {
-      logger.error('Error ending link', { err });
-      await dialog.error('Failed to End Link', getErrorMessage(err));
-    }
-  };
-
-  const handleEditName = async (newName: string) => {
-    try {
-      await updateLinkById(linkId, { name: newName });
-      setEditModalVisible(false);
-      trackEvent('link_updated', { link_id: linkId });
-      invalidate.linkDetail(linkId);
-      invalidate.activeLink();
-      invalidate.partyDetail(partyId);
-      invalidate.activity();
-    } catch (err) {
-      logger.error('Error updating link name', { err });
-      await dialog.error('Failed to Edit Link Name', getErrorMessage(err));
-    }
-  };
-
-  const handleSaveBanner = async (croppedUri: string) => {
-    setSavingBanner(true);
-    try {
-      const compressed = await compressImage(croppedUri);
-      const bannerPath = await linksStorage.uploadBanner(
-        linkId,
-        compressed.uri,
-        'image/jpeg',
-      );
-      await updateLinkById(linkId, {
-        banner_path: bannerPath,
-        banner_crop_x: 50,
-        banner_crop_y: 42,
-      });
-      setEditBannerVisible(false);
-      invalidate.linkDetail(linkId);
-      invalidate.activeLink();
-      invalidate.partyDetail(partyId);
-    } catch (err) {
-      logger.error('Error updating link banner', { err });
-      await dialog.error('Failed to Update Banner', getErrorMessage(err));
-    } finally {
-      setSavingBanner(false);
-    }
-  };
-
-  const handleDeleteLink = async () => {
-    setMenuVisible(false);
-    const confirmed = await dialog.confirmDanger(
-      'Delete Link?',
-      'This will permanently delete the link and all its media. This cannot be undone.',
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const linkPaths = await linksStorage.getPathsById(linkId);
-      await linksStorage.remove(linkPaths);
-      await deleteLink(linkId);
-      trackEvent('link_deleted', { link_id: linkId });
-      trackEvent('link_post_deleted', {
-        link_id: linkId,
-        posts_count: link.posts.length,
-      });
-      trackEvent('media_deleted', {
-        link_id: linkId,
-        media_count: linkPaths.length,
-      });
-      invalidate.activeLink();
-      invalidate.partyDetail(partyId);
-      invalidate.activity();
-      const parentNavigation = navigation.getParent();
-      if (parentNavigation) {
-        parentNavigation.dispatch(
-          CommonActions.navigate('Party', {
-            screen: 'PartyDetail',
-            params: { partyId },
-          }),
-        );
-        return;
-      }
-      navigation.goBack();
-    } catch (err) {
-      logger.error('Error deleting link', { err });
-      await dialog.error('Failed to Delete Link', getErrorMessage(err));
-    }
-  };
-
-  const handleJoinLink = async () => {
-    setMenuVisible(false);
-    const confirmed = await dialog.confirmAsk(
-      'Join Link?',
-      'Become an active participant in the ongoing link.',
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await createLinkMember({ link_id: linkId, user_id: userId });
-      trackEvent('link_joined', { link_id: linkId });
-      invalidate.linkDetail(linkId);
-      invalidate.activeLink();
-    } catch (err) {
-      logger.error('Error joining link', { err });
-      await dialog.error('Failed to Join Link', getErrorMessage(err));
-    }
-  };
-
-  const handleLeaveLink = async () => {
-    setMenuVisible(false);
-    const confirmed = await dialog.confirmDanger(
-      'Leave Link?',
-      'You will no longer be able to view or add media to this link.',
-    );
-
-    if (!confirmed) return;
-
-    if (!userId) return;
-
-    try {
-      await deleteLinkMember(linkId, userId);
-      trackEvent('link_left', { linkId: linkId });
-      invalidate.linkDetail(linkId);
-      invalidate.activeLink();
-      invalidate.partyDetail(partyId);
-      navigation.goBack();
-    } catch (err) {
-      logger.error('Error leaving link', { err });
-      await dialog.error('Failed to Leave Link', getErrorMessage(err));
-    }
-  };
-
-  /* ----------------------- 
-      Post & Media Actions
+  /* -----------------------
+      Navigation Handlers
      -----------------------*/
 
   const handlePostMediaPress = (index: number) => {
-    navigation.navigate('MediaViewer', {
-      linkId,
-      initialIndex: index,
-    });
+    navigation.navigate('MediaViewer', { linkId, initialIndex: index });
   };
 
   const handleMediaPress = (item: LinkPostMedia) => {
@@ -327,49 +177,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     navigation.navigate('AllMedia', { linkId });
   };
 
-  const handleDeletePost = async (postId: string) => {
-    const post = link?.posts.find((p) => p.id === postId);
-    if (!post) return;
-
-    const confirmed = await dialog.confirmDanger(
-      'Delete Post?',
-      `This will permanently delete this post and ${post.media.length} media.`,
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const deletedPaths = new Set(post.media.map((media) => media.path));
-      const isDeletingBanner =
-        !!link.banner_path && deletedPaths.has(link.banner_path);
-      const nextImageBanner = isDeletingBanner
-        ? allMedia.find(
-            (media) => media.type === 'image' && !deletedPaths.has(media.path),
-          )
-        : null;
-
-      await Promise.all(
-        post.media.map((media) => deleteLinkPostMedia(media.id)),
-      );
-      await deleteLinkPost(postId);
-      await linksStorage.remove(post.media.map((media) => media.path));
-
-      if (isDeletingBanner) {
-        await updateLinkById(linkId, {
-          banner_path: nextImageBanner?.path ?? null,
-          banner_crop_x: 50,
-          banner_crop_y: 42,
-        });
-      }
-
-      invalidate.linkDetail(linkId);
-    } catch (err) {
-      logger.error('Error deleting post', { err });
-      await dialog.error('Failed to Delete Post', getErrorMessage(err));
-    }
-  };
-
-  /* ----------------------- 
+  /* -----------------------
       Dropdown Menu
      -----------------------*/
 
@@ -411,30 +219,52 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       menuItems.push({
         icon: 'check-circle',
         label: 'End Link',
-        action: handleEndLink,
+        action: () => {
+          setMenuVisible(false);
+          linkActions.endLink();
+        },
       });
     }
 
     menuItems.push({
       icon: 'trash-2',
       label: 'Delete Link',
-      action: handleDeleteLink,
+      action: () => {
+        setMenuVisible(false);
+        linkActions.deleteLink();
+      },
       variant: 'danger',
     });
   } else if (isMember) {
     menuItems.push({
       icon: 'log-out',
       label: 'Leave Link',
-      action: handleLeaveLink,
+      action: () => {
+        setMenuVisible(false);
+        linkActions.leaveLink();
+      },
       variant: 'danger',
     });
   } else if (isActive) {
     menuItems.push({
       icon: 'log-in',
       label: 'Join Link',
-      action: handleJoinLink,
+      action: () => {
+        setMenuVisible(false);
+        linkActions.joinLink();
+      },
     });
   }
+
+  const handleEditName = async (newName: string) => {
+    await linkActions.editName(newName);
+    setEditModalVisible(false);
+  };
+
+  const handleSaveBanner = async (croppedUri: string) => {
+    await linkActions.saveBanner(croppedUri);
+    setEditBannerVisible(false);
+  };
 
   return (
     <>
@@ -658,7 +488,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                     post={post}
                     onMediaPress={handlePostMediaPress}
                     currentUserId={userId}
-                    onDeletePost={handleDeletePost}
+                    onDeletePost={linkActions.deletePost}
                   />
                 ))
               )}
@@ -713,7 +543,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             onClose={() => setEditBannerVisible(false)}
             images={imageMedia}
             initialPath={link.banner_path}
-            saving={savingBanner}
+            saving={linkActions.savingBanner}
             onSave={handleSaveBanner}
           />
 
