@@ -1,20 +1,15 @@
-import { useEffect } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  useAnimatedProps,
-  withSpring,
-  interpolate,
-  Extrapolation,
-  Easing,
-  withTiming,
-} from 'react-native-reanimated';
-import { Pressable, useWindowDimensions, View, Text } from 'react-native';
+import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { StagedAsset } from '../hooks/useStagedMedia';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 type Props = {
   assets: StagedAsset[];
@@ -28,8 +23,6 @@ type Props = {
 const GRID_COLUMNS = 3;
 const GRID_GAP = 8;
 const SHEET_PADDING = 16;
-const COLLAPSED_HEIGHT = 80;
-const SPRING_CONFIG = { damping: 100, stiffness: 400 };
 
 export default function StagedMediaSheet({
   assets,
@@ -40,275 +33,266 @@ export default function StagedMediaSheet({
   uploading,
 }: Props) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const [index, setIndex] = useState(1);
+  const [contentHeight, setContentHeight] = useState(0);
+  const sheetRef = useRef<BottomSheet>(null);
+  const animatedIndex = useSharedValue(1);
 
-  const expandedHeight = screenHeight * 0.55;
-  const sheetHeight = useSharedValue(0);
-  const dragStart = useSharedValue(0);
-  const dismissY = useSharedValue(0);
+  const COLLAPSED = 88;
+  const fitSnap = Math.min(contentHeight + 50, screenHeight * 0.6);
+  const isCollapsed = index === 0;
   const tileSize =
     (screenWidth - SHEET_PADDING * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
     GRID_COLUMNS;
+  const preview = assets.slice(0, 4);
+  const remaining = assets.length - preview.length;
 
-  const expandedAnimatedProps = useAnimatedProps(() => ({
-    pointerEvents: (sheetHeight.value > COLLAPSED_HEIGHT + 40
-      ? 'auto'
-      : 'none') as 'auto' | 'none',
-  }));
-  const collapsedAnimatedProps = useAnimatedProps(() => ({
-    pointerEvents: (sheetHeight.value <= COLLAPSED_HEIGHT + 40
-      ? 'auto'
-      : 'none') as 'auto' | 'none',
-  }));
+  const snapPoints = useMemo(() => [COLLAPSED, fitSnap], [fitSnap]);
 
-  useEffect(() => {
-    sheetHeight.value = withSpring(expandedHeight, SPRING_CONFIG);
-  }, []);
-
-  const tapGesture = Gesture.Tap().onEnd(() => {
-    const mid = (COLLAPSED_HEIGHT + expandedHeight) / 2;
-    if (sheetHeight.value > mid) {
-      sheetHeight.value = withSpring(COLLAPSED_HEIGHT, SPRING_CONFIG);
-    } else {
-      sheetHeight.value = withSpring(expandedHeight, SPRING_CONFIG);
-    }
+  const postStyle = useAnimatedStyle(() => {
+    const t = interpolate(
+      animatedIndex.value,
+      [0, 1, 2],
+      [0, 1, 1],
+      Extrapolation.CLAMP,
+    );
+    return {
+      opacity: t,
+      transform: [
+        {
+          translateY: interpolate(
+            animatedIndex.value,
+            [0, 1],
+            [14, 0],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
+    };
   });
-  const dragGesture = Gesture.Pan()
-    .onStart(() => {
-      dragStart.value = sheetHeight.value;
-    })
-    .onUpdate((event) => {
-      const newHeight = dragStart.value - event.translationY;
-      sheetHeight.value = Math.max(
-        COLLAPSED_HEIGHT,
-        Math.min(expandedHeight, newHeight),
-      );
-    })
-    .onEnd((event) => {
-      const mid = (COLLAPSED_HEIGHT + expandedHeight) / 2;
-      const goingUp = event.velocityY < -500;
-      const goingDown = event.velocityY > 500;
 
-      if (goingUp || (!goingDown && sheetHeight.value > mid)) {
-        sheetHeight.value = withSpring(expandedHeight, SPRING_CONFIG);
-      } else {
-        sheetHeight.value = withSpring(COLLAPSED_HEIGHT, SPRING_CONFIG);
-      }
-    });
-  const handleGesture = Gesture.Exclusive(tapGesture, dragGesture);
-
-  const dismiss = (callback: () => void) => {
-    dismissY.value = withTiming(expandedHeight, {
-      duration: 250,
-      easing: Easing.in(Easing.ease),
-    });
-    setTimeout(callback, 250);
-  };
-
-  const handleClearAll = () => {
-    dismiss(onClearAll);
-  };
-
-  const handleRemove = (uri: string) => {
-    if (assets.length === 1) {
-      dismiss(() => onRemove(uri));
-    } else {
-      onRemove(uri);
-    }
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    height: sheetHeight.value,
-    paddingBottom: insets.bottom,
-    transform: [{ translateY: dismissY.value }],
-  }));
-
-  const expandedOpacity = useAnimatedStyle(() => ({
+  const expandedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      sheetHeight.value,
-      [COLLAPSED_HEIGHT + 40, COLLAPSED_HEIGHT + 120],
-      [0, 1],
+      animatedIndex.value,
+      [0, 0.35, 1],
+      [0, 0.2, 1],
       Extrapolation.CLAMP,
     ),
+    transform: [
+      {
+        translateY: interpolate(
+          animatedIndex.value,
+          [0, 1],
+          [10, 0],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
   }));
-  const collapsedOpacity = useAnimatedStyle(() => ({
+
+  const collapsedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      sheetHeight.value,
-      [COLLAPSED_HEIGHT, COLLAPSED_HEIGHT + 80],
-      [1, 0],
+      animatedIndex.value,
+      [0, 0.65, 1],
+      [1, 0.2, 0],
       Extrapolation.CLAMP,
     ),
+    transform: [
+      {
+        scale: interpolate(
+          animatedIndex.value,
+          [0, 1],
+          [1, 0.96],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
   }));
 
   return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: '#ffffff',
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 8,
-        },
-        animatedStyle,
-      ]}
+    <BottomSheet
+      ref={sheetRef}
+      index={index}
+      onChange={setIndex}
+      animatedIndex={animatedIndex}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose={false}
     >
-      {/* Drag handle */}
-      <GestureDetector gesture={handleGesture}>
+      <BottomSheetScrollView
+        onContentSizeChange={(_, h) => setContentHeight(h)}
+        contentContainerStyle={{
+          paddingHorizontal: SHEET_PADDING,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Expanded View */}
         <Animated.View
-          style={{ alignItems: 'center', paddingVertical: 10 }}
-          hitSlop={{ top: 20, bottom: 20 }}
+          style={[{ flex: 1 }, expandedStyle]}
+          pointerEvents={index === 1 ? 'auto' : 'none'}
         >
+          {/* Header */}
           <View
             style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: '#cbd5e1',
+              backgroundColor: 'rgba(255,255,255,0.96)',
+              borderBottomWidth: 1,
+              borderBottomColor: '#f1f5f9',
+              zIndex: 10,
+              paddingBottom: 8,
+              marginBottom: 12,
             }}
-          />
-        </Animated.View>
-      </GestureDetector>
-
-      {/* Content */}
-      <View style={{ flex: 1, paddingHorizontal: SHEET_PADDING }}>
-        {/* Expanded grid */}
-        <Animated.View
-          style={[{ flex: 1 }, expandedOpacity]}
-          animatedProps={expandedAnimatedProps}
-        >
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-base font-semibold text-slate-800">
-              {assets.length} media ready
-            </Text>
-            <Pressable onPress={handleClearAll} hitSlop={8}>
-              <Text className="text-sm text-slate-400">Clear all</Text>
-            </Pressable>
+          >
+            <View className="flex-row items-center justify-between pt-1">
+              <Text className="text-base font-semibold text-slate-800">
+                {assets.length} item{assets.length === 1 ? '' : 's'} ready
+              </Text>
+              <Pressable onPress={onClearAll} hitSlop={8}>
+                <Text className="text-sm text-slate-400">Clear all</Text>
+              </Pressable>
+            </View>
           </View>
 
-          <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
-            {assets.map((item) => (
-              <View
-                key={item.asset.uri}
-                style={{ width: tileSize, height: tileSize }}
-              >
-                <Image
-                  source={{ uri: item.thumbnailUri ?? item.asset.uri }}
-                  cachePolicy="memory-disk"
-                  style={{
-                    width: tileSize,
-                    height: tileSize,
-                    borderRadius: 12,
-                  }}
-                  contentFit="cover"
-                  transition={150}
-                />
-                {item.thumbnailStatus === 'generating' && (
-                  <View className="absolute inset-0 items-center justify-center">
-                    <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
-                      <Ionicons name="time-outline" size={14} color="white" />
-                    </View>
-                  </View>
-                )}
-                {item.asset.type === 'video' && (
-                  <View className="absolute inset-0 items-center justify-center">
-                    <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
-                      <Feather
-                        name="play"
-                        size={14}
-                        color="white"
-                        className="ml-1"
-                      />
-                    </View>
-                  </View>
-                )}
-                <Pressable
-                  onPress={() => handleRemove(item.asset.uri)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-black/70 rounded-full items-center justify-center"
-                  hitSlop={8}
-                >
-                  <Feather name="x" size={12} color="white" />
-                </Pressable>
-              </View>
-            ))}
-
-            <Pressable
-              onPress={onAddFromGallery}
-              style={{ width: tileSize, height: tileSize, borderRadius: 12 }}
-              className="border-2 border-dashed border-slate-200 items-center justify-center active:bg-slate-50"
-            >
-              <Feather name="plus" size={24} color="#94a3b8" />
-              <Text className="text-xs text-slate-400 mt-1">Add</Text>
-            </Pressable>
-          </View>
-
-          <View className="mt-4">
+          {/* Post Button */}
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                right: 16,
+                bottom: 16,
+              },
+              postStyle,
+            ]}
+            pointerEvents={isCollapsed ? 'none' : 'auto'}
+          >
             <Pressable
               onPress={onUpload}
               disabled={uploading}
-              className="h-12 rounded-xl bg-blue-600 flex-row items-center justify-center gap-2 active:bg-blue-700 disabled:opacity-50"
+              className="h-12 rounded-full bg-blue-600 px-5 flex-row items-center justify-center gap-2 disabled:opacity-50"
             >
               <Ionicons name="arrow-up" size={18} color="white" />
-              <Text className="text-white font-semibold text-base">Post</Text>
+              <Text className="text-white text-sm font-semibold">Post</Text>
             </Pressable>
+          </Animated.View>
+
+          {/* Staged Assets */}
+          <View className="flex-1">
+            <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
+              {assets.map((item) => (
+                <View
+                  key={item.id}
+                  style={{ width: tileSize, height: tileSize }}
+                >
+                  <Image
+                    source={{ uri: item.thumbnailUri ?? item.asset.uri }}
+                    cachePolicy="memory-disk"
+                    style={{
+                      width: tileSize,
+                      height: tileSize,
+                      borderRadius: 12,
+                    }}
+                    contentFit="cover"
+                    transition={150}
+                  />
+                  {item.thumbnailStatus === 'generating' && (
+                    <View className="absolute inset-0 items-center justify-center">
+                      <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
+                        <Ionicons name="time-outline" size={14} color="white" />
+                      </View>
+                    </View>
+                  )}
+                  {item.asset.type === 'video' && (
+                    <View className="absolute inset-0 items-center justify-center">
+                      <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
+                        <Feather name="play" size={14} color="white" />
+                      </View>
+                    </View>
+                  )}
+                  <Pressable
+                    onPress={() => onRemove(item.asset.uri)}
+                    className="absolute -right-2 -top-2 h-6 w-6 items-center justify-center rounded-full bg-black/70"
+                    hitSlop={8}
+                  >
+                    <Feather name="x" size={12} color="white" />
+                  </Pressable>
+                </View>
+              ))}
+
+              <Pressable
+                onPress={onAddFromGallery}
+                style={{ width: tileSize, height: tileSize, borderRadius: 12 }}
+                className="items-center justify-center border-2 border-dashed border-slate-200"
+              >
+                <Feather name="plus" size={24} color="#94a3b8" />
+                <Text className="mt-1 text-xs text-slate-400">Add</Text>
+              </Pressable>
+            </View>
           </View>
         </Animated.View>
 
-        {/* Collapsed summary (overlaid on top) */}
+        {/* Collapsed View */}
         <Animated.View
           style={[
             {
               position: 'absolute',
-              top: 0,
               left: SHEET_PADDING,
               right: SHEET_PADDING,
+              top: 8,
             },
-            collapsedOpacity,
+            collapsedStyle,
           ]}
-          animatedProps={collapsedAnimatedProps}
+          pointerEvents={index === 0 ? 'auto' : 'none'}
         >
           <View className="flex-row items-center gap-3">
             <View className="flex-row items-center">
-              {assets.slice(0, 3).map((item, index) => (
-                <Image
-                  key={item.asset.uri}
-                  source={{ uri: item.thumbnailUri ?? item.asset.uri }}
-                  cachePolicy="memory-disk"
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    marginLeft: index === 0 ? 0 : -12,
-                    zIndex: 3 - index,
-                  }}
-                  contentFit="cover"
-                />
-              ))}
+              {preview.map((item, i) => {
+                const showRemaining = i === preview.length - 1 && remaining > 0;
+
+                return (
+                  <View
+                    key={item.id}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      marginLeft: i === 0 ? 0 : -6,
+                      zIndex: 10 - i,
+                      overflow: 'hidden',
+                      borderWidth: 1,
+                      borderColor: '#fff',
+                    }}
+                  >
+                    <Image
+                      source={{ uri: item.thumbnailUri ?? item.asset.uri }}
+                      style={{ width: '100%', height: '100%' }}
+                      contentFit="cover"
+                    />
+
+                    {showRemaining && (
+                      <View className="absolute inset-0 items-center justify-center bg-black/40">
+                        <Text className="text-[11px] font-semibold text-white">
+                          +{remaining}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
             </View>
 
             <Text className="flex-1 text-sm font-medium text-slate-700">
-              {assets.length} media ready
+              {assets.length} item{assets.length === 1 ? '' : 's'} ready
             </Text>
 
             <Pressable
               onPress={onUpload}
               disabled={uploading}
-              className="h-12 px-5 rounded-xl bg-blue-600 flex-row items-center justify-center gap-1.5 active:bg-blue-700 disabled:opacity-50"
+              className="h-10 px-4 rounded-lg bg-blue-600 flex-row items-center justify-center gap-1.5 disabled:opacity-50"
             >
-              <Ionicons name="arrow-up" size={14} color="white" />
+              <Ionicons name="arrow-up" size={16} color="white" />
             </Pressable>
           </View>
         </Animated.View>
-      </View>
-    </Animated.View>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 }
