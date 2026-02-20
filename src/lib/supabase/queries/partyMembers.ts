@@ -1,6 +1,5 @@
 import { supabase } from '../client';
 import { PartyMemberRow, PartyMemberInsert } from '../../models';
-import { logger } from '../../telemetry/logger';
 
 export async function getPartyMembersByPartyId(
   partyId: string,
@@ -11,7 +10,6 @@ export async function getPartyMembersByPartyId(
     .eq('party_id', partyId);
 
   if (error) {
-    logger.error('Error fetching party members:', error.message);
     throw error;
   }
 
@@ -20,7 +18,7 @@ export async function getPartyMembersByPartyId(
 
 export async function createPartyMember(
   partyMember: PartyMemberInsert,
-): Promise<PartyMemberRow | null> {
+): Promise<PartyMemberRow> {
   const { data, error } = await supabase
     .from('party_members')
     .insert(partyMember)
@@ -28,21 +26,22 @@ export async function createPartyMember(
     .single();
 
   if (error) {
-    logger.error('Error creating party member:', error.message);
     throw error;
   }
 
   return data;
 }
 
-export async function deletePartyMember(partyId: string, userId: string) {
+export async function deletePartyMember(
+  partyId: string,
+  userId: string,
+): Promise<void> {
   const { error } = await supabase
     .from('party_members')
     .delete()
     .match({ party_id: partyId, user_id: userId });
 
-  if (error) {
-    logger.error('Error deleting party member:', error.message);
-    throw error;
-  }
+  if (error) throw error;
+
+  return;
 }

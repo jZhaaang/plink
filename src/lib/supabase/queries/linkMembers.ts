@@ -1,6 +1,5 @@
 import { supabase } from '../client';
 import { LinkMemberRow, LinkMemberInsert } from '../../models';
-import { logger } from '../../telemetry/logger';
 
 export async function getLinkMembersByLinkId(
   linkId: string,
@@ -10,39 +9,35 @@ export async function getLinkMembersByLinkId(
     .select('*')
     .eq('link_id', linkId);
 
-  if (error) {
-    logger.error('Error fetching link members:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
 
 export async function createLinkMember(
   linkMember: LinkMemberInsert,
-): Promise<LinkMemberRow | null> {
+): Promise<LinkMemberRow> {
   const { data, error } = await supabase
     .from('link_members')
     .insert(linkMember)
     .select()
     .single();
 
-  if (error) {
-    logger.error('Error creating link member:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
 
-export async function deleteLinkMember(linkId: string, userId: string) {
+export async function deleteLinkMember(
+  linkId: string,
+  userId: string,
+): Promise<void> {
   const { error } = await supabase
     .from('link_members')
     .delete()
     .match({ link_id: linkId, user_id: userId });
 
-  if (error) {
-    logger.error('Error deleting link member:', error.message);
-    throw error;
-  }
+  if (error) throw error;
+
+  return;
 }

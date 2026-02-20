@@ -1,5 +1,4 @@
 import { supabase } from '../client';
-import { logger } from '../../telemetry/logger';
 import {
   ActivityEventRow,
   ActivityFeedItem,
@@ -19,10 +18,7 @@ export async function getActivityEventsByUserId(
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (error) {
-    logger.error('Error fetching activity events:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -34,10 +30,7 @@ export async function getUnreadActivityCount(userId: string): Promise<number> {
     .eq('recipient_user_id', userId)
     .is('read_at', null);
 
-  if (error) {
-    logger.error('Error fetching unread activity count:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return count ?? 0;
 }
@@ -53,10 +46,7 @@ export async function markActivityEventsRead(
     .in('id', eventIds)
     .is('read_at', null);
 
-  if (error) {
-    logger.error('Error marking activity events as read:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   return;
 }
@@ -93,21 +83,9 @@ export async function getActivityFeedByUserId(
       : Promise.resolve({ data: [] as PartyRow[], error: null }),
   ]);
 
-  if (profilesRes.error) {
-    logger.error('Error fetching actor profiles:', profilesRes.error.message);
-    throw profilesRes.error;
-  }
-  if (linksRes.error) {
-    logger.error('Error fetching links for activity:', linksRes.error.message);
-    throw linksRes.error;
-  }
-  if (partiesRes.error) {
-    logger.error(
-      'Error fetching parties for activity:',
-      partiesRes.error.message,
-    );
-    throw partiesRes.error;
-  }
+  if (profilesRes.error) throw profilesRes.error;
+  if (linksRes.error) throw linksRes.error;
+  if (partiesRes.error) throw partiesRes.error;
 
   const profileMap = new Map((profilesRes.data ?? []).map((p) => [p.id, p]));
   const linkMap = new Map((linksRes.data ?? []).map((l) => [l.id, l]));

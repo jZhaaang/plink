@@ -1,7 +1,10 @@
 import { Platform } from 'react-native';
 import { supabase } from '../client';
 
-export async function upsertPushToken(userId: string, token: string) {
+export async function upsertPushToken(
+  userId: string,
+  token: string,
+): Promise<void> {
   const platform = Platform.OS === 'ios' ? 'ios' : 'android';
   const { error } = await supabase.from('push_tokens').upsert(
     {
@@ -13,5 +16,8 @@ export async function upsertPushToken(userId: string, token: string) {
     },
     { onConflict: 'token' },
   );
+
   if (error) throw error;
+
+  return;
 }
