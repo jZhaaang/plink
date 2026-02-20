@@ -8,7 +8,6 @@ import {
   RefreshControl,
   GestureResponderEvent,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
@@ -33,16 +32,15 @@ import StagedMediaSheet from '../components/StagedMediaSheet';
 import UploadProgressModal from '../../../components/UploadProgressModal';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
-import { LinearGradient } from 'expo-linear-gradient';
 import { CardSection } from '../../../components/Card';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
-import { Image } from 'expo-image';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
+import HeroBanner from '../../../components/HeroBanner';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -50,7 +48,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
   const dialog = useDialog();
-  const insets = useSafeAreaInsets();
 
   const {
     link,
@@ -270,100 +267,37 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     <>
       <View className="flex-1 bg-neutral-50">
         <StatusBar style="light" />
-        <View style={{ height: insets.top, overflow: 'hidden' }}>
-          {link.bannerUrl ? (
-            <>
-              <Image
-                source={{ uri: link.bannerUrl }}
-                cachePolicy="memory-disk"
-                contentFit="cover"
-                contentPosition={{
-                  left: `${link.banner_crop_x}%`,
-                  top: `${link.banner_crop_y}%`,
-                }}
-                blurRadius={20}
-                style={{ width: '100%', height: insets.top + 40 }}
-              />
-              <View className="absolute inset-0 bg-black/25" />
-            </>
-          ) : (
-            <LinearGradient
-              colors={['#dbeafe', '#60a5fa']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={{ width: '100%', height: insets.top + 40 }}
-            />
-          )}
-        </View>
-        <View className="flex-1 bg-neutral-50">
-          {/* Hero */}
-          <View className="w-full" style={{ aspectRatio: 2.5 }}>
-            {link.bannerUrl ? (
-              <Image
-                source={{ uri: link.bannerUrl }}
-                cachePolicy="memory-disk"
-                contentFit="cover"
-                contentPosition={{
-                  left: `${link.banner_crop_x}%`,
-                  top: `${link.banner_crop_y}%`,
-                }}
-                style={{ width: '100%', height: '100%' }}
-              />
-            ) : (
-              <LinearGradient
-                colors={['#dbeafe', '#60a5fa']}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 1, y: 0 }}
-                style={{ flex: 1 }}
-              />
-            )}
 
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.6)']}
-              className="absolute bottom-0 left-0 right-0 h-28"
-            />
-
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
-              <View className="flex-row items-center mb-1">
-                <View
-                  className={`px-2.5 py-0.5 rounded-full ${isActive ? 'bg-green-500/80' : 'bg-white/20'}`}
-                >
-                  <Text className="text-xs font-semibold text-white">
-                    {isActive ? 'Active' : 'Ended'}
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-2xl font-bold text-white">{link.name}</Text>
-              <Text className="text-sm text-white/70 mt-0.5">
-                Created by {owner.name ?? 'Unknown'}
+        <HeroBanner
+          banner={
+            link.bannerUrl
+              ? {
+                  uri: link.bannerUrl,
+                  cropX: link.banner_crop_x,
+                  cropY: link.banner_crop_y,
+                }
+              : null
+          }
+          gradientColors={['#dbeafe', '#60a5fa']}
+          onBack={() => navigation.goBack()}
+          onMenuPress={handleMenuPress}
+        >
+          <View className="flex-row items-center mb-1">
+            <View
+              className={`px-2.5 py-0.5 rounded-full ${isActive ? 'bg-green-500/80' : 'bg-white/20'}`}
+            >
+              <Text className="text-xs font-semibold text-white">
+                {isActive ? 'Active' : 'Ended'}
               </Text>
             </View>
           </View>
+          <Text className="text-2xl font-bold text-white">{link.name}</Text>
+          <Text className="text-sm text-white/70 mt-0.5">
+            Created by {owner.name ?? 'Unknown'}
+          </Text>
+        </HeroBanner>
 
-          {/* Floating menu over hero */}
-          <View
-            className="absolute top-0 left-0 right-0"
-            pointerEvents="box-none"
-          >
-            <View
-              className="flex-row items-center justify-between px-4 py-2"
-              pointerEvents="box-none"
-            >
-              <Pressable
-                onPress={() => navigation.goBack()}
-                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-              >
-                <Feather name="arrow-left" size={20} color="#fff" />
-              </Pressable>
-              <Pressable
-                onPress={handleMenuPress}
-                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-              >
-                <Feather name="more-vertical" size={20} color="#fff" />
-              </Pressable>
-            </View>
-          </View>
-
+        <View className="flex-1 bg-neutral-50">
           <ScrollView
             className="flex-1"
             contentContainerClassName="pb-40"

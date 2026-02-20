@@ -40,8 +40,6 @@ import {
   DataFallbackScreen,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
-import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
@@ -49,6 +47,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
+import HeroBanner from '../../../components/HeroBanner';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -230,30 +229,19 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   return (
     <View className="flex-1 bg-neutral-50">
       <StatusBar style="light" />
-      <View style={{ height: insets.top, overflow: 'hidden' }}>
-        {party.bannerUrl ? (
-          <>
-            <Image
-              source={{ uri: party.bannerUrl }}
-              cachePolicy="memory-disk"
-              contentFit="cover"
-              blurRadius={20}
-              style={{ width: '100%', height: insets.top + 40 }}
-            />
-            <View
-              className="absolute inset-0 bg-black/20"
-              pointerEvents="none"
-            />
-          </>
-        ) : (
-          <LinearGradient
-            colors={['#bfdbfe', '#3b82f6']}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 0 }}
-            style={{ flex: 1 }}
-          />
-        )}
-      </View>
+
+      <HeroBanner
+        banner={party.bannerUrl ? { uri: party.bannerUrl } : null}
+        gradientColors={['#bfdbfe', '#3b82f6']}
+        onBack={() => navigation.goBack()}
+        onMenuPress={isOwner ? handleMenuPress : undefined}
+      >
+        <Text className="text-2xl font-bold text-white">{party.name}</Text>
+        <Text className="text-sm text-white/70 mt-1">
+          {party.members.length}{' '}
+          {party.members.length === 1 ? 'member' : 'members'}
+        </Text>
+      </HeroBanner>
 
       <View className="flex-1 bg-neutral-50">
         <ScrollView
@@ -265,42 +253,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             />
           }
         >
-          {/* Hero Banner */}
-          <View className="w-full" style={{ aspectRatio: 2.5 }}>
-            {party.bannerUrl ? (
-              <Image
-                source={{ uri: party.bannerUrl }}
-                cachePolicy="memory-disk"
-                contentFit="cover"
-                style={{ width: '100%', height: '100%' }}
-              />
-            ) : (
-              <LinearGradient
-                colors={['#bfdbfe', '#3b82f6']}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 1, y: 0 }}
-                style={{ flex: 1 }}
-              />
-            )}
-
-            {/* Bottom gradient for text legibility */}
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.55)']}
-              className="absolute bottom-0 left-0 right-0 h-28"
-            />
-
-            {/* Party name overlaid on banner */}
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
-              <Text className="text-2xl font-bold text-white">
-                {party.name}
-              </Text>
-              <Text className="text-sm text-white/70 mt-1">
-                {party.members.length}{' '}
-                {party.members.length === 1 ? 'member' : 'members'}
-              </Text>
-            </View>
-          </View>
-
           {/* Members */}
           <View className="flex-row items-center justify-between px-5 mt-5">
             <AvatarStack avatarUris={memberAvatars} size={40} />
@@ -362,35 +314,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             )}
           </View>
         </ScrollView>
-
-        {/* Floating nav over banner */}
-        <View
-          className="absolute top-0 left-0 right-0"
-          pointerEvents="box-none"
-        >
-          <View
-            className="flex-row items-center justify-between px-4 py-2"
-            pointerEvents="box-none"
-          >
-            <Pressable
-              onPress={() => navigation.goBack()}
-              className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-            >
-              <Feather name="arrow-left" size={20} color="#fff" />
-            </Pressable>
-
-            {isOwner ? (
-              <Pressable
-                onPress={handleMenuPress}
-                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-              >
-                <Feather name="more-vertical" size={20} color="#fff" />
-              </Pressable>
-            ) : (
-              <View className="w-9" />
-            )}
-          </View>
-        </View>
 
         {/* Create Link Modal */}
         <CreateLinkModal
