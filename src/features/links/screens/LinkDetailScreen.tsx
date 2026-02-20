@@ -651,7 +651,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           {/* Bottom Actions (for active links) */}
           {isActive && isMember && (
             <>
-              {hasAssets ? (
+              {hasAssets && (
                 <StagedMediaSheet
                   assets={stagedAssets}
                   onAddFromGallery={addFromGallery}
@@ -660,20 +660,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   onUpload={uploadAll}
                   uploading={uploading}
                 />
-              ) : (
-                <Pressable
-                  onPress={addFromGallery}
-                  className="absolute bottom-6 right-5 w-14 h-14 rounded-full bg-blue-600 items-center justify-center active:bg-blue-700"
-                  style={{
-                    shadowColor: '#2563eb',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 6,
-                  }}
-                >
-                  <Feather name="plus" size={24} color="white" />
-                </Pressable>
               )}
             </>
           )}
