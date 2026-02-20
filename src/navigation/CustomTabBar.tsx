@@ -38,12 +38,7 @@ export default function CustomTabBar({
 
   const activeTabRoute = state.routes[state.index] as NestedRoute;
   const currentScreen = getDeepFocusedRouteName(activeTabRoute);
-
-  const shouldHideTabBar =
-    currentScreen === 'MediaViewer' || currentScreen === 'AllMedia';
-  if (shouldHideTabBar) return null;
   const isOnLinkDetail = currentScreen === 'LinkDetail';
-
   const showFAB = isOnLinkDetail && activeLink !== null;
   const centerIcon = showFAB ? 'plus' : 'party-popper';
 
@@ -117,6 +112,10 @@ export default function CustomTabBar({
     ],
     [closeMenu, requestUpload],
   );
+
+  const shouldHideTabBar =
+    currentScreen === 'MediaViewer' || currentScreen === 'AllMedia';
+  if (shouldHideTabBar) return null;
 
   return (
     <>
