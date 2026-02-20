@@ -57,6 +57,7 @@ import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
+import { logger } from '../../../lib/telemetry/logger';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -122,7 +123,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       if (!uploadAction) return;
-
       clearUploadAction();
 
       switch (uploadAction) {
@@ -152,6 +152,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     .filter((url): url is string => !!url);
   const owner = link.members.find((m) => m.id === link.owner_id);
 
+  /* ----------------------- 
+      Link Actions
+     -----------------------*/
   const handleEndLink = async () => {
     setMenuVisible(false);
     const confirmed = await dialog.confirmDanger(
@@ -169,7 +172,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       invalidate.partyDetail(partyId);
       invalidate.activity();
     } catch (err) {
-      await dialog.error('Error ending link', getErrorMessage(err));
+      logger.error('Error ending link', { err });
+      await dialog.error('Failed to End Link', getErrorMessage(err));
     }
   };
 
@@ -183,7 +187,34 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       invalidate.partyDetail(partyId);
       invalidate.activity();
     } catch (err) {
-      await dialog.error('Error updating link', getErrorMessage(err));
+      logger.error('Error updating link name', { err });
+      await dialog.error('Failed to Edit Link Name', getErrorMessage(err));
+    }
+  };
+
+  const handleSaveBanner = async (croppedUri: string) => {
+    setSavingBanner(true);
+    try {
+      const compressed = await compressImage(croppedUri);
+      const bannerPath = await linksStorage.uploadBanner(
+        linkId,
+        compressed.uri,
+        'image/jpeg',
+      );
+      await updateLinkById(linkId, {
+        banner_path: bannerPath,
+        banner_crop_x: 50,
+        banner_crop_y: 42,
+      });
+      setEditBannerVisible(false);
+      invalidate.linkDetail(linkId);
+      invalidate.activeLink();
+      invalidate.partyDetail(partyId);
+    } catch (err) {
+      logger.error('Error updating link banner', { err });
+      await dialog.error('Failed to Update Banner', getErrorMessage(err));
+    } finally {
+      setSavingBanner(false);
     }
   };
 
@@ -224,7 +255,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       }
       navigation.goBack();
     } catch (err) {
-      await dialog.error('Error deleting link', getErrorMessage(err));
+      logger.error('Error deleting link', { err });
+      await dialog.error('Failed to Delete Link', getErrorMessage(err));
     }
   };
 
@@ -243,7 +275,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
     } catch (err) {
-      await dialog.error('Error joining link', getErrorMessage(err));
+      logger.error('Error joining link', { err });
+      await dialog.error('Failed to Join Link', getErrorMessage(err));
     }
   };
 
@@ -260,14 +293,85 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
     try {
       await deleteLinkMember(linkId, userId);
+      trackEvent('link_left', { linkId: linkId });
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       navigation.goBack();
     } catch (err) {
-      await dialog.error('Error leaving link', getErrorMessage(err));
+      logger.error('Error leaving link', { err });
+      await dialog.error('Failed to Leave Link', getErrorMessage(err));
     }
   };
+
+  /* ----------------------- 
+      Post & Media Actions
+     -----------------------*/
+
+  const handlePostMediaPress = (index: number) => {
+    navigation.navigate('MediaViewer', {
+      linkId,
+      initialIndex: index,
+    });
+  };
+
+  const handleMediaPress = (item: LinkPostMedia) => {
+    const index = allMedia.findIndex((m) => m.id === item.id);
+    navigation.navigate('MediaViewer', {
+      linkId,
+      initialIndex: index === -1 ? 0 : index,
+    });
+  };
+
+  const handleSeeAllMedia = () => {
+    navigation.navigate('AllMedia', { linkId });
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    const post = link?.posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    const confirmed = await dialog.confirmDanger(
+      'Delete Post?',
+      `This will permanently delete this post and ${post.media.length} media.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const deletedPaths = new Set(post.media.map((media) => media.path));
+      const isDeletingBanner =
+        !!link.banner_path && deletedPaths.has(link.banner_path);
+      const nextImageBanner = isDeletingBanner
+        ? allMedia.find(
+            (media) => media.type === 'image' && !deletedPaths.has(media.path),
+          )
+        : null;
+
+      await Promise.all(
+        post.media.map((media) => deleteLinkPostMedia(media.id)),
+      );
+      await deleteLinkPost(postId);
+      await linksStorage.remove(post.media.map((media) => media.path));
+
+      if (isDeletingBanner) {
+        await updateLinkById(linkId, {
+          banner_path: nextImageBanner?.path ?? null,
+          banner_crop_x: 50,
+          banner_crop_y: 42,
+        });
+      }
+
+      invalidate.linkDetail(linkId);
+    } catch (err) {
+      logger.error('Error deleting post', { err });
+      await dialog.error('Failed to Delete Post', getErrorMessage(err));
+    }
+  };
+
+  /* ----------------------- 
+      Dropdown Menu
+     -----------------------*/
 
   const handleMenuPress = (event: GestureResponderEvent) => {
     event.currentTarget.measureInWindow(
@@ -331,91 +435,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       action: handleJoinLink,
     });
   }
-
-  const handlePostMediaPress = (index: number) => {
-    navigation.navigate('MediaViewer', {
-      linkId,
-      initialIndex: index,
-    });
-  };
-
-  const handleMediaPress = (item: LinkPostMedia) => {
-    const index = allMedia.findIndex((m) => m.id === item.id);
-    navigation.navigate('MediaViewer', {
-      linkId,
-      initialIndex: index === -1 ? 0 : index,
-    });
-  };
-
-  const handleSeeAllMedia = () => {
-    navigation.navigate('AllMedia', { linkId });
-  };
-
-  const handleDeletePost = async (postId: string) => {
-    const post = link?.posts.find((p) => p.id === postId);
-    if (!post) return;
-
-    const confirmed = await dialog.confirmDanger(
-      'Delete Post?',
-      `This will permanently delete this post and ${post.media.length} media.`,
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const deletedPaths = new Set(post.media.map((media) => media.path));
-      const isDeletingBanner =
-        !!link.banner_path && deletedPaths.has(link.banner_path);
-      const nextImageBanner = isDeletingBanner
-        ? allMedia.find(
-            (media) => media.type === 'image' && !deletedPaths.has(media.path),
-          )
-        : null;
-
-      await Promise.all(
-        post.media.map((media) => deleteLinkPostMedia(media.id)),
-      );
-      await deleteLinkPost(postId);
-      await linksStorage.remove(post.media.map((media) => media.path));
-
-      if (isDeletingBanner) {
-        await updateLinkById(linkId, {
-          banner_path: nextImageBanner?.path ?? null,
-          banner_crop_x: 50,
-          banner_crop_y: 42,
-        });
-      }
-
-      invalidate.linkDetail(linkId);
-    } catch (err) {
-      dialog.error('Delete failed', getErrorMessage(err));
-    }
-  };
-
-  const handleSaveBanner = async (croppedUri: string) => {
-    setSavingBanner(true);
-    try {
-      const compressed = await compressImage(croppedUri);
-      const bannerPath = await linksStorage.uploadBanner(
-        linkId,
-        compressed.uri,
-        'image/jpeg',
-      );
-      await updateLinkById(linkId, {
-        banner_path: bannerPath,
-        banner_crop_x: 50,
-        banner_crop_y: 42,
-      });
-      setEditBannerVisible(false);
-      invalidate.linkDetail(linkId);
-      invalidate.activeLink();
-      invalidate.partyDetail(partyId);
-    } catch (err) {
-      await dialog.error('Error updating banner', getErrorMessage(err));
-    } finally {
-      setSavingBanner(false);
-    }
-  };
 
   return (
     <>
