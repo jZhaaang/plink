@@ -8,10 +8,7 @@ import {
   RefreshControl,
   GestureResponderEvent,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
@@ -30,7 +27,6 @@ import MediaGrid from '../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
 import CreateLinkModal from '../components/CreateLinkModal';
 import {
-  Button,
   EmptyState,
   Divider,
   SectionHeader,
@@ -38,6 +34,7 @@ import {
   DropdownMenuItem,
   Card,
   LoadingScreen,
+  DataFallbackScreen,
 } from '../../../components';
 import { useStagedMedia } from '../hooks/useStagedMedia';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -68,24 +65,22 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
+  const insets = useSafeAreaInsets();
 
-  const { link, loading, error, refetch } = useLinkDetail(linkId);
-
-  const onUploadSuccess = useCallback(() => {
-    invalidate.linkDetail(linkId);
-  }, [invalidate, linkId]);
+  const {
+    link,
+    loading: linkLoading,
+    error: linkError,
+    refetch: refetchLink,
+  } = useLinkDetail(linkId);
+  const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
 
   const onUploadError = useCallback(
-    (error: Error) => {
-      dialog.error('Upload failed', error.message);
+    (error: unknown) => {
+      dialog.error('Upload Failed', getErrorMessage(error));
     },
     [dialog],
   );
-
-  const onUploadComplete = useCallback(async () => {
-    invalidate.linkDetail(linkId);
-    invalidate.partyDetail(partyId);
-  }, [link?.banner_path, linkId, partyId, invalidate]);
 
   const {
     stagedAssets,
@@ -99,10 +94,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     hasAssets,
   } = useStagedMedia({
     linkId,
+    partyId,
     userId,
-    onSuccess: onUploadSuccess,
     onError: onUploadError,
-    onUploadComplete,
   });
 
   const [showCamera, setShowCamera] = useState(false);
@@ -114,8 +108,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const [editBannerVisible, setEditBannerVisible] = useState(false);
   const [savingBanner, setSavingBanner] = useState(false);
 
-  const insets = useSafeAreaInsets();
-
   const allMedia = useMemo(() => {
     if (!link) return [];
     return link.posts.flatMap((post) => post.media);
@@ -124,8 +116,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     () => allMedia.filter((media) => media.type === 'image'),
     [allMedia],
   );
-
-  const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
 
   useFocusEffect(
     useCallback(() => {
@@ -136,21 +126,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }, [uploadRequested, clearUploadRequest]),
   );
 
-  if (loading) return <LoadingScreen label="Loading..." />;
-
-  if (error || !link) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
-        <Text className="text-center text-neutral-600 mb-4">
-          Failed to load link details.
-        </Text>
-        <Text className="text-center text-xs text-red-500 mb-4">
-          {error?.message}
-        </Text>
-        <Button title="Retry" variant="outline" onPress={() => refetch()} />
-      </SafeAreaView>
-    );
-  }
+  if (linkLoading) return <LoadingScreen label="Loading..." />;
+  if (linkError || !link) return <DataFallbackScreen onAction={refetchLink} />;
 
   const startFormatted = formatDateTime(link.created_at);
   const endFormatted = formatDateTime(link.end_time);
@@ -529,7 +506,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             className="flex-1"
             contentContainerClassName="pb-40"
             refreshControl={
-              <RefreshControl refreshing={loading} onRefresh={refetch} />
+              <RefreshControl
+                refreshing={linkLoading}
+                onRefresh={refetchLink}
+              />
             }
           >
             <Card className="mx-4 mt-4">

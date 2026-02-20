@@ -16,13 +16,13 @@ import {
   generateVideoThumbnail,
 } from '../../../lib/media/thumbnail';
 import { logger } from '../../../lib/telemetry/logger';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 
 type UseStagedMediaOpts = {
   linkId: string;
+  partyId: string;
   userId: string;
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
-  onUploadComplete?: (uploaded: UploadedAsset[]) => Promise<void> | void;
+  onError?: (error: unknown) => void;
 };
 
 export type StagedAsset = {
@@ -48,11 +48,11 @@ type UploadedAsset = {
 
 export function useStagedMedia({
   linkId,
+  partyId,
   userId,
-  onSuccess,
   onError,
-  onUploadComplete,
 }: UseStagedMediaOpts) {
+  const invalidate = useInvalidate();
   const [stagedAssets, setStagedAssets] = useState<StagedAsset[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
@@ -150,10 +150,6 @@ export function useStagedMedia({
     try {
       const post = await createLinkPost({ link_id: linkId, owner_id: userId });
 
-      if (!post) {
-        throw new Error('Failed to create post');
-      }
-
       const uploadedResults = await Promise.allSettled(
         stagedAssets.map(async (item): Promise<UploadedAsset> => {
           const mime = item.asset.mimeType ?? 'image/jpeg';
@@ -220,14 +216,15 @@ export function useStagedMedia({
         }),
       );
 
-      await onUploadComplete?.(successes);
+      invalidate.linkDetail(linkId);
+      invalidate.partyDetail(partyId);
+      invalidate.activity();
 
       if (failures > 0) {
         setProgress((prev) => (prev ? { ...prev, failed: failures } : null));
         onError?.(new Error(`${failures} upload(s) failed`));
       }
 
-      onSuccess?.();
       trackEvent('media_uploaded', {
         link_id: linkId,
         count: successes.length,
@@ -243,12 +240,13 @@ export function useStagedMedia({
         await linksStorage.remove(uploadedPaths);
       }
       trackEvent('media_upload_failed', { link_id: linkId });
-      onError?.(err instanceof Error ? err : new Error('Upload failed'));
+      logger.error('Error uploading staged media', { err });
+      onError?.(err);
     } finally {
       setUploading(false);
       setProgress(null);
     }
-  }, [stagedAssets, linkId, userId, onSuccess, onError, onUploadComplete]);
+  }, [stagedAssets, linkId, userId, invalidate, onError]);
 
   return {
     stagedAssets,
