@@ -9,6 +9,8 @@ import {
 import { LinkRow } from '../lib/models';
 import { useActiveLink } from '../features/links/hooks/useActiveLink';
 
+type UploadAction = 'camera-photo' | 'camera-video' | 'gallery' | null;
+
 type ActiveLinkContextValue = {
   activeLink: LinkRow | null;
   loading: boolean;
@@ -17,9 +19,9 @@ type ActiveLinkContextValue = {
   openCreateLink: () => void;
   closeCreateLink: () => void;
 
-  uploadRequested: boolean;
-  requestUpload: () => void;
-  clearUploadRequest: () => void;
+  uploadAction: UploadAction;
+  requestUpload: (action: UploadAction) => void;
+  clearUploadAction: () => void;
 };
 
 const ActiveLinkContext = createContext<ActiveLinkContextValue>({
@@ -28,20 +30,23 @@ const ActiveLinkContext = createContext<ActiveLinkContextValue>({
   createLinkVisible: false,
   openCreateLink: () => {},
   closeCreateLink: () => {},
-  uploadRequested: false,
+  uploadAction: null,
   requestUpload: () => {},
-  clearUploadRequest: () => {},
+  clearUploadAction: () => {},
 });
 
 export function ActiveLinkProvider({ children }: { children: ReactNode }) {
   const { activeLink, loading } = useActiveLink();
   const [createLinkVisible, setCreateLinkVisible] = useState(false);
-  const [uploadRequested, setUploadRequested] = useState(false);
+  const [uploadAction, setUploadAction] = useState<UploadAction>(null);
 
   const openCreateLink = useCallback(() => setCreateLinkVisible(true), []);
   const closeCreateLink = useCallback(() => setCreateLinkVisible(false), []);
-  const requestUpload = useCallback(() => setUploadRequested(true), []);
-  const clearUploadRequest = useCallback(() => setUploadRequested(false), []);
+  const requestUpload = useCallback(
+    (action: UploadAction) => setUploadAction(action),
+    [],
+  );
+  const clearUploadAction = useCallback(() => setUploadAction(null), []);
 
   const value = useMemo(
     () => ({
@@ -50,9 +55,9 @@ export function ActiveLinkProvider({ children }: { children: ReactNode }) {
       createLinkVisible,
       openCreateLink,
       closeCreateLink,
-      uploadRequested,
+      uploadAction,
       requestUpload,
-      clearUploadRequest,
+      clearUploadAction,
     }),
     [
       activeLink,
@@ -60,9 +65,9 @@ export function ActiveLinkProvider({ children }: { children: ReactNode }) {
       createLinkVisible,
       openCreateLink,
       closeCreateLink,
-      uploadRequested,
+      uploadAction,
       requestUpload,
-      clearUploadRequest,
+      clearUploadAction,
     ],
   );
 

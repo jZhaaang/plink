@@ -73,7 +73,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     error: linkError,
     refetch: refetchLink,
   } = useLinkDetail(linkId);
-  const { uploadRequested, clearUploadRequest } = useActiveLinkContext();
+  const { uploadAction, clearUploadAction } = useActiveLinkContext();
 
   const onUploadError = useCallback(
     (error: unknown) => {
@@ -99,7 +99,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     onError: onUploadError,
   });
 
-  const [showCamera, setShowCamera] = useState(false);
+  const [cameraMode, setCameraMode] = useState<'picture' | 'video' | null>(
+    null,
+  );
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
     null,
@@ -119,11 +121,22 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      if (uploadRequested) {
-        clearUploadRequest();
-        setShowCamera(true);
+      if (!uploadAction) return;
+
+      clearUploadAction();
+
+      switch (uploadAction) {
+        case 'camera-photo':
+          setCameraMode('picture');
+          break;
+        case 'camera-video':
+          setCameraMode('video');
+          break;
+        case 'gallery':
+          addFromGallery();
+          break;
       }
-    }, [uploadRequested, clearUploadRequest]),
+    }, [uploadAction, clearUploadAction]),
   );
 
   if (linkLoading) return <LoadingScreen label="Loading..." />;
@@ -703,12 +716,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         </View>
       </View>
       <CameraModal
-        visible={showCamera}
+        visible={!!cameraMode}
+        initial={cameraMode}
         onCapture={(assets) => {
           stageAssets(assets);
-          setShowCamera(false);
+          setCameraMode(null);
         }}
-        onClose={() => setShowCamera(false)}
+        onClose={() => setCameraMode(null)}
       />
     </>
   );

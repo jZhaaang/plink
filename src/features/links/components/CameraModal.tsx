@@ -30,22 +30,25 @@ type CapturedAsset = {
 
 type Props = {
   visible: boolean;
+  initial: 'picture' | 'video';
   onCapture: (assets: ImagePicker.ImagePickerAsset[]) => void;
   onClose: () => void;
 };
 
 const MODES = ['Photo', 'Video'] as const;
-const DEFAULT_MODE = 'picture' as const;
 const DEFAULT_FACING = 'back' as const;
 
-export default function CameraModal({ visible, onCapture, onClose }: Props) {
+export default function CameraModal({
+  visible,
+  initial,
+  onCapture,
+  onClose,
+}: Props) {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [micPermission, requestMicPermission] = useMicrophonePermissions();
   const [facing, setFacing] = useState<'front' | 'back'>(DEFAULT_FACING);
   const [isRecording, setIsRecording] = useState(false);
-  const [mode, setMode] = useState<'picture' | 'video' | 'preview'>(
-    DEFAULT_MODE,
-  );
+  const [mode, setMode] = useState<'picture' | 'video' | 'preview'>(initial);
   const [capturedAsset, setCapturedAsset] = useState<CapturedAsset | null>(
     null,
   );
@@ -73,7 +76,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
   const resetModalState = () => {
     setIsRecording(false);
     setCapturedAsset(null);
-    setMode(DEFAULT_MODE);
+    setMode(initial);
     setFacing(DEFAULT_FACING);
     recordingScale.value = withSpring(1, { damping: 50, stiffness: 150 });
   };
@@ -82,7 +85,8 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
     if (!visible) {
       resetModalState();
     }
-  }, [visible]);
+    setMode(initial);
+  }, [visible, initial]);
 
   const takePicture = async () => {
     if (!cameraRef.current) return;
@@ -180,7 +184,7 @@ export default function CameraModal({ visible, onCapture, onClose }: Props) {
 
   const handleRetake = () => {
     setCapturedAsset(null);
-    setMode(capturedAsset?.type === 'video' ? 'video' : DEFAULT_MODE);
+    setMode(capturedAsset?.type === 'video' ? 'video' : initial);
   };
 
   const handleClose = () => {
