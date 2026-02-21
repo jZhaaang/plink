@@ -27,6 +27,14 @@ export default {
     'expo-video',
     'expo-notifications',
     [
+      'react-native-vision-camera',
+      {
+        cameraPermissionText: 'Allow plink to access your camera',
+        enableMicrophonePermission: true,
+        microphonePermissionText: 'Allow plink to access your microphone',
+      },
+    ],
+    [
       '@sentry/react-native/expo',
       {
         url: 'https://sentry.io/',

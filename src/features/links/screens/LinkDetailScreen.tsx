@@ -102,9 +102,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     onError: onUploadError,
   });
 
-  const [cameraMode, setCameraMode] = useState<'picture' | 'video' | null>(
-    null,
-  );
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{
     x: number;
@@ -129,7 +127,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
       switch (uploadAction) {
         case 'camera-photo':
-          setCameraMode('picture');
+          setCameraMode('photo');
           break;
         case 'camera-video':
           setCameraMode('video');
@@ -486,7 +484,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       </View>
       <CameraModal
         visible={!!cameraMode}
-        initial={cameraMode}
+        initialMode={cameraMode ?? 'photo'}
         onCapture={(assets) => {
           stageAssets(assets);
           setCameraMode(null);

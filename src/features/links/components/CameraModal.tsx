@@ -1,231 +1,151 @@
-import {
-  CameraView,
-  useCameraPermissions,
-  useMicrophonePermissions,
-} from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import { useEffect, useRef, useState } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import { useVisionCamera } from '../hooks/useVisionCamera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { logger } from '../../../lib/telemetry/logger';
-import { View, Text, StatusBar, Pressable, Modal } from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { useEffect } from 'react';
+import {
+  Modal,
+  Pressable,
+  View,
+  Text,
+  StatusBar,
+  useWindowDimensions,
+} from 'react-native';
+import { Camera } from 'react-native-vision-camera';
+import { Feather } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { getErrorMessage } from '../../../lib/utils/errorExtraction';
-import { LoadingScreen, Spinner } from '../../../components';
-import { compressImage } from '../../../lib/media/compress';
-
-type CapturedAsset = {
-  uri: string;
-  type: 'image' | 'video';
-  width?: number;
-  height?: number;
-  duration?: number;
-};
 
 type Props = {
   visible: boolean;
-  initial: 'picture' | 'video';
+  initialMode: 'photo' | 'video';
   onCapture: (assets: ImagePicker.ImagePickerAsset[]) => void;
   onClose: () => void;
 };
 
-const MODES = ['Photo', 'Video'] as const;
-const DEFAULT_FACING = 'back' as const;
-
 export default function CameraModal({
   visible,
-  initial,
+  initialMode,
   onCapture,
   onClose,
 }: Props) {
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [micPermission, requestMicPermission] = useMicrophonePermissions();
-  const [facing, setFacing] = useState<'front' | 'back'>(DEFAULT_FACING);
-  const [isRecording, setIsRecording] = useState(false);
-  const [mode, setMode] = useState<'picture' | 'video' | 'preview'>(initial);
-  const [capturedAsset, setCapturedAsset] = useState<CapturedAsset | null>(
-    null,
-  );
-
-  const cameraRef = useRef<CameraView>(null);
-  const recordingScale = useSharedValue(1);
   const insets = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  const {
+    cameraRef,
+    device,
+    toggleCameraPosition,
+    captureMode,
+    setCaptureMode,
+    previewRatio,
+    format,
+    isRecording,
+    capturedAsset,
+    setCapturedAsset,
+    hasCameraPermission,
+    hasMicrophonePermission,
+    requestCameraPermission,
+    requestMicrophonePermission,
+    takePhoto,
+    startRecording,
+    stopRecording,
+  } = useVisionCamera();
+  const capturedVideoPlayer = useVideoPlayer(
+    capturedAsset?.type === 'video' ? { uri: capturedAsset.uri } : null,
+    (player) => {
+      player.loop = true;
+      player.play();
+    },
+  );
 
   useEffect(() => {
     if (!visible) return;
-    if (!cameraPermission?.granted) {
-      requestCameraPermission();
-    }
-    if (!micPermission?.granted) {
-      requestMicPermission();
-    }
+    if (!hasCameraPermission) requestCameraPermission();
+    if (!hasMicrophonePermission) requestMicrophonePermission();
   }, [
     visible,
-    cameraPermission?.granted,
-    micPermission?.granted,
+    hasCameraPermission,
+    hasMicrophonePermission,
     requestCameraPermission,
-    requestMicPermission,
+    requestMicrophonePermission,
   ]);
 
-  const resetModalState = () => {
-    setIsRecording(false);
-    setCapturedAsset(null);
-    setMode(initial);
-    setFacing(DEFAULT_FACING);
-    recordingScale.value = withSpring(1, { damping: 50, stiffness: 150 });
-  };
-
   useEffect(() => {
-    if (!visible) {
-      resetModalState();
-    }
-    setMode(initial);
-  }, [visible, initial]);
+    if (!visible) return;
+    setCaptureMode(initialMode);
+  }, [visible, initialMode, setCaptureMode]);
 
-  const takePicture = async () => {
-    if (!cameraRef.current) return;
+  const maxPreviewHeight = screenHeight - (insets.top + insets.bottom + 180);
+  const previewHeight = Math.min(screenWidth / previewRatio, maxPreviewHeight);
 
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        exif: false,
-        imageType: 'jpg',
-        skipProcessing: true,
-      });
-
-      if (photo) {
-        const compressed = await compressImage(photo.uri);
-        setCapturedAsset({
-          uri: compressed.uri,
-          type: 'image',
-          width: photo.width,
-          height: photo.height,
-        });
-        setMode('preview');
-      }
-    } catch (err) {
-      logger.error('Failed to take picture:', getErrorMessage(err));
-    }
-  };
-
-  const startRecording = async () => {
-    if (!cameraRef.current) return;
-
-    setIsRecording(true);
-    recordingScale.value = withSpring(1.2, { damping: 50, stiffness: 150 });
-
-    try {
-      const video = await cameraRef.current.recordAsync({
-        maxDuration: 60,
-      });
-
-      if (video) {
-        setCapturedAsset({
-          uri: video.uri,
-          type: 'video',
-        });
-        setMode('preview');
-      }
-    } catch (err) {
-      logger.error('Failed to record video:', getErrorMessage(err));
-      setMode('picture');
-    } finally {
-      setIsRecording(false);
-      recordingScale.value = withSpring(1, { damping: 50, stiffness: 150 });
-    }
-  };
-
-  const stopRecording = () => {
-    if (!cameraRef.current) return;
-
-    setIsRecording(false);
-    recordingScale.value = withSpring(1, { damping: 50, stiffness: 150 });
-    cameraRef.current.stopRecording();
-  };
-
-  const handleCapture = () => {
-    if (mode === 'picture') {
-      takePicture();
-    } else if (mode === 'video') {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    }
-  };
+  const topBarHeight = insets.top + 56;
+  const controlsBottom = insets.bottom + 24;
+  const previewTop = topBarHeight;
 
   const handleConfirm = () => {
     if (!capturedAsset) return;
-
-    const asset: ImagePicker.ImagePickerAsset = {
-      uri: capturedAsset.uri,
-      type: capturedAsset.type,
-      width: capturedAsset.width ?? 0,
-      height: capturedAsset.height ?? 0,
-      duration: capturedAsset.duration,
-      assetId: null,
-      fileName: null,
-      fileSize: null,
-      mimeType: capturedAsset.type === 'video' ? 'video/mp4' : 'image/jpeg',
-      base64: null,
-      exif: null,
-    };
-
-    onCapture([asset]);
-    resetModalState();
-    onClose();
-  };
-
-  const handleRetake = () => {
+    onCapture([
+      {
+        uri: capturedAsset.uri,
+        type: capturedAsset.type,
+        width: capturedAsset.width ?? 0,
+        height: capturedAsset.height ?? 0,
+        duration: capturedAsset.duration,
+        assetId: null,
+        fileName: null,
+        fileSize: null,
+        mimeType: capturedAsset.type === 'video' ? 'video/mp4' : 'image/jpeg',
+        base64: null,
+        exif: null,
+      },
+    ]);
     setCapturedAsset(null);
-    setMode(capturedAsset?.type === 'video' ? 'video' : initial);
+    onClose();
   };
 
   const handleClose = () => {
-    if (isRecording && cameraRef.current) {
-      cameraRef.current.stopRecording();
-    }
-    resetModalState();
+    setCapturedAsset(null);
     onClose();
   };
 
-  const buttonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: recordingScale.value }],
-  }));
-
-  if (!cameraPermission || !micPermission)
-    return <LoadingScreen label="Waiting for permissions..." />;
-
-  if (!cameraPermission.granted || !micPermission.granted) {
+  if (!hasCameraPermission || !hasMicrophonePermission) {
     return (
-      <View className="flex-1 bg-black items-center justify-center px-8">
-        <StatusBar barStyle="light-content" />
-        <Feather name="camera-off" size={64} color="white" />
-        <Text className="text-white text-lg font-semibold mt-6 text-center">
-          Camera & Microphone Access Required
-        </Text>
-        <Text className="text-white/60 text-sm mt-2 text-center">
-          Please grant permissions to capture photos and videos
-        </Text>
-        <Pressable
-          onPress={() => {
-            requestCameraPermission();
-            requestMicPermission();
-          }}
-          className="mt-8 px-6 py-3 bg-blue-600 rounded-xl active:bg-blue-700"
-        >
-          <Text className="text-white font-semibold">Grant Permissions</Text>
-        </Pressable>
-        <Pressable onPress={handleClose} className="mt-4">
-          <Text className="text-white/60">Cancel</Text>
-        </Pressable>
-      </View>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={handleClose}
+      >
+        <View className="flex-1 bg-black items-center justify-center">
+          <Text className="text-white text-base">
+            Camera permissions required
+          </Text>
+          <Pressable
+            onPress={() => {
+              requestCameraPermission();
+              requestMicrophonePermission();
+            }}
+            className="mt-4 px-5 py-3 bg-blue-600 rounded-lg"
+          >
+            <Text className="text-white font-semibold">Grant</Text>
+          </Pressable>
+        </View>
+      </Modal>
+    );
+  }
+
+  if (!device) {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={handleClose}
+      >
+        <View className="flex-1 bg-black items-center justify-center">
+          <Text className="text-white text-base">Loading camera...</Text>
+        </View>
+      </Modal>
     );
   }
 
@@ -239,166 +159,161 @@ export default function CameraModal({
       <View className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
-        {mode !== 'preview' ? (
-          <View className="flex-1">
-            <View className="flex-1 items-center justify-center">
-              <CameraView
-                ref={cameraRef}
-                style={{ width: '100%', aspectRatio: 3 / 4 }}
-                facing={facing}
-                mode={mode}
-                videoQuality="720p"
+        {/* Camera layer — always rendered */}
+        <View className="absolute inset-0">
+          {/* Top bar */}
+          <View
+            className="absolute top-0 left-0 right-0 bg-black"
+            style={{ height: topBarHeight }}
+          >
+            <Pressable
+              onPress={
+                capturedAsset ? () => setCapturedAsset(null) : handleClose
+              }
+              className="absolute left-4 p-2 bg-black/40 rounded-full"
+              style={{ top: insets.top + 12 }}
+            >
+              <Feather name="x" size={24} color="white" />
+            </Pressable>
+
+            {!capturedAsset && (
+              <Pressable
+                onPress={toggleCameraPosition}
+                className="absolute right-4 p-2 bg-black/40 rounded-full"
+                style={{ top: insets.top + 12 }}
+              >
+                <Feather name="refresh-cw" size={22} color="white" />
+              </Pressable>
+            )}
+          </View>
+
+          {/* Camera preview — stays mounted */}
+          <View
+            className="absolute left-0 right-0 overflow-hidden bg-black"
+            style={{ top: previewTop, height: previewHeight }}
+          >
+            <Camera
+              ref={cameraRef}
+              style={{ flex: 1 }}
+              device={device}
+              format={format}
+              isActive={visible && !capturedAsset}
+              photo
+              video
+              audio
+              resizeMode="cover"
+              zoom={device.neutralZoom}
+            />
+          </View>
+
+          {/* Shutter button */}
+          <View
+            className="absolute left-0 right-0 items-center"
+            style={{ bottom: controlsBottom + 80 }}
+          >
+            <Pressable
+              onPress={captureMode === 'photo' ? takePhoto : undefined}
+              onPressIn={captureMode === 'video' ? startRecording : undefined}
+              onPressOut={captureMode === 'video' ? stopRecording : undefined}
+              className="w-20 h-20 rounded-full border-4 border-white items-center justify-center"
+            >
+              <View
+                className={`w-16 h-16 rounded-full ${isRecording ? 'bg-red-500' : 'bg-white'}`}
               />
-            </View>
+            </Pressable>
+          </View>
 
-            {/* Top Controls — now outside CameraView, positioned over full screen */}
+          {/* Mode toggle */}
+          {!capturedAsset && (
             <View
-              className="absolute top-0 left-0 right-0 z-10 px-4"
-              style={{ paddingTop: insets.top + 8 }}
+              className="absolute left-0 right-0 items-center"
+              style={{ bottom: controlsBottom }}
             >
-              <View className="flex-row items-center justify-between">
+              <View className="mt-4 flex-row bg-black/40 rounded-full p-1">
                 <Pressable
-                  onPress={handleClose}
-                  className="p-2 bg-black/30 rounded-full"
+                  disabled={isRecording}
+                  onPress={() => setCaptureMode('photo')}
+                  className={`px-4 py-2 rounded-full ${captureMode === 'photo' ? 'bg-white' : ''}`}
                 >
-                  <Feather name="x" size={24} color="white" />
+                  <Text
+                    className={
+                      captureMode === 'photo'
+                        ? 'text-black font-semibold'
+                        : 'text-white'
+                    }
+                  >
+                    Photo
+                  </Text>
                 </Pressable>
 
                 <Pressable
-                  onPress={() =>
-                    setFacing((f) => (f === 'back' ? 'front' : 'back'))
-                  }
-                  className="p-2 bg-black/30 rounded-full"
+                  disabled={isRecording}
+                  onPress={() => setCaptureMode('video')}
+                  className={`px-4 py-2 rounded-full ${captureMode === 'video' ? 'bg-white' : ''}`}
                 >
-                  <Ionicons name="camera-reverse" size={24} color="white" />
+                  <Text
+                    className={
+                      captureMode === 'video'
+                        ? 'text-black font-semibold'
+                        : 'text-white'
+                    }
+                  >
+                    Video
+                  </Text>
                 </Pressable>
               </View>
             </View>
+          )}
+        </View>
 
-            {/* Bottom Controls */}
+        {/* Preview layer — overlaid on top when asset exists */}
+        {capturedAsset && (
+          <View className="absolute inset-0">
             <View
-              className="absolute bottom-0 left-0 right-0 items-center"
-              style={{ paddingBottom: insets.bottom + 32, overflow: 'visible' }}
+              className="absolute left-0 right-0 overflow-hidden bg-transparent"
+              style={{ top: previewTop, height: previewHeight }}
             >
-              <View className="flex-row justify-center gap-6 mb-4">
-                {MODES.map((m) => {
-                  const isSelected =
-                    (m === 'Photo' && mode === 'picture') ||
-                    (m === 'Video' && mode === 'video');
-                  return (
-                    <Pressable
-                      key={m}
-                      disabled={isRecording}
-                      onPress={() =>
-                        setMode(m === 'Photo' ? 'picture' : 'video')
-                      }
-                    >
-                      <Text
-                        className={`text-sm font-semibold ${isSelected ? 'text-yellow-400' : 'text-white/50'}`}
-                      >
-                        {m}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {/* Capture Button */}
-              <Pressable onPress={handleCapture}>
-                <Animated.View style={buttonStyle}>
-                  <View className="w-20 h-20 rounded-full border-4 border-white items-center justify-center">
-                    <View
-                      style={{
-                        width: isRecording ? 28 : 64,
-                        height: isRecording ? 28 : 64,
-                        borderRadius: isRecording ? 6 : 32,
-                        backgroundColor: isRecording ? '#ef4444' : 'white',
-                      }}
-                    />
-                  </View>
-                </Animated.View>
+              {capturedAsset.type === 'video' ? (
+                <VideoView
+                  player={capturedVideoPlayer}
+                  style={{ flex: 1 }}
+                  contentFit="cover"
+                  nativeControls={false}
+                  allowsFullscreen={false}
+                />
+              ) : (
+                <Image
+                  source={{ uri: capturedAsset.uri }}
+                  style={{ flex: 1 }}
+                  contentFit="cover"
+                />
+              )}
+            </View>
+
+            {/* X button to discard */}
+            <Pressable
+              onPress={() => setCapturedAsset(null)}
+              className="absolute left-4 p-2 bg-black/40 rounded-full"
+              style={{ top: insets.top + 12 }}
+            >
+              <Feather name="x" size={24} color="white" />
+            </Pressable>
+
+            {/* Confirm button — same position as shutter */}
+            <View
+              className="absolute left-0 right-0 items-center"
+              style={{ bottom: controlsBottom + 80 }}
+            >
+              <Pressable
+                onPress={handleConfirm}
+                className="w-20 h-20 rounded-full bg-blue-600 items-center justify-center"
+              >
+                <Feather name="send" size={28} color="white" />
               </Pressable>
             </View>
-          </View>
-        ) : capturedAsset ? (
-          <PreviewView
-            asset={capturedAsset}
-            onConfirm={handleConfirm}
-            onRetake={handleRetake}
-            insets={insets}
-          />
-        ) : (
-          <View className="flex-1 items-center justify-center">
-            <Spinner size="large" tone="inverse" />
           </View>
         )}
       </View>
     </Modal>
-  );
-}
-
-type PreviewProps = {
-  asset: CapturedAsset;
-  onConfirm: () => void;
-  onRetake: () => void;
-  insets: { top: number; bottom: number };
-};
-
-function PreviewView({ asset, onConfirm, onRetake, insets }: PreviewProps) {
-  const player = useVideoPlayer(
-    asset.type === 'video' ? asset.uri : null,
-    (p) => {
-      if (asset.type === 'video') {
-        p.loop = true;
-        p.play();
-      }
-    },
-  );
-
-  return (
-    <View className="flex-1 bg-black">
-      {/* Media Preview */}
-      <View className="flex-1 items-center justify-center">
-        {asset.type === 'video' ? (
-          <VideoView
-            player={player!}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="contain"
-            nativeControls={false}
-          />
-        ) : (
-          <Image
-            source={{ uri: asset.uri }}
-            cachePolicy="memory-disk"
-            style={{ width: '100%', height: '100%' }}
-            contentFit="contain"
-            transition={200}
-          />
-        )}
-      </View>
-
-      {/* Bottom Actions */}
-      <View
-        className="absolute bottom-0 left-0 right-0 px-8"
-        style={{ paddingBottom: insets.bottom + 32 }}
-      >
-        <View className="flex-row items-center justify-center gap-12">
-          {/* Retake Button */}
-          <Pressable onPress={onRetake} className="items-center">
-            <View className="w-16 h-16 rounded-full bg-black/50 items-center justify-center border-2 border-white/30">
-              <Feather name="x" size={28} color="white" />
-            </View>
-            <Text className="text-white text-xs mt-2">Retake</Text>
-          </Pressable>
-
-          {/* Confirm Button */}
-          <Pressable onPress={onConfirm} className="items-center">
-            <View className="w-16 h-16 rounded-full bg-blue-600 items-center justify-center">
-              <Feather name="check" size={32} color="white" />
-            </View>
-            <Text className="text-white text-xs mt-2">Use</Text>
-          </Pressable>
-        </View>
-      </View>
-    </View>
   );
 }
