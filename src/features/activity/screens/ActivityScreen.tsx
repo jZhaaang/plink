@@ -1,30 +1,52 @@
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { TabsParamList } from '../../../navigation/types';
 import { useActivityFeed } from '../hooks/useActivityFeed';
-import { Text, SectionList } from 'react-native';
+import { Text, SectionList, View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, EmptyState, LoadingScreen } from '../../../components';
+import {
+  DataFallbackScreen,
+  EmptyState,
+  LoadingScreen,
+} from '../../../components';
 import ActivityListItem from '../components/ActivityListItem';
 import { useAuth } from '../../../providers/AuthProvider';
+import { useDialog } from '../../../providers/DialogProvider';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { deleteAllActivityEvents } from '../../../lib/supabase/queries/activity';
+import { logger } from '../../../lib/telemetry/logger';
+import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 type Props = BottomTabScreenProps<TabsParamList, 'Activity'>;
 
 export default function ActivityScreen({ navigation }: Props) {
   const { userId } = useAuth();
-  const { sections, loading, error, refetch } = useActivityFeed(userId);
+  const {
+    sections,
+    loading: activityLoading,
+    error: activityError,
+    refetch: refetchActivity,
+  } = useActivityFeed(userId);
+  const dialog = useDialog();
+  const invalidate = useInvalidate();
 
-  if (loading) return <LoadingScreen label="Loading..." />;
-
-  if (error) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center px-6 bg-neutral-50">
-        <Text className="text-center text-neutral-600 mb-4">
-          Failed to load activity.
-        </Text>
-        <Button title="Retry" variant="outline" onPress={() => refetch()} />
-      </SafeAreaView>
+  const clearAll = async () => {
+    const confirmed = await dialog.confirmDanger(
+      'Clear Activity',
+      'This will clear all of your activity history. This cannot be undone.',
     );
-  }
+    if (!confirmed) return;
+
+    try {
+      await deleteAllActivityEvents(userId);
+      invalidate.activity();
+    } catch (err) {
+      logger.error('Error deleting activity', { err });
+      await dialog.error('Failed to Delete Activity', getErrorMessage(err));
+    }
+  };
+
+  if (activityLoading) return <LoadingScreen label="Loading..." />;
+  if (activityError) return <DataFallbackScreen onAction={refetchActivity} />;
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
@@ -37,12 +59,19 @@ export default function ActivityScreen({ navigation }: Props) {
           paddingBottom: 120,
         }}
         stickySectionHeadersEnabled={false}
-        refreshing={loading}
-        onRefresh={refetch}
+        refreshing={activityLoading}
+        onRefresh={refetchActivity}
         ListHeaderComponent={
-          <Text className="text-2xl font-bold text-slate-900 mb-3">
-            Activity
-          </Text>
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-2xl font-bold text-slate-900">Activity</Text>
+            {sections.length > 0 && (
+              <TouchableOpacity onPress={clearAll}>
+                <Text className="text-sm font-medium text-red-500">
+                  Clear All
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         }
         ListEmptyComponent={
           <EmptyState

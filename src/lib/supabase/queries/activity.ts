@@ -103,3 +103,14 @@ export async function getActivityFeedByUserId(
     };
   });
 }
+
+export async function deleteAllActivityEvents(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('activity_events')
+    .delete()
+    .eq('recipient_user_id', userId);
+
+  if (error) throw error;
+
+  return;
+}
