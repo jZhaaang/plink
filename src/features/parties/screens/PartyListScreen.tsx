@@ -27,6 +27,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
+import * as Burnt from 'burnt';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -70,6 +71,7 @@ export default function PartyListScreen({ navigation }: Props) {
       await updatePartyById(party.id, { banner_path });
       trackEvent('party_created', { party_id: party.id });
       invalidate.parties();
+      Burnt.toast({ title: 'Party created', preset: 'done', haptic: 'success' });
     } catch (err) {
       logger.error('Error creating party', { err });
       await dialog.error('Failed to Create a Party', getErrorMessage(err));

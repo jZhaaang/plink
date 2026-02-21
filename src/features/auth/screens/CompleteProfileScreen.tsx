@@ -16,6 +16,7 @@ import { compressImage } from '../../../lib/media/compress';
 import { isValidUsername, normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import * as Burnt from 'burnt';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
@@ -32,10 +33,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const handleChoosePhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      await dialog.error(
-        'Permission needed',
-        'Allow photo access to choose an avatar.',
-      );
+      Burnt.toast({ title: 'Photo access required', preset: 'error', haptic: 'error' });
       return;
     }
 
@@ -51,10 +49,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const handleTakePhoto = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      await dialog.error(
-        'Permission needed',
-        'Allow camera access to choose an avatar.',
-      );
+      Burnt.toast({ title: 'Camera access required', preset: 'error', haptic: 'error' });
       return;
     }
 

@@ -47,6 +47,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
+import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
@@ -104,6 +105,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         invalidate.activeLink();
         invalidate.parties();
         invalidate.activity();
+        Burnt.toast({ title: 'Link started!', preset: 'done', haptic: 'success' });
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });
       }
     } catch (err) {
@@ -143,6 +145,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       trackEvent('party_updated', { party_id: partyId });
       invalidate.partyDetail(partyId);
       invalidate.parties();
+      Burnt.toast({ title: 'Party updated', preset: 'done', haptic: 'success' });
     } catch (err) {
       logger.error('Error updating party', { err });
       await dialog.error('Failed to Update Party', getErrorMessage(err));
@@ -178,6 +181,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       invalidate.parties();
       invalidate.activeLink();
       invalidate.activity();
+      Burnt.toast({ title: 'Party deleted', preset: 'done', haptic: 'success' });
       navigation.goBack();
     } catch (err) {
       logger.error('Error deleting party', { err });

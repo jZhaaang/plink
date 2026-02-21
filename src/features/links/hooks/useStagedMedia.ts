@@ -1,4 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
+import * as Burnt from 'burnt';
 import { useCallback, useState } from 'react';
 import {
   createLinkPost,
@@ -222,7 +223,10 @@ export function useStagedMedia({
 
       if (failures > 0) {
         setProgress((prev) => (prev ? { ...prev, failed: failures } : null));
+        Burnt.toast({ title: `${failures} item(s) failed to upload`, preset: 'error', haptic: 'error' });
         onError?.(new Error(`${failures} upload(s) failed`));
+      } else {
+        Burnt.toast({ title: 'Media posted', preset: 'done', haptic: 'success' });
       }
 
       trackEvent('media_uploaded', {

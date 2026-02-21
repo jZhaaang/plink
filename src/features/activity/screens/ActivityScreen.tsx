@@ -15,6 +15,7 @@ import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { deleteAllActivityEvents } from '../../../lib/supabase/queries/activity';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import * as Burnt from 'burnt';
 
 type Props = BottomTabScreenProps<TabsParamList, 'Activity'>;
 
@@ -39,6 +40,7 @@ export default function ActivityScreen({ navigation }: Props) {
     try {
       await deleteAllActivityEvents(userId);
       invalidate.activity();
+      Burnt.toast({ title: 'Activity cleared', preset: 'done', haptic: 'success' });
     } catch (err) {
       logger.error('Error deleting activity', { err });
       await dialog.error('Failed to Delete Activity', getErrorMessage(err));

@@ -23,6 +23,7 @@ import { compressImage } from '../../../lib/media/compress';
 import { isValidUsername, normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import * as Burnt from 'burnt';
 
 export default function ProfileScreen() {
   const { userId } = useAuth();
@@ -79,10 +80,7 @@ export default function ProfileScreen() {
   const handleChoosePhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      await dialog.error(
-        'Permission needed',
-        'Allow photo access to choose an avatar.',
-      );
+      Burnt.toast({ title: 'Photo access needed to change avatar', preset: 'error', haptic: 'error' });
       return;
     }
 
@@ -141,6 +139,7 @@ export default function ProfileScreen() {
       invalidate.profile();
       setEditing(false);
       setImageUri(null);
+      Burnt.toast({ title: 'Profile saved', preset: 'done', haptic: 'success' });
     } catch (err) {
       logger.error('Error updating user profile', { err });
       await dialog.error('Failed to Update Profile', getErrorMessage(err));

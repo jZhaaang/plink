@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import * as Burnt from 'burnt';
 import {
   Camera,
   useCameraDevice,
@@ -75,9 +76,9 @@ export function useVisionCamera() {
         });
         setIsRecording(false);
       },
-      onRecordingError: (error) => {
+      onRecordingError: () => {
         setIsRecording(false);
-        console.log(error);
+        Burnt.toast({ title: 'Recording failed', preset: 'error', haptic: 'error' });
       },
     });
   }, [isRecording]);

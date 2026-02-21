@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
+import * as Burnt from 'burnt';
 import { Button, Modal, Spinner, TextField } from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
 import { resolveProfile } from '../../../lib/resolvers/profile';
@@ -62,6 +63,7 @@ export default function InviteMemberModal({
   const handleInvite = async () => {
     if (state.status === 'found') {
       await inviteUser(state.user.id);
+      Burnt.toast({ title: `@${state.user.username} invited`, preset: 'done', haptic: 'success' });
       onSuccess();
       onClose();
     }

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import * as Burnt from 'burnt';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
@@ -54,6 +55,7 @@ export function useLinkDetailActions({
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       invalidate.activity();
+      Burnt.toast({ title: 'Link ended', preset: 'done', haptic: 'success' });
     } catch (err) {
       logger.error('Error ending link', { err });
       await dialog.error('Failed to End Link', getErrorMessage(err));
@@ -69,6 +71,7 @@ export function useLinkDetailActions({
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
         invalidate.activity();
+        Burnt.toast({ title: 'Link renamed', preset: 'done', haptic: 'success' });
       } catch (err) {
         logger.error('Error updating link name', { err });
         await dialog.error('Failed to Edit Link Name', getErrorMessage(err));
@@ -95,6 +98,7 @@ export function useLinkDetailActions({
         invalidate.linkDetail(linkId);
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
+        Burnt.toast({ title: 'Banner updated', preset: 'done', haptic: 'success' });
       } catch (err) {
         logger.error('Error updating link banner', { err });
         await dialog.error('Failed to Update Banner', getErrorMessage(err));
@@ -130,6 +134,7 @@ export function useLinkDetailActions({
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       invalidate.activity();
+      Burnt.toast({ title: 'Link deleted', preset: 'done', haptic: 'success' });
       onDelete?.();
     } catch (err) {
       logger.error('Error deleting link', { err });
@@ -149,6 +154,7 @@ export function useLinkDetailActions({
       trackEvent('link_joined', { link_id: linkId });
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
+      Burnt.toast({ title: 'Joined link', preset: 'done', haptic: 'success' });
     } catch (err) {
       logger.error('Error joining link', { err });
       await dialog.error('Failed to Join Link', getErrorMessage(err));
@@ -169,6 +175,7 @@ export function useLinkDetailActions({
       invalidate.linkDetail(linkId);
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
+      Burnt.toast({ title: 'Left link', preset: 'done', haptic: 'success' });
       onLeave?.();
     } catch (err) {
       logger.error('Error leaving link', { err });
@@ -212,6 +219,7 @@ export function useLinkDetailActions({
         }
 
         invalidate.linkDetail(linkId);
+        Burnt.toast({ title: 'Post deleted', preset: 'done', haptic: 'success' });
       } catch (err) {
         logger.error('Error deleting post', { err });
         await dialog.error('Failed to Delete Post', getErrorMessage(err));

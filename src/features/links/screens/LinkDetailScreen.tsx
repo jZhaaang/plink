@@ -12,7 +12,6 @@ import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
-import { useDialog } from '../../../providers/DialogProvider';
 import AvatarStack from '../../../components/AvatarStack';
 import MediaGrid from '../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
@@ -40,6 +39,7 @@ import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
+import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
@@ -47,7 +47,6 @@ type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
-  const dialog = useDialog();
 
   const {
     link,
@@ -80,9 +79,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const onUploadError = useCallback(
     (error: unknown) => {
-      dialog.error('Upload Failed', getErrorMessage(error));
+      Burnt.toast({ title: `Upload failed: ${getErrorMessage(error)}`, preset: 'error', haptic: 'error' });
     },
-    [dialog],
+    [],
   );
 
   const {

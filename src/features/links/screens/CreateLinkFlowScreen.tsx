@@ -13,6 +13,7 @@ import { SignedInParamList } from '../../../navigation/types';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
+import * as Burnt from 'burnt';
 
 export default function CreateLinkFlowScreen() {
   const { userId } = useAuth();
@@ -51,6 +52,7 @@ export default function CreateLinkFlowScreen() {
         invalidate.partyDetail(selectedParty.id);
         invalidate.parties();
         invalidate.activity();
+        Burnt.toast({ title: 'Link started!', preset: 'done', haptic: 'success' });
         navigation.navigate('App', {
           screen: 'Link',
           params: {
