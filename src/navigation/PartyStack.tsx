@@ -19,7 +19,8 @@ export default function PartyStack() {
         component={MediaViewerScreen}
         options={{
           presentation: 'fullScreenModal',
-          animation: 'fade',
+          animation: 'fade_from_bottom',
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen

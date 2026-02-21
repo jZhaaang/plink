@@ -155,11 +155,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   /* -----------------------
       Navigation Handlers
      -----------------------*/
-
-  const handlePostMediaPress = (index: number) => {
-    navigation.navigate('MediaViewer', { linkId, initialIndex: index });
-  };
-
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
     navigation.navigate('MediaViewer', {
@@ -418,7 +413,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   <PostFeedItem
                     key={post.id}
                     post={post}
-                    onMediaPress={handlePostMediaPress}
+                    onMediaPress={handleMediaPress}
                     currentUserId={userId}
                     onDeletePost={linkActions.deletePost}
                   />

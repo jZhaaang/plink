@@ -6,7 +6,7 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { LinkPostWithMedia } from '../../../lib/models';
+import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
 import { memo, useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem } from '../../../components';
@@ -15,7 +15,7 @@ import MediaTile from '../../../components/MediaTile';
 
 type Props = {
   post: LinkPostWithMedia;
-  onMediaPress?: (index: number) => void;
+  onMediaPress?: (item: LinkPostMedia) => void;
   currentUserId?: string;
   onDeletePost?: (postId: string) => void;
 };
@@ -105,14 +105,14 @@ export function PostFeedItem({
           className="flex-row flex-wrap"
           style={{ gap: GAP, marginHorizontal: -GAP / 2 }}
         >
-          {post.media.map((media, index) => (
+          {post.media.map((media) => (
             <MediaTile
               key={media.id}
               uri={media.thumbnailUrl ?? media.url}
               width={itemSize}
               height={mediaCount === 1 ? itemSize * 0.75 : itemSize}
               containerStyle={{ marginHorizontal: GAP / 2 }}
-              onPress={() => onMediaPress?.(index)}
+              onPress={() => onMediaPress?.(media)}
               renderOverlay={(isLoaded) => {
                 if (!isLoaded || media.type !== 'video') return null;
 

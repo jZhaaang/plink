@@ -1,52 +1,49 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { View, useWindowDimensions, StatusBar, FlatList } from 'react-native';
 import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  useWindowDimensions,
-  StatusBar,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-
+  GestureViewer,
+  useGestureViewerState,
+} from 'react-native-gesture-image-viewer';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLinkDetail } from '../hooks/useLinkDetail';
+import MediaViewerOverlay from '../components/MediaViewerOverlay';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'MediaViewer'>;
 
-type VideoProps = {
+type MediaItemProps = {
   url: string;
   width: number;
   height: number;
-  isActive: boolean;
 };
 
-function VideoItem({ url, width, height, isActive }: VideoProps) {
+function VideoItem({ url, width, height }: MediaItemProps) {
   const player = useVideoPlayer(url, (p) => {
     p.loop = false;
   });
 
-  useEffect(() => {
-    if (!isActive) {
-      player.pause();
-    }
-  }, [isActive, player]);
-
   return (
-    <View style={{ width, height }} className="items-center justify-center">
-      <VideoView
-        player={player}
-        style={{ width, height }}
-        contentFit="contain"
-        fullscreenOptions={{ enable: true }}
-        allowsPictureInPicture={false}
-        nativeControls
-      />
-    </View>
+    <VideoView
+      player={player}
+      style={{ width, height }}
+      contentFit="contain"
+      nativeControls
+    />
+  );
+}
+
+function ImageItem({ url, width, height }: MediaItemProps) {
+  return (
+    <Image
+      source={url}
+      style={{ width, height }}
+      contentFit="contain"
+      cachePolicy="memory-disk"
+      transition={200}
+    />
   );
 }
 
@@ -55,84 +52,43 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
   const { link } = useLinkDetail(linkId);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const flatListRef = useRef<FlatList>(null);
 
-  const mediaHeight = height - insets.bottom;
+  const { currentIndex, totalCount } = useGestureViewerState();
+
   const mediaItems = useMemo(() => {
     if (!link) return [];
     return link.posts.flatMap((post) => post.media);
   }, [link]);
 
+  const mediaHeight = height - insets.bottom;
+
+  const renderItem = useCallback(
+    (item) => {
+      if (item.type === 'video') {
+        return <VideoItem url={item.url} width={width} height={mediaHeight} />;
+      } else {
+        return <ImageItem url={item.url} width={width} height={mediaHeight} />;
+      }
+    },
+    [width, mediaHeight],
+  );
+
   return (
-    <View className="flex-1 bg-black">
+    <View style={{ flex: 1, backgroundColor: 'black' }}>
       <StatusBar barStyle="light-content" />
-      {/* Header */}
-      <View
-        className="absolute top-0 left-0 right-0 z-10 px-4 pb-4"
-        style={{ paddingTop: insets.top + 8 }}
-      >
-        <View className="flex-row items-center justify-between">
-          <Pressable
-            onPress={() => navigation.goBack()}
-            className="p-2 -ml-2 bg-black/40 rounded-full"
-          >
-            <Feather name="x" size={24} color="white" />
-          </Pressable>
 
-          <Text className="text-white font-medium px-3 py-1 rounded-full bg-black/35">
-            {currentIndex + 1} of {mediaItems.length}
-          </Text>
+      <MediaViewerOverlay
+        currentIndex={currentIndex}
+        totalCount={totalCount}
+        onClose={() => navigation.goBack()}
+      />
 
-          <View className="w-10" />
-        </View>
-      </View>
-
-      {/* Image Gallery */}
-      <FlatList
-        ref={flatListRef}
+      <GestureViewer
         data={mediaItems}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        initialScrollIndex={initialIndex}
-        getItemLayout={(_, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-        onMomentumScrollEnd={(event) => {
-          const offsetX = event.nativeEvent.contentOffset.x;
-          const index = Math.round(offsetX / width);
-          setCurrentIndex(index);
-        }}
-        keyExtractor={(index) => index.id}
-        renderItem={({ item, index }) => {
-          if (item.type === 'video') {
-            return (
-              <VideoItem
-                url={item.url}
-                width={width}
-                height={mediaHeight}
-                isActive={currentIndex === index}
-              />
-            );
-          }
-          return (
-            <View
-              style={{ width, height }}
-              className="items-center justify-center"
-            >
-              <Image
-                source={{ uri: item.url }}
-                style={{ width, height: mediaHeight }}
-                contentFit="contain"
-                cachePolicy="memory-disk"
-                transition={200}
-              />
-            </View>
-          );
-        }}
+        initialIndex={initialIndex}
+        ListComponent={FlatList}
+        renderItem={renderItem}
+        onDismiss={() => navigation.goBack()}
       />
     </View>
   );
