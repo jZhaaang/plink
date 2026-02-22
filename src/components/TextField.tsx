@@ -32,7 +32,8 @@ export default function TextField({
         <TextInput
           {...rest}
           placeholderTextColor="#94a3b8"
-          className={cn('ml-2 flex-1 py-3 text-base', inputClassName)}
+          className={cn('ml-2 flex-1 py-3', inputClassName)}
+          style={{ color: '#0f172a', fontSize: 14 }}
         />
         {right}
       </View>
