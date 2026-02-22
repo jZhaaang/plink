@@ -40,6 +40,7 @@ export function useVisionCamera() {
   const photoFormat = useCameraFormat(device, [
     { photoAspectRatio: 4 / 3 },
     { videoAspectRatio: 4 / 3 },
+    { videoResolution: 'max' },
     { photoResolution: 'max' },
   ]);
   const videoFormat = useCameraFormat(device, [
@@ -48,7 +49,7 @@ export function useVisionCamera() {
   ]);
 
   const format = captureMode === 'photo' ? photoFormat : videoFormat;
-  const previewRatio = format.videoHeight / format.videoWidth;
+  const previewRatio = captureMode === 'photo' ? 3 / 4 : 9 / 16;
 
   const takePhoto = useCallback(async () => {
     if (!cameraRef.current) return;
@@ -78,7 +79,11 @@ export function useVisionCamera() {
       },
       onRecordingError: () => {
         setIsRecording(false);
-        Burnt.toast({ title: 'Recording failed', preset: 'error', haptic: 'error' });
+        Burnt.toast({
+          title: 'Recording failed',
+          preset: 'error',
+          haptic: 'error',
+        });
       },
     });
   }, [isRecording]);
