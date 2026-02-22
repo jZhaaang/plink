@@ -119,180 +119,193 @@ export default function StagedMediaSheet({
       enableDynamicSizing={false}
       enablePanDownToClose={false}
     >
-      <BottomSheetScrollView
-        onContentSizeChange={(_, h) => setContentHeight(h)}
-        contentContainerStyle={{
-          paddingHorizontal: SHEET_PADDING,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Expanded View */}
-        <Animated.View
-          style={[{ flex: 1 }, expandedStyle]}
-          pointerEvents={index === 1 ? 'auto' : 'none'}
+      <View className="flex-1">
+        <BottomSheetScrollView
+          onContentSizeChange={(_, h) => setContentHeight(h)}
+          contentContainerStyle={{
+            paddingHorizontal: SHEET_PADDING,
+            paddingBottom: 64,
+          }}
+          showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
-          <View
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.96)',
-              borderBottomWidth: 1,
-              borderBottomColor: '#f1f5f9',
-              zIndex: 10,
-              paddingBottom: 8,
-              marginBottom: 12,
-            }}
+          {/* Expanded View */}
+          <Animated.View
+            style={[{ flex: 1 }, expandedStyle]}
+            pointerEvents={index === 1 ? 'auto' : 'none'}
           >
-            <View className="flex-row items-center justify-between pt-1">
-              <Text className="text-base font-semibold text-slate-800">
-                {assets.length} item{assets.length === 1 ? '' : 's'} ready
-              </Text>
-              <Pressable onPress={onClearAll} hitSlop={8}>
-                <Text className="text-sm text-slate-400">Clear all</Text>
-              </Pressable>
+            {/* Header */}
+            <View
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.96)',
+                borderBottomWidth: 1,
+                borderBottomColor: '#f1f5f9',
+                zIndex: 10,
+                paddingBottom: 8,
+                marginBottom: 12,
+              }}
+            >
+              <View className="flex-row items-center justify-between pt-1">
+                <Text className="text-base font-semibold text-slate-800">
+                  {assets.length} item{assets.length === 1 ? '' : 's'} ready
+                </Text>
+                <Pressable onPress={onClearAll} hitSlop={8}>
+                  <Text className="text-sm text-slate-400">Clear all</Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
 
-          {/* Post Button */}
+            {/* Staged Assets */}
+            <View className="flex-1">
+              <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
+                {assets.map((item) => (
+                  <View
+                    key={item.id}
+                    style={{ width: tileSize, height: tileSize }}
+                  >
+                    <Image
+                      source={{ uri: item.thumbnailUri ?? item.asset.uri }}
+                      cachePolicy="memory-disk"
+                      style={{
+                        width: tileSize,
+                        height: tileSize,
+                        borderRadius: 12,
+                      }}
+                      contentFit="cover"
+                      transition={150}
+                    />
+                    {item.thumbnailStatus === 'generating' && (
+                      <View className="absolute inset-0 items-center justify-center">
+                        <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
+                          <Ionicons
+                            name="time-outline"
+                            size={14}
+                            color="white"
+                          />
+                        </View>
+                      </View>
+                    )}
+                    {item.asset.type === 'video' && (
+                      <View className="absolute inset-0 items-center justify-center">
+                        <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
+                          <Feather name="play" size={14} color="white" />
+                        </View>
+                      </View>
+                    )}
+                    <Pressable
+                      onPress={() => onRemove(item.asset.uri)}
+                      className="absolute -right-2 -top-2 h-6 w-6 items-center justify-center rounded-full bg-black/70"
+                      hitSlop={8}
+                    >
+                      <Feather name="x" size={12} color="white" />
+                    </Pressable>
+                  </View>
+                ))}
+
+                <Pressable
+                  onPress={onAddFromGallery}
+                  style={{
+                    width: tileSize,
+                    height: tileSize,
+                    borderRadius: 12,
+                  }}
+                  className="items-center justify-center border-2 border-dashed border-slate-200"
+                >
+                  <Feather name="plus" size={24} color="#94a3b8" />
+                  <Text className="mt-1 text-xs text-slate-400">Add</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* Collapsed View */}
           <Animated.View
             style={[
               {
                 position: 'absolute',
-                right: 16,
-                bottom: 16,
+                left: SHEET_PADDING,
+                right: SHEET_PADDING,
+                top: 8,
               },
-              postStyle,
+              collapsedStyle,
             ]}
-            pointerEvents={isCollapsed ? 'none' : 'auto'}
+            pointerEvents={index === 0 ? 'auto' : 'none'}
           >
-            <Pressable
-              onPress={onUpload}
-              disabled={uploading}
-              className="h-12 rounded-full bg-blue-600 px-5 flex-row items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <Ionicons name="arrow-up" size={18} color="white" />
-              <Text className="text-white text-sm font-semibold">Post</Text>
-            </Pressable>
-          </Animated.View>
+            <View className="flex-row items-center gap-3">
+              <View className="flex-row items-center">
+                {preview.map((item, i) => {
+                  const showRemaining =
+                    i === preview.length - 1 && remaining > 0;
 
-          {/* Staged Assets */}
-          <View className="flex-1">
-            <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
-              {assets.map((item) => (
-                <View
-                  key={item.id}
-                  style={{ width: tileSize, height: tileSize }}
-                >
-                  <Image
-                    source={{ uri: item.thumbnailUri ?? item.asset.uri }}
-                    cachePolicy="memory-disk"
-                    style={{
-                      width: tileSize,
-                      height: tileSize,
-                      borderRadius: 12,
-                    }}
-                    contentFit="cover"
-                    transition={150}
-                  />
-                  {item.thumbnailStatus === 'generating' && (
-                    <View className="absolute inset-0 items-center justify-center">
-                      <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
-                        <Ionicons name="time-outline" size={14} color="white" />
-                      </View>
+                  return (
+                    <View
+                      key={item.id}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        marginLeft: i === 0 ? 0 : -6,
+                        zIndex: 10 - i,
+                        overflow: 'hidden',
+                        borderWidth: 1,
+                        borderColor: '#fff',
+                      }}
+                    >
+                      <Image
+                        source={{ uri: item.thumbnailUri ?? item.asset.uri }}
+                        style={{ width: '100%', height: '100%' }}
+                        contentFit="cover"
+                      />
+
+                      {showRemaining && (
+                        <View className="absolute inset-0 items-center justify-center bg-black/40">
+                          <Text className="text-[11px] font-semibold text-white">
+                            +{remaining}
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                  )}
-                  {item.asset.type === 'video' && (
-                    <View className="absolute inset-0 items-center justify-center">
-                      <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
-                        <Feather name="play" size={14} color="white" />
-                      </View>
-                    </View>
-                  )}
-                  <Pressable
-                    onPress={() => onRemove(item.asset.uri)}
-                    className="absolute -right-2 -top-2 h-6 w-6 items-center justify-center rounded-full bg-black/70"
-                    hitSlop={8}
-                  >
-                    <Feather name="x" size={12} color="white" />
-                  </Pressable>
-                </View>
-              ))}
+                  );
+                })}
+              </View>
+
+              <Text className="flex-1 text-sm font-medium text-slate-700">
+                {assets.length} item{assets.length === 1 ? '' : 's'} ready
+              </Text>
 
               <Pressable
-                onPress={onAddFromGallery}
-                style={{ width: tileSize, height: tileSize, borderRadius: 12 }}
-                className="items-center justify-center border-2 border-dashed border-slate-200"
+                onPress={onUpload}
+                disabled={uploading}
+                className="h-10 px-4 rounded-lg bg-blue-600 flex-row items-center justify-center gap-1.5 disabled:opacity-50"
               >
-                <Feather name="plus" size={24} color="#94a3b8" />
-                <Text className="mt-1 text-xs text-slate-400">Add</Text>
+                <Ionicons name="arrow-up" size={16} color="white" />
               </Pressable>
             </View>
-          </View>
-        </Animated.View>
+          </Animated.View>
+        </BottomSheetScrollView>
 
-        {/* Collapsed View */}
+        {/* Post Button */}
         <Animated.View
           style={[
             {
               position: 'absolute',
-              left: SHEET_PADDING,
-              right: SHEET_PADDING,
-              top: 8,
+              left: 16,
+              right: 16,
+              bottom: 20,
             },
-            collapsedStyle,
+            postStyle,
           ]}
-          pointerEvents={index === 0 ? 'auto' : 'none'}
+          pointerEvents={isCollapsed ? 'none' : 'auto'}
         >
-          <View className="flex-row items-center gap-3">
-            <View className="flex-row items-center">
-              {preview.map((item, i) => {
-                const showRemaining = i === preview.length - 1 && remaining > 0;
-
-                return (
-                  <View
-                    key={item.id}
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 8,
-                      marginLeft: i === 0 ? 0 : -6,
-                      zIndex: 10 - i,
-                      overflow: 'hidden',
-                      borderWidth: 1,
-                      borderColor: '#fff',
-                    }}
-                  >
-                    <Image
-                      source={{ uri: item.thumbnailUri ?? item.asset.uri }}
-                      style={{ width: '100%', height: '100%' }}
-                      contentFit="cover"
-                    />
-
-                    {showRemaining && (
-                      <View className="absolute inset-0 items-center justify-center bg-black/40">
-                        <Text className="text-[11px] font-semibold text-white">
-                          +{remaining}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-
-            <Text className="flex-1 text-sm font-medium text-slate-700">
-              {assets.length} item{assets.length === 1 ? '' : 's'} ready
-            </Text>
-
-            <Pressable
-              onPress={onUpload}
-              disabled={uploading}
-              className="h-10 px-4 rounded-lg bg-blue-600 flex-row items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              <Ionicons name="arrow-up" size={16} color="white" />
-            </Pressable>
-          </View>
+          <Pressable
+            onPress={onUpload}
+            disabled={uploading}
+            className="h-12 rounded-full bg-blue-600 px-5 flex-row items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <Ionicons name="arrow-up" size={18} color="white" />
+            <Text className="text-white text-sm font-semibold">Post</Text>
+          </Pressable>
         </Animated.View>
-      </BottomSheetScrollView>
+      </View>
     </BottomSheet>
   );
 }
