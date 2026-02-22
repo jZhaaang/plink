@@ -33,7 +33,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const handleChoosePhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Burnt.toast({ title: 'Photo access required', preset: 'error', haptic: 'error' });
+      Burnt.toast({
+        title: 'Photo access required',
+        preset: 'error',
+        haptic: 'error',
+      });
       return;
     }
 
@@ -49,7 +53,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const handleTakePhoto = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Burnt.toast({ title: 'Camera access required', preset: 'error', haptic: 'error' });
+      Burnt.toast({
+        title: 'Camera access required',
+        preset: 'error',
+        haptic: 'error',
+      });
       return;
     }
 
@@ -144,7 +152,8 @@ export default function CompleteProfileScreen({ navigation }: Props) {
               <Image
                 source={{ uri: imageUri }}
                 cachePolicy="memory-disk"
-                className="h-28 w-28"
+                contentFit="cover"
+                style={{ width: 112, height: 112 }}
               />
             ) : (
               <Ionicons name="camera-outline" size={26} color="#64748b" />
