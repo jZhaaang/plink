@@ -1,11 +1,12 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { FlatList, View, Text, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { PartyCard } from '../components/PartyCard';
-import { Feather } from '@expo/vector-icons';
 import {
   Button,
   DataFallbackScreen,
@@ -28,6 +29,7 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -35,6 +37,7 @@ export default function PartyListScreen({ navigation }: Props) {
   const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
+  const insets = useSafeAreaInsets();
 
   const {
     parties,
@@ -71,7 +74,11 @@ export default function PartyListScreen({ navigation }: Props) {
       await updatePartyById(party.id, { banner_path });
       trackEvent('party_created', { party_id: party.id });
       invalidate.parties();
-      Burnt.toast({ title: 'Party created', preset: 'done', haptic: 'success' });
+      Burnt.toast({
+        title: 'Party created',
+        preset: 'done',
+        haptic: 'success',
+      });
     } catch (err) {
       logger.error('Error creating party', { err });
       await dialog.error('Failed to Create a Party', getErrorMessage(err));
@@ -118,32 +125,31 @@ export default function PartyListScreen({ navigation }: Props) {
             />
           }
         ></FlatList>
-        {parties.length ? (
-          <Pressable
-            onPress={() => setModalVisible(true)}
-            className="absolute right-5 bottom-5 overflow-hidden rounded-full shadow-lg active:scale-95"
-            style={{ elevation: 8 }}
-            accessibilityLabel="Create a new party"
-          >
-            <LinearGradient
-              colors={['#6366f1', '#8b5cf6']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              className="flex-row items-center px-5 py-4 gap-2"
-            >
-              <Feather name="plus" size={20} color="white" />
-              <Text className="text-white font-semibold">New Party</Text>
-            </LinearGradient>
-          </Pressable>
-        ) : null}
-
-        <CreatePartyModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onSubmit={(name, bannerUri) => handleSubmit(name, bannerUri)}
-          loading={loading}
-        />
       </View>
+
+      {parties.length ? (
+        <Pressable
+          onPress={() => setModalVisible(true)}
+          className="h-12 px-4 rounded-full flex-row items-center justify-center rounded-full bg-blue-600 active:opacity-90"
+          style={{
+            position: 'absolute',
+            right: 20,
+            bottom: insets.bottom + 20,
+          }}
+        >
+          <Ionicons name="add" size={20} color="white" />
+          <Text className="text-white text-sm font-semibold">
+            Create a Party
+          </Text>
+        </Pressable>
+      ) : null}
+
+      <CreatePartyModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={(name, bannerUri) => handleSubmit(name, bannerUri)}
+        loading={loading}
+      />
     </SafeAreaView>
   );
 }
