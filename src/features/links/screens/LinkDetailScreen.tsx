@@ -77,12 +77,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const { uploadAction, clearUploadAction } = useActiveLinkContext();
 
-  const onUploadError = useCallback(
-    (error: unknown) => {
-      Burnt.toast({ title: `Upload failed: ${getErrorMessage(error)}`, preset: 'error', haptic: 'error' });
-    },
-    [],
-  );
+  const onUploadError = useCallback((error: unknown) => {
+    Burnt.toast({
+      title: `Upload failed: ${getErrorMessage(error)}`,
+      preset: 'error',
+      haptic: 'error',
+    });
+  }, []);
 
   const {
     stagedAssets,
@@ -335,14 +336,18 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                     <Text className="text-xl font-bold text-slate-800">
                       {link.postCount}
                     </Text>
-                    <Text className="text-xs text-slate-400 mt-0.5">Posts</Text>
+                    <Text className="text-xs text-slate-400 mt-0.5">
+                      Post{link.postCount > 1 ? 's' : ''}
+                    </Text>
                   </View>
                   <View className="w-px bg-slate-100 self-stretch" />
                   <View className="items-center">
                     <Text className="text-xl font-bold text-slate-800">
                       {link.mediaCount}
                     </Text>
-                    <Text className="text-xs text-slate-400 mt-0.5">Media</Text>
+                    <Text className="text-xs text-slate-400 mt-0.5">
+                      Item{link.mediaCount > 1 ? 's' : ''}
+                    </Text>
                   </View>
                 </View>
               </CardSection>
@@ -350,10 +355,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
             <Divider className="my-6" />
 
-            {/* All Photos Section */}
+            {/* All Items Section */}
             <View className="px-4 pb-8">
               <SectionHeader
-                title="All Media"
+                title="All Items"
                 count={link.mediaCount}
                 action={
                   link.mediaCount > 6 ? (

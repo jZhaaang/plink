@@ -131,7 +131,9 @@ export function PostFeedItem({
 
       {/* Photo count indicator for posts with many photos */}
       {mediaCount > 0 && (
-        <Text className="text-xs text-slate-500 mt-2">{mediaCount} media</Text>
+        <Text className="text-xs text-slate-500 mt-2">
+          {mediaCount} item{mediaCount > 1 ? 's' : ''}
+        </Text>
       )}
 
       <DropdownMenu
