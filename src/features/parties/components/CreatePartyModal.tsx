@@ -98,7 +98,12 @@ export default function CreatePartyModal({
             colors={['#bfdbfe', '#3b82f6']}
             start={{ x: 0, y: 1 }}
             end={{ x: 1, y: 0 }}
-            className="flex-1 items-center justify-center"
+            style={{
+              width: '100%',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             <MaterialIcons
               name="add-photo-alternate"
