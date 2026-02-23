@@ -160,8 +160,7 @@ export default function CustomTabBar({
                     }
                   }}
                   activeOpacity={0.8}
-                  className="w-16 h-16 rounded-full bg-blue-500 items-center justify-center shadow-lg"
-                  style={{ elevation: 8 }}
+                  className="w-16 h-16 rounded-full bg-blue-500 items-center justify-center"
                 >
                   {showFAB ? (
                     <View className="w-16 h-16">
