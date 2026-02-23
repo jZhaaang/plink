@@ -15,6 +15,7 @@ export default {
   },
   android: {
     package: 'com.anonymous.plink',
+    googleServicesFile: './google-services.json',
   },
   ios: {
     bundleIdentifier: 'com.jimmy.plink',

@@ -6,6 +6,7 @@ import { upsertPushToken } from '../../../lib/supabase/queries/pushTokens';
 import { useEffect } from 'react';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { SignedInParamList } from '../../../navigation/types';
+import { logger } from '../../../lib/telemetry/logger';
 
 type PushData = {
   type?: string;
@@ -45,8 +46,17 @@ async function registerForPushToken(userId: string): Promise<void> {
     Constants.expoConfig?.extra?.eas?.projectId ??
     Constants.easConfig?.projectId;
 
-  const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  await upsertPushToken(userId, token);
+  try {
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
+      .data;
+    await upsertPushToken(userId, token);
+  } catch (err) {
+    logger.error('Push registration failed', {
+      error: err instanceof Error ? err : new Error(String(err)),
+      platform: Platform.OS,
+      projectId,
+    });
+  }
 }
 
 function extractData(
