@@ -21,3 +21,14 @@ export async function upsertPushToken(
 
   return;
 }
+
+export async function deletePushToken(token: string): Promise<void> {
+  const { error } = await supabase
+    .from('push_tokens')
+    .delete()
+    .eq('token', token);
+
+  if (error) throw error;
+
+  return;
+}

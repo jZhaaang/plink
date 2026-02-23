@@ -23,7 +23,10 @@ import { compressImage } from '../../../lib/media/compress';
 import { isValidUsername, normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import * as Burnt from 'burnt';
+import { deletePushToken } from '../../../lib/supabase/queries/pushTokens';
 
 export default function ProfileScreen() {
   const { userId } = useAuth();
@@ -80,7 +83,11 @@ export default function ProfileScreen() {
   const handleChoosePhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Burnt.toast({ title: 'Photo access needed to change avatar', preset: 'error', haptic: 'error' });
+      Burnt.toast({
+        title: 'Photo access needed to change avatar',
+        preset: 'error',
+        haptic: 'error',
+      });
       return;
     }
 
@@ -139,7 +146,11 @@ export default function ProfileScreen() {
       invalidate.profile();
       setEditing(false);
       setImageUri(null);
-      Burnt.toast({ title: 'Profile saved', preset: 'done', haptic: 'success' });
+      Burnt.toast({
+        title: 'Profile saved',
+        preset: 'done',
+        haptic: 'success',
+      });
     } catch (err) {
       logger.error('Error updating user profile', { err });
       await dialog.error('Failed to Update Profile', getErrorMessage(err));
@@ -155,6 +166,21 @@ export default function ProfileScreen() {
     );
     if (confirmed) {
       try {
+        try {
+          const projectId =
+            Constants.expoConfig?.extra?.eas?.projectId ??
+            Constants.easConfig?.projectId;
+
+          if (projectId) {
+            const token = (
+              await Notifications.getExpoPushTokenAsync({ projectId })
+            ).data;
+            await deletePushToken(token);
+          }
+        } catch (err) {
+          logger.error('Error removing push token on sign out', { err });
+        }
+
         await signOut();
       } catch (err) {
         logger.error('Error signing out', { err });
