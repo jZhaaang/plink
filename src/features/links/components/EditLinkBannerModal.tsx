@@ -6,15 +6,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   visible: boolean;
   onClose: () => void;
   images: LinkPostMedia[];
   initialPath: string | null;
   saving?: boolean;
   onSave: (croppedUri: string) => Promise<void>;
-};
+}
 
 export default function EditLinkBannerModal({
   visible,
@@ -60,7 +61,7 @@ export default function EditLinkBannerModal({
       visible={visible}
       onClose={onClose}
       animationType="slide"
-      contentClassName="w-[94%] rounded-3xl p-0 overflow-hidden"
+      contentStyle={styles.modalContent}
       disableBackdropDismiss={isBusy}
       scrollEnabled={false}
     >
@@ -68,32 +69,28 @@ export default function EditLinkBannerModal({
         colors={['#e2f1ff', '#ffffff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        className="px-5 pt-5 pb-4 border-b border-slate-100"
+        style={styles.headerGradient}
       >
-        <View className="flex-row items-center justify-between">
+        <View style={styles.headerRow}>
           <View>
-            <Text className="text-lg font-semibold text-slate-900">
-              Edit Link Banner
-            </Text>
-            <Text className="text-sm text-slate-500 mt-0.5">
+            <Text style={styles.title}>Edit Link Banner</Text>
+            <Text style={styles.subtitle}>
               Pick a photo, then crop to banner ratio
             </Text>
           </View>
 
-          <Pressable
-            onPress={onClose}
-            disabled={isBusy}
-            className="w-9 h-9 rounded-full bg-slate-100 items-center justify-center"
-          >
-            <Feather name="x" size={18} color="#334155" />
+          <Pressable onPress={onClose} disabled={isBusy}>
+            <View style={styles.closeCircle}>
+              <Feather name="x" size={18} color="#334155" />
+            </View>
           </Pressable>
         </View>
       </LinearGradient>
 
-      <View className="px-5 pt-4 pb-5 bg-white">
+      <View style={styles.body}>
         {selectedImage ? (
-          <View className="rounded-2xl overflow-hidden border border-slate-200">
-            <View className="w-full bg-slate-100" style={{ aspectRatio: 2.5 }}>
+          <View style={styles.previewCard}>
+            <View style={styles.previewBanner}>
               <Image
                 source={{ uri: selectedImage.url }}
                 contentFit="cover"
@@ -103,34 +100,30 @@ export default function EditLinkBannerModal({
               />
               <LinearGradient
                 colors={['rgba(2,6,23,0.05)', 'rgba(2,6,23,0.45)']}
-                className="absolute inset-0"
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               />
-              <View className="absolute bottom-3 left-3 right-3 flex-row items-center justify-between">
-                <Text className="text-[11px] text-white/95 font-medium">
-                  Final crop opens on Save
-                </Text>
-                <View className="px-2.5 py-1 rounded-full bg-black/35">
-                  <Text className="text-[10px] text-white/90">2.5:1</Text>
+              <View style={styles.previewFooter}>
+                <Text style={styles.previewHint}>Final crop opens on Save</Text>
+                <View style={styles.ratioBadge}>
+                  <Text style={styles.ratioText}>2.5:1</Text>
                 </View>
               </View>
             </View>
           </View>
         ) : (
-          <View className="rounded-2xl bg-slate-50 border border-slate-200 p-6 items-center">
-            <View className="w-12 h-12 rounded-full bg-slate-100 items-center justify-center mb-2">
+          <View style={styles.emptyCard}>
+            <View style={styles.emptyIcon}>
               <Feather name="image" size={20} color="#64748b" />
             </View>
-            <Text className="text-sm text-slate-600 text-center">
+            <Text style={styles.emptyText}>
               Add photos to this link before setting a banner.
             </Text>
           </View>
         )}
 
         {images.length > 0 ? (
-          <View className="mt-4">
-            <Text className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-              Link Photos
-            </Text>
+          <View style={styles.thumbnailSection}>
+            <Text style={styles.thumbnailLabel}>Link Photos</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -142,22 +135,25 @@ export default function EditLinkBannerModal({
                   <Pressable
                     key={image.id}
                     onPress={() => setSelectedPath(image.path)}
-                    className={`rounded-xl overflow-hidden border-2 ${
-                      isSelected ? 'border-blue-500' : 'border-transparent'
-                    }`}
-                    style={{ width: 84, height: 84 }}
                   >
-                    <Image
-                      source={{ uri: image.url }}
-                      cachePolicy="memory-disk"
-                      contentFit="cover"
-                      style={{ width: '100%', height: '100%' }}
-                    />
-                    {isSelected ? (
-                      <View className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-blue-500 items-center justify-center">
-                        <Feather name="check" size={12} color="#fff" />
-                      </View>
-                    ) : null}
+                    <View
+                      style={[
+                        styles.thumbnail,
+                        isSelected && styles.thumbnailSelected,
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: image.url }}
+                        cachePolicy="memory-disk"
+                        contentFit="cover"
+                        style={{ width: '100%', height: '100%' }}
+                      />
+                      {isSelected ? (
+                        <View style={styles.checkBadge}>
+                          <Feather name="check" size={12} color="#fff" />
+                        </View>
+                      ) : null}
+                    </View>
                   </Pressable>
                 );
               })}
@@ -165,18 +161,18 @@ export default function EditLinkBannerModal({
           </View>
         ) : null}
 
-        <View className="mt-5 flex-row gap-3">
+        <View style={styles.actions}>
           <Button
             title="Cancel"
             variant="outline"
             onPress={onClose}
-            className="flex-1"
+            style={{ flex: 1 }}
             disabled={isBusy}
           />
           <Button
             title={cropping ? 'Cropping...' : 'Crop & Save'}
             onPress={handleSave}
-            className="flex-1"
+            style={{ flex: 1 }}
             loading={isBusy}
             disabled={!selectedImage || isBusy}
           />
@@ -185,3 +181,142 @@ export default function EditLinkBannerModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  modalContent: {
+    width: '94%',
+    borderRadius: 24,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  headerGradient: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+  subtitle: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+    marginTop: 2,
+  },
+  closeCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.surfacePressed,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  body: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
+    backgroundColor: theme.colors.surface,
+  },
+  previewCard: {
+    borderRadius: theme.radii.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  previewBanner: {
+    width: '100%',
+    backgroundColor: theme.colors.surfacePressed,
+    aspectRatio: 2.5,
+  },
+  previewFooter: {
+    position: 'absolute',
+    bottom: theme.spacing.md,
+    left: theme.spacing.md,
+    right: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  previewHint: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.95)',
+    fontWeight: theme.fontWeights.medium,
+  },
+  ratioBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  ratioText: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.9)',
+  },
+  emptyCard: {
+    borderRadius: theme.radii.xl,
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: theme.spacing['2xl'],
+    alignItems: 'center',
+  },
+  emptyIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.surfacePressed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  emptyText: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.iconSecondary,
+    textAlign: 'center',
+  },
+  thumbnailSection: {
+    marginTop: theme.spacing.lg,
+  },
+  thumbnailLabel: {
+    fontSize: theme.fontSizes.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: theme.colors.textPlaceholder,
+    marginBottom: theme.spacing.sm,
+  },
+  thumbnail: {
+    width: 84,
+    height: 84,
+    borderRadius: theme.radii.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  thumbnailSelected: {
+    borderColor: theme.colors.info,
+  },
+  checkBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 20,
+    height: 20,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.info,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actions: {
+    marginTop: theme.spacing.xl,
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+  },
+}));

@@ -6,14 +6,15 @@ import { Party } from '../../../lib/models';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { pickPartyBannerFromLibrary } from '../../../lib/media/bannerCropper';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   visible: boolean;
   initialParty?: Party;
   loading?: boolean;
   onClose: () => void;
   onSubmit: (name: string, bannerUri: string | null) => Promise<void>;
-};
+}
 
 export default function CreatePartyModal({
   visible,
@@ -68,56 +69,60 @@ export default function CreatePartyModal({
     bannerUri !== (initialParty?.bannerUrl ?? null);
 
   return (
-    <Modal visible={visible} onClose={handleClose} animationType="slide">
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-semibold">
+    <Modal visible={visible} onClose={handleClose} animationType="fade">
+      <View style={styles.header}>
+        <Text style={styles.title}>
           {isEditMode ? 'Edit Party' : 'Create Party'}
         </Text>
-        <Pressable onPress={handleClose} className="p-2">
-          <Text className="text-neutral-500">Close</Text>
+        <Pressable onPress={handleClose}>
+          <View style={styles.closeButton}>
+            <Text style={styles.closeText}>Close</Text>
+          </View>
         </Pressable>
       </View>
 
       {/* Banner picker */}
-      <Pressable
-        onPress={chooseBanner}
-        className="rounded-xl overflow-hidden"
-        style={{ aspectRatio: 2.5 }}
-      >
-        {bannerUri ? (
-          <ImageBackground
-            source={{ uri: bannerUri }}
-            className="flex-1 items-center justify-center"
-          >
-            <View className="flex-1 w-full bg-black/20 items-center justify-center">
-              <MaterialIcons name="edit" size={24} color="#ffffffcc" />
-            </View>
-          </ImageBackground>
-        ) : (
-          <LinearGradient
-            colors={['#bfdbfe', '#3b82f6']}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              width: '100%',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <MaterialIcons
-              name="add-photo-alternate"
-              size={36}
-              color="#ffffff99"
-            />
-            <Text className="text-white/60 text-xs mt-1" numberOfLines={1}>
-              Add Banner
-            </Text>
-          </LinearGradient>
-        )}
+      <Pressable onPress={chooseBanner}>
+        <View style={styles.bannerWrap}>
+          {bannerUri ? (
+            <ImageBackground
+              source={{ uri: bannerUri }}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <View style={styles.bannerOverlay}>
+                <MaterialIcons name="edit" size={24} color="#ffffffcc" />
+              </View>
+            </ImageBackground>
+          ) : (
+            <LinearGradient
+              colors={['#bfdbfe', '#3b82f6']}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <MaterialIcons
+                name="add-photo-alternate"
+                size={36}
+                color="#ffffff99"
+              />
+              <Text style={styles.addBannerText} numberOfLines={1}>
+                Add Banner
+              </Text>
+            </LinearGradient>
+          )}
+        </View>
       </Pressable>
 
-      <View className="mt-4 gap-2">
+      <View style={styles.formSection}>
         <TextField
           header="Party Name"
           left={
@@ -129,16 +134,15 @@ export default function CreatePartyModal({
           }
           value={name}
           onChangeText={setName}
-          className="text-base"
           autoCapitalize="words"
           maxLength={30}
           returnKeyType="done"
         />
 
-        <View className="mt-6">
+        <View style={styles.submitWrap}>
           <Button
             title={isEditMode ? 'Save Changes' : 'Create Party'}
-            size="lg"
+            size="md"
             onPress={handleSubmit}
             loading={loading || localLoading}
             disabled={!name.trim() || (isEditMode && !hasChanges)}
@@ -148,3 +152,47 @@ export default function CreatePartyModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.lg,
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+  closeButton: {
+    padding: theme.spacing.sm,
+  },
+  closeText: {
+    color: theme.colors.textTertiary,
+  },
+  bannerWrap: {
+    borderRadius: theme.radii.lg,
+    overflow: 'hidden',
+    aspectRatio: 2.5,
+  },
+  bannerOverlay: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: theme.colors.overlayLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addBannerText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: theme.fontSizes.xs,
+    marginTop: theme.spacing.xs,
+  },
+  formSection: {
+    marginTop: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  submitWrap: {
+    marginTop: theme.spacing['2xl'],
+  },
+}));

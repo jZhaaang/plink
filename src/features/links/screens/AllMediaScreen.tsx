@@ -9,6 +9,7 @@ import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaGrid from '../components/MediaGrid';
 import { LinkPostMedia } from '../../../lib/models';
 import { LoadingScreen } from '../../../components';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
@@ -38,24 +39,20 @@ export default function AllMediaScreen({ route, navigation }: Props) {
   if (loading) return <LoadingScreen label="Loading..." />;
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
-      <View className="px-4 pt-2 pb-3">
-        <View className="flex-row items-center mb-3">
-          <Pressable
-            onPress={() => navigation.goBack()}
-            className="w-10 h-10 rounded-full bg-white items-center justify-center border border-slate-200 active:opacity-80"
-          >
-            <Feather name="arrow-left" size={20} color="#334155" />
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
+      <View style={styles.topSection}>
+        <View style={styles.navRow}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <View style={styles.backButton}>
+              <Feather name="arrow-left" size={20} color="#334155" />
+            </View>
           </Pressable>
 
-          <View className="flex-1 px-3">
-            <Text
-              className="text-xl font-bold text-slate-900"
-              numberOfLines={1}
-            >
+          <View style={styles.titleWrap}>
+            <Text style={styles.screenTitle} numberOfLines={1}>
               All Media
             </Text>
-            <Text className="text-sm text-slate-500" numberOfLines={1}>
+            <Text style={styles.screenSubtitle} numberOfLines={1}>
               {link?.name ?? 'Link'} • {allMedia.length} items
             </Text>
           </View>
@@ -65,55 +62,161 @@ export default function AllMediaScreen({ route, navigation }: Props) {
           colors={['#dbeafe', '#eff6ff']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          className="rounded-2xl px-4 py-3 border border-blue-100"
+          style={styles.statsGradient}
         >
-          <View className="flex-row items-center gap-2">
-            <View className="px-2.5 py-1 rounded-full bg-white/80 border border-blue-100">
-              <Text className="text-xs font-semibold text-blue-700">
-                Photos {photoCount}
-              </Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statPill}>
+              <Text style={styles.statText}>Photos {photoCount}</Text>
             </View>
-            <View className="px-2.5 py-1 rounded-full bg-white/80 border border-blue-100">
-              <Text className="text-xs font-semibold text-blue-700">
-                Videos {videoCount}
-              </Text>
+            <View style={styles.statPill}>
+              <Text style={styles.statText}>Videos {videoCount}</Text>
             </View>
           </View>
         </LinearGradient>
       </View>
 
       {allMedia.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="w-full rounded-2xl bg-white border border-slate-200 p-6 items-center">
-            <View className="w-12 h-12 rounded-full bg-slate-100 items-center justify-center mb-3">
+        <View style={styles.emptyWrap}>
+          <View style={styles.emptyCard}>
+            <View style={styles.emptyIcon}>
               <Feather name="image" size={20} color="#64748b" />
             </View>
-            <Text className="text-base font-semibold text-slate-800 mb-1">
-              No media yet
-            </Text>
-            <Text className="text-sm text-slate-500 text-center">
+            <Text style={styles.emptyTitle}>No media yet</Text>
+            <Text style={styles.emptyMessage}>
               Photos and videos shared in this link will appear here.
             </Text>
           </View>
         </View>
       ) : (
-        <View className="flex-1 px-4">
+        <View style={styles.gridWrap}>
           <MediaGrid
             media={allMedia}
             onMediaPress={handleMediaPress}
             columns={3}
             scrollEnabled
             ListHeaderComponent={() => (
-              <View className="pb-2">
-                <Text className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                  Latest uploads
-                </Text>
+              <View style={styles.gridHeader}>
+                <Text style={styles.gridHeaderText}>Latest uploads</Text>
               </View>
             )}
-            ListFooterComponent={() => <View className="h-10" />}
+            ListFooterComponent={() => <View style={{ height: 40 }} />}
           />
         </View>
       )}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  topSection: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.sm,
+    paddingBottom: theme.spacing.md,
+  },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  titleWrap: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.md,
+  },
+  screenTitle: {
+    fontSize: theme.fontSizes.xl,
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+  },
+  screenSubtitle: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+  },
+  statsGradient: {
+    borderRadius: theme.radii.xl,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.accentSurfaceLight,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  statPill: {
+    paddingHorizontal: 10,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderWidth: 1,
+    borderColor: theme.colors.accentSurfaceLight,
+  },
+  statText: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.accentText,
+  },
+  emptyWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing['2xl'],
+  },
+  emptyCard: {
+    width: '100%',
+    borderRadius: theme.radii.xl,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: theme.spacing['2xl'],
+    alignItems: 'center',
+  },
+  emptyIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.surfacePressed,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  emptyTitle: {
+    fontSize: theme.fontSizes.base,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
+  },
+  emptyMessage: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+    textAlign: 'center',
+  },
+  gridWrap: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  gridHeader: {
+    paddingBottom: theme.spacing.sm,
+  },
+  gridHeaderText: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    color: theme.colors.textPlaceholder,
+  },
+}));

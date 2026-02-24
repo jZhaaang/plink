@@ -2,12 +2,13 @@ import { Pressable, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { Link } from '../../../lib/models';
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   link: Link;
   onPress?: (linkId: string) => void;
-};
+}
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return '';
@@ -17,14 +18,18 @@ function formatDate(dateString: string | null): string {
 
 export function LinkCard({ link, onPress }: Props) {
   const isActive = !link.end_time;
+  const [pressed, setPressed] = useState(false);
+
+  cardStyles.useVariants({ isActive, pressed });
 
   return (
     <Pressable
       onPress={() => onPress?.(link.id)}
-      className="mb-3 active:opacity-90"
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
     >
-      <View className="rounded-2xl overflow-hidden border border-slate-200 bg-white">
-        <View className="w-full bg-slate-100" style={{ aspectRatio: 2.5 }}>
+      <View style={cardStyles.card}>
+        <View style={cardStyles.bannerWrap}>
           {link.bannerUrl ? (
             <Image
               source={{ uri: link.bannerUrl }}
@@ -48,29 +53,22 @@ export function LinkCard({ link, onPress }: Props) {
 
           <LinearGradient
             colors={['transparent', 'rgba(15,23,42,0.72)']}
-            className="absolute bottom-0 left-0 right-0 h-24"
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 96 }}
           />
 
-          <View className="absolute top-3 right-3">
-            <View
-              className={`px-2.5 py-1 rounded-full ${
-                isActive ? 'bg-emerald-500/90' : 'bg-slate-900/65'
-              }`}
-            >
-              <Text className="text-xs font-semibold text-white">
+          <View style={cardStyles.badgeWrap}>
+            <View style={cardStyles.badge}>
+              <Text style={cardStyles.badgeText}>
                 {isActive ? 'Active' : 'Ended'}
               </Text>
             </View>
           </View>
 
-          <View className="absolute bottom-0 left-0 right-0 px-4 pb-3">
-            <Text
-              className="text-base font-semibold text-white"
-              numberOfLines={1}
-            >
+          <View style={cardStyles.bottomOverlay}>
+            <Text style={cardStyles.linkName} numberOfLines={1}>
               {link.name}
             </Text>
-            <Text className="text-xs text-white/80 mt-0.5" numberOfLines={1}>
+            <Text style={cardStyles.dateText} numberOfLines={1}>
               {isActive
                 ? `Started ${formatDate(link.created_at)}`
                 : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
@@ -83,3 +81,64 @@ export function LinkCard({ link, onPress }: Props) {
 }
 
 export default memo(LinkCard);
+
+const cardStyles = StyleSheet.create((theme) => ({
+  card: {
+    borderRadius: theme.radii.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    marginBottom: theme.spacing.md,
+    variants: {
+      pressed: {
+        true: { opacity: 0.9 },
+        false: {},
+      },
+    },
+  },
+  bannerWrap: {
+    width: '100%',
+    backgroundColor: theme.colors.surfacePressed,
+    aspectRatio: 2.5,
+  },
+  badgeWrap: {
+    position: 'absolute',
+    top: theme.spacing.md,
+    right: theme.spacing.md,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
+    variants: {
+      isActive: {
+        true: { backgroundColor: theme.colors.badgeActive },
+        false: { backgroundColor: theme.colors.badgeInactive },
+      },
+    },
+  },
+  badgeText: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textInverse,
+  },
+  bottomOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+  },
+  linkName: {
+    fontSize: theme.fontSizes.base,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textInverse,
+  },
+  dateText: {
+    fontSize: theme.fontSizes.xs,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+  },
+}));

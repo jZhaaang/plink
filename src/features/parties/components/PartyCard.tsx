@@ -4,13 +4,14 @@ import { Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import AvatarStack from '../../../components/AvatarStack';
 import { memo } from 'react';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   name: string;
   bannerUri?: string | null;
   members?: { avatarUrl?: string }[];
   onPress?: () => void;
-};
+}
 
 function BannerFallback({ showIcon }: { showIcon?: boolean }) {
   return (
@@ -18,7 +19,7 @@ function BannerFallback({ showIcon }: { showIcon?: boolean }) {
       colors={['#bfdbfe', '#3b82f6']}
       start={{ x: 0, y: 1 }}
       end={{ x: 1, y: 0 }}
-      className="flex-1 items-center justify-center"
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
     >
       {showIcon && (
         <MaterialIcons name="add-photo-alternate" size={36} color="#ffffff99" />
@@ -36,13 +37,9 @@ export function PartyCard(props: Props) {
   const memberCount = members?.length ?? 0;
 
   return (
-    <Pressable onPress={onPress} className="mb-3">
-      <View className="rounded-2xl bg-neutral-100 p-4 shadow-md">
-        {/* Banner - inner rounded rect */}
-        <View
-          className="rounded-xl overflow-hidden"
-          style={{ aspectRatio: 2.5 }}
-        >
+    <Pressable onPress={onPress}>
+      <View style={styles.card}>
+        <View style={styles.bannerWrap}>
           {bannerUri ? (
             <Image
               source={{ uri: bannerUri }}
@@ -55,23 +52,8 @@ export function PartyCard(props: Props) {
           )}
         </View>
 
-        {/* Floating info pill */}
-        <View
-          className="mx-3 flex-row items-center rounded-xl bg-white px-4 py-3"
-          style={{
-            marginTop: -20,
-            marginBottom: 4,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 4,
-            elevation: 3,
-          }}
-        >
-          <Text
-            className="flex-1 text-base font-semibold text-neutral-900"
-            numberOfLines={1}
-          >
+        <View style={styles.infoPill}>
+          <Text style={styles.partyName} numberOfLines={1}>
             {name}
           </Text>
 
@@ -89,3 +71,40 @@ export function PartyCard(props: Props) {
 }
 
 export default memo(PartyCard);
+
+const styles = StyleSheet.create((theme) => ({
+  card: {
+    borderRadius: theme.radii.xl,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  bannerWrap: {
+    borderRadius: theme.radii.lg,
+    overflow: 'hidden',
+    aspectRatio: 2.5,
+  },
+  infoPill: {
+    marginHorizontal: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: theme.radii.lg,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    marginTop: -20,
+    marginBottom: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  partyName: {
+    flex: 1,
+    fontSize: theme.fontSizes.base,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+}));

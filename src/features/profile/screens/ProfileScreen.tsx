@@ -27,6 +27,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as Burnt from 'burnt';
 import { deletePushToken } from '../../../lib/supabase/queries/pushTokens';
+import { StyleSheet } from 'react-native-unistyles';
 
 export default function ProfileScreen() {
   const { userId } = useAuth();
@@ -190,42 +191,39 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
-      <ScrollView className="flex-1" contentContainerClassName="px-4">
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         {editing ? (
           <>
-            <Text className="text-xl font-bold mb-4">Edit Profile</Text>
+            <Text style={styles.screenTitle}>Edit Profile</Text>
             <Divider />
 
-            <View className="gap-6 mt-4">
+            <View style={styles.sectionGroup}>
               {/* Avatar Editor */}
-              <View className="items-center gap-2">
-                <Pressable
-                  onPress={handleChoosePhoto}
-                  className="relative h-28 w-28 overflow-hidden rounded-full"
-                >
-                  {editModeAvatarUri ? (
-                    <Image
-                      source={{ uri: editModeAvatarUri }}
-                      style={{ width: 112, height: 112 }}
-                      cachePolicy="memory-disk"
-                      contentFit="cover"
-                    />
-                  ) : (
-                    ''
-                  )}
-                  {/* Camera Icon Overlay */}
-                  <View className="absolute inset-0 items-center justify-center bg-black/30">
-                    <Ionicons name="camera-outline" size={32} color="white" />
+              <View style={styles.avatarSection}>
+                <Pressable onPress={handleChoosePhoto}>
+                  <View style={styles.avatarEditWrap}>
+                    {editModeAvatarUri ? (
+                      <Image
+                        source={{ uri: editModeAvatarUri }}
+                        style={{ width: 112, height: 112 }}
+                        cachePolicy="memory-disk"
+                        contentFit="cover"
+                      />
+                    ) : null}
+                    <View style={styles.avatarOverlay}>
+                      <Ionicons name="camera-outline" size={32} color="white" />
+                    </View>
                   </View>
                 </Pressable>
-                <Text className="text-sm text-slate-500">
-                  Tap to change photo
-                </Text>
+                <Text style={styles.avatarHint}>Tap to change photo</Text>
               </View>
 
               {/* Name Field */}
-              <View className="gap-1">
+              <View style={styles.fieldGroup}>
                 <TextField
                   header="Name"
                   left={
@@ -240,10 +238,10 @@ export default function ProfileScreen() {
               </View>
 
               {/* Username Field */}
-              <View className="gap-1">
+              <View style={styles.fieldGroup}>
                 <TextField
                   header="Username"
-                  left={<Text className="text-slate-400">@</Text>}
+                  left={<Text style={styles.atSymbol}>@</Text>}
                   placeholder="username"
                   value={username}
                   onChangeText={(text) =>
@@ -253,13 +251,13 @@ export default function ProfileScreen() {
                   autoCorrect={false}
                   maxLength={20}
                 />
-                <Text className="text-xs text-slate-500 px-1">
+                <Text style={styles.fieldHint}>
                   Others can find and invite you by username
                 </Text>
               </View>
 
               {/* Action Buttons */}
-              <View className="gap-3">
+              <View style={styles.actionGroup}>
                 <Button
                   title="Save"
                   onPress={handleSave}
@@ -276,14 +274,13 @@ export default function ProfileScreen() {
           </>
         ) : (
           <>
-            <Text className="text-xl font-bold mb-4">My Profile</Text>
+            <Text style={styles.screenTitle}>My Profile</Text>
             <Divider />
 
-            <View className="gap-6 mt-4">
+            <View style={styles.sectionGroup}>
               {/* Profile Display Card */}
-              <View className="items-center rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
-                {/* Avatar */}
-                <View className="mb-4">
+              <View style={styles.profileCard}>
+                <View style={styles.profileAvatarWrap}>
                   {profile.avatarUrl ? (
                     <Image
                       source={{ uri: profile.avatarUrl }}
@@ -291,38 +288,29 @@ export default function ProfileScreen() {
                       cachePolicy="memory-disk"
                       contentFit="cover"
                     />
-                  ) : (
-                    ''
-                  )}
+                  ) : null}
                 </View>
 
-                {/* Name */}
-                <Text className="text-xl font-semibold text-slate-900">
-                  {profile.name}
-                </Text>
+                <Text style={styles.profileName}>{profile.name}</Text>
 
-                {/* Username */}
                 {profile.username && (
-                  <Text className="text-sm text-slate-500">
+                  <Text style={styles.profileUsername}>
                     @{profile.username}
                   </Text>
                 )}
 
-                {/* Join Date */}
-                <Text className="mt-1 text-sm text-slate-500">
+                <Text style={styles.profileJoinDate}>
                   Joined {new Date(profile.created_at).toLocaleDateString()}
                 </Text>
               </View>
 
-              {/* Edit Profile Button */}
               <Button
                 title="Edit Profile"
                 variant="outline"
                 onPress={handleEdit}
               />
 
-              {/* Sign Out Button */}
-              <View className="mt-6">
+              <View style={styles.signOutWrap}>
                 <Button
                   title="Sign Out"
                   variant="ghost"
@@ -336,3 +324,93 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: theme.spacing.lg,
+  },
+  screenTitle: {
+    fontSize: theme.fontSizes.xl,
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.lg,
+  },
+  sectionGroup: {
+    gap: theme.spacing['2xl'],
+    marginTop: theme.spacing.lg,
+  },
+  avatarSection: {
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  avatarEditWrap: {
+    height: 112,
+    width: 112,
+    overflow: 'hidden',
+    borderRadius: theme.radii.full,
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.overlayMedium,
+  },
+  avatarHint: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+  },
+  fieldGroup: {
+    gap: theme.spacing.xs,
+  },
+  atSymbol: {
+    color: theme.colors.textPlaceholder,
+  },
+  fieldHint: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.textTertiary,
+    paddingHorizontal: theme.spacing.xs,
+  },
+  actionGroup: {
+    gap: theme.spacing.md,
+  },
+  profileCard: {
+    alignItems: 'center',
+    borderRadius: theme.radii.xl,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing['2xl'],
+    ...theme.shadows.md,
+  },
+  profileAvatarWrap: {
+    marginBottom: theme.spacing.lg,
+  },
+  profileName: {
+    fontSize: theme.fontSizes.xl,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+  profileUsername: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+  },
+  profileJoinDate: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+  },
+  signOutWrap: {
+    marginTop: theme.spacing['2xl'],
+  },
+}));

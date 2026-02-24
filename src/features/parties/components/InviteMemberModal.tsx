@@ -6,14 +6,15 @@ import * as Burnt from 'burnt';
 import { Button, Modal, Spinner, TextField } from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
 import { resolveProfile } from '../../../lib/resolvers/profile';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   visible: boolean;
   onClose: () => void;
   partyId: string;
   existingMemberIds: string[];
   onSuccess: () => void;
-};
+}
 
 export default function InviteMemberModal({
   visible,
@@ -77,19 +78,19 @@ export default function InviteMemberModal({
     switch (state.status) {
       case 'not_found':
         return (
-          <Text className="text-red-500 text-sm mt-2">
+          <Text style={styles.errorText}>
             No user found with that username
           </Text>
         );
       case 'already_member':
         return (
-          <Text className="text-amber-600 text-sm mt-2">
+          <Text style={styles.warningText}>
             This user is already a member
           </Text>
         );
       case 'error':
         return (
-          <Text className="text-red-500 text-sm mt-2">{state.message}</Text>
+          <Text style={styles.errorText}>{state.message}</Text>
         );
       default:
         return null;
@@ -99,10 +100,12 @@ export default function InviteMemberModal({
   return (
     <Modal visible={visible} onClose={handleClose} animationType="slide">
       {/* Header */}
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-semibold">Invite Member</Text>
-        <Pressable onPress={handleClose} className="p-2">
-          <Text className="text-neutral-500">Close</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Invite Member</Text>
+        <Pressable onPress={handleClose}>
+          <View style={styles.closeButton}>
+            <Text style={styles.closeText}>Close</Text>
+          </View>
         </Pressable>
       </View>
 
@@ -116,7 +119,7 @@ export default function InviteMemberModal({
         autoCorrect={false}
         returnKeyType="search"
         onSubmitEditing={handleSearch}
-        left={<Text className="text-slate-400">@</Text>}
+        left={<Text style={styles.atSymbol}>@</Text>}
       />
 
       {/* Status Messages */}
@@ -124,23 +127,23 @@ export default function InviteMemberModal({
 
       {/* Search Result - User Preview Card */}
       {state.status === 'searching' && (
-        <View className="mt-4 p-4 items-center">
+        <View style={styles.spinnerWrap}>
           <Spinner />
         </View>
       )}
 
       {state.status === 'found' && (
-        <View className="mt-4 flex-row items-center p-3 bg-slate-100 rounded-xl">
+        <View style={styles.userCard}>
           <Image
             source={{ uri: foundUserAvatarUrl ?? undefined }}
             cachePolicy="memory-disk"
             style={{ width: 44, height: 44, borderRadius: 22 }}
           />
-          <View className="ml-3 flex-1">
-            <Text className="text-base font-medium text-slate-900">
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>
               {state.user.name || 'Unknown'}
             </Text>
-            <Text className="text-sm text-slate-500">
+            <Text style={styles.userHandle}>
               @{state.user.username}
             </Text>
           </View>
@@ -149,7 +152,7 @@ export default function InviteMemberModal({
       )}
 
       {/* Action Buttons */}
-      <View className="mt-6 gap-3">
+      <View style={styles.actions}>
         {state.status === 'found' || state.status === 'inviting' ? (
           <Button
             title="Invite"
@@ -170,3 +173,66 @@ export default function InviteMemberModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.lg,
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+  closeButton: {
+    padding: theme.spacing.sm,
+  },
+  closeText: {
+    color: theme.colors.textTertiary,
+  },
+  atSymbol: {
+    color: theme.colors.textPlaceholder,
+  },
+  errorText: {
+    color: theme.colors.error,
+    fontSize: theme.fontSizes.sm,
+    marginTop: theme.spacing.sm,
+  },
+  warningText: {
+    color: theme.colors.warning,
+    fontSize: theme.fontSizes.sm,
+    marginTop: theme.spacing.sm,
+  },
+  spinnerWrap: {
+    marginTop: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+  },
+  userCard: {
+    marginTop: theme.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.surfacePressed,
+    borderRadius: theme.radii.lg,
+  },
+  userInfo: {
+    marginLeft: theme.spacing.md,
+    flex: 1,
+  },
+  userName: {
+    fontSize: theme.fontSizes.base,
+    fontWeight: theme.fontWeights.medium,
+    color: theme.colors.textPrimary,
+  },
+  userHandle: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+  },
+  actions: {
+    marginTop: theme.spacing['2xl'],
+    gap: theme.spacing.md,
+  },
+}));

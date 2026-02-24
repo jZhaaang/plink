@@ -2,8 +2,9 @@ import { FlatList, useWindowDimensions, View, Text } from 'react-native';
 import { LinkPostMedia } from '../../../lib/models';
 import { Feather } from '@expo/vector-icons';
 import MediaTile from '../../../components/MediaTile';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   media: LinkPostMedia[];
   columns?: number;
   maxItems?: number;
@@ -12,7 +13,7 @@ type Props = {
   ListFooterComponent?: React.ComponentType;
   onMediaPress?: (item: LinkPostMedia) => void;
   onOverflowPress?: () => void;
-};
+}
 
 const GAP = 3;
 
@@ -63,21 +64,19 @@ export default function MediaGrid({
 
               if (isLastItem) {
                 return (
-                  <View className="absolute inset-0 bg-black/60 items-center justify-center rounded-xl">
-                    <Text className="text-white text-lg font-semibold">
-                      +{overflowCount}
-                    </Text>
+                  <View style={styles.overflowOverlay}>
+                    <Text style={styles.overflowText}>+{overflowCount}</Text>
                   </View>
                 );
               } else if (item.type === 'video') {
                 return (
-                  <View className="absolute inset-0 items-center justify-center">
-                    <View className="w-10 h-10 rounded-full bg-black/50 items-center justify-center">
+                  <View style={styles.videoOverlay}>
+                    <View style={styles.playButton}>
                       <Feather
                         name="play"
                         size={20}
                         color="white"
-                        className="ml-1"
+                        style={{ marginLeft: 2 }}
                       />
                     </View>
                   </View>
@@ -91,3 +90,39 @@ export default function MediaGrid({
     />
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  overflowOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.lg,
+  },
+  overflowText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+  },
+  videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButton: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.overlay,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));

@@ -49,6 +49,7 @@ import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -105,7 +106,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         invalidate.activeLink();
         invalidate.parties();
         invalidate.activity();
-        Burnt.toast({ title: 'Link started!', preset: 'done', haptic: 'success' });
+        Burnt.toast({
+          title: 'Link started!',
+          preset: 'done',
+          haptic: 'success',
+        });
         navigation.navigate('LinkDetail', { linkId: link.id, partyId });
       }
     } catch (err) {
@@ -145,7 +150,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       trackEvent('party_updated', { party_id: partyId });
       invalidate.partyDetail(partyId);
       invalidate.parties();
-      Burnt.toast({ title: 'Party updated', preset: 'done', haptic: 'success' });
+      Burnt.toast({
+        title: 'Party updated',
+        preset: 'done',
+        haptic: 'success',
+      });
     } catch (err) {
       logger.error('Error updating party', { err });
       await dialog.error('Failed to Update Party', getErrorMessage(err));
@@ -181,7 +190,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       invalidate.parties();
       invalidate.activeLink();
       invalidate.activity();
-      Burnt.toast({ title: 'Party deleted', preset: 'done', haptic: 'success' });
+      Burnt.toast({
+        title: 'Party deleted',
+        preset: 'done',
+        haptic: 'success',
+      });
       navigation.goBack();
     } catch (err) {
       logger.error('Error deleting party', { err });
@@ -231,7 +244,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <View style={styles.root}>
       <StatusBar style="light" />
 
       <HeroBanner
@@ -240,16 +253,16 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         onBack={() => navigation.goBack()}
         onMenuPress={isOwner ? handleMenuPress : undefined}
       >
-        <Text className="text-2xl font-bold text-white">{party.name}</Text>
-        <Text className="text-sm text-white/70 mt-1">
+        <Text style={styles.heroTitle}>{party.name}</Text>
+        <Text style={styles.heroSubtitle}>
           {party.members.length}{' '}
           {party.members.length === 1 ? 'member' : 'members'}
         </Text>
       </HeroBanner>
 
-      <View className="flex-1 bg-neutral-50">
+      <View style={styles.contentArea}>
         <ScrollView
-          className="flex-1"
+          style={styles.scrollView}
           refreshControl={
             <RefreshControl
               refreshing={partyLoading}
@@ -258,25 +271,22 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           }
         >
           {/* Members */}
-          <View className="flex-row items-center justify-between px-5 mt-5">
+          <View style={styles.membersRow}>
             <AvatarStack avatarUris={memberAvatars} size={40} />
             {isOwner && (
-              <Pressable
-                onPress={() => setInviteModalVisible(true)}
-                className="flex-row items-center bg-blue-50 px-3 py-1.5 rounded-full"
-              >
-                <Feather name="user-plus" size={14} color="#2563eb" />
-                <Text className="text-blue-600 text-xs font-semibold ml-1.5">
-                  Invite
-                </Text>
+              <Pressable onPress={() => setInviteModalVisible(true)}>
+                <View style={styles.invitePill}>
+                  <Feather name="user-plus" size={14} color="#2563eb" />
+                  <Text style={styles.inviteText}>Invite</Text>
+                </View>
               </Pressable>
             )}
           </View>
 
-          <Divider className="my-6" />
+          <Divider style={{ marginVertical: 24 }} />
 
           {/* Active Link */}
-          <View className="px-5">
+          <View style={styles.section}>
             {activeLink ? (
               <>
                 <SectionHeader title="Active Link" />
@@ -300,8 +310,13 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
           {/* Past Links */}
           <View
-            className="px-5 mt-6"
-            style={{ paddingBottom: Math.max(insets.bottom, 32) }}
+            style={[
+              styles.section,
+              {
+                marginTop: 24,
+                paddingBottom: Math.max(insets.bottom, 32),
+              },
+            ]}
           >
             <SectionHeader title="Past Links" count={pastLinks.length} />
 
@@ -374,3 +389,51 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  root: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  heroTitle: {
+    fontSize: theme.fontSizes['2xl'],
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textInverse,
+  },
+  heroSubtitle: {
+    fontSize: theme.fontSizes.sm,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: theme.spacing.xs,
+  },
+  contentArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  membersRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.xl,
+    marginTop: theme.spacing.xl,
+  },
+  invitePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.accentSurface,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 6,
+    borderRadius: theme.radii.full,
+  },
+  inviteText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.semibold,
+    marginLeft: 6,
+  },
+  section: {
+    paddingHorizontal: theme.spacing.xl,
+  },
+}));

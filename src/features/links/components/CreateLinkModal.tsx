@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Button, Modal, TextField } from '../../../components';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   visible: boolean;
   initialName?: string;
   loading?: boolean;
   onClose: () => void;
   onSubmit: (name: string) => Promise<void>;
-};
+}
 
 export default function CreateLinkModal({
   visible,
@@ -54,12 +55,14 @@ export default function CreateLinkModal({
 
   return (
     <Modal visible={visible} onClose={handleClose} animationType="slide">
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-semibold">
+      <View style={styles.header}>
+        <Text style={styles.title}>
           {isEditMode ? 'Edit Link Name' : 'Start a Link'}
         </Text>
-        <Pressable onPress={handleClose} className="p-2">
-          <Text className="text-neutral-500">Close</Text>
+        <Pressable onPress={handleClose}>
+          <View style={styles.closeButton}>
+            <Text style={styles.closeText}>Close</Text>
+          </View>
         </Pressable>
       </View>
 
@@ -73,7 +76,7 @@ export default function CreateLinkModal({
         returnKeyType="done"
       />
 
-      <View className="mt-6">
+      <View style={styles.submitWrap}>
         <Button
           title={isEditMode ? 'Save Changes' : 'Start Link'}
           size="lg"
@@ -85,3 +88,26 @@ export default function CreateLinkModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.lg,
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+  closeButton: {
+    padding: theme.spacing.sm,
+  },
+  closeText: {
+    color: theme.colors.textTertiary,
+  },
+  submitWrap: {
+    marginTop: theme.spacing['2xl'],
+  },
+}));

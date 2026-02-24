@@ -12,13 +12,14 @@ import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import MediaTile from '../../../components/MediaTile';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   post: LinkPostWithMedia;
   onMediaPress?: (item: LinkPostMedia) => void;
   currentUserId?: string;
   onDeletePost?: (postId: string) => void;
-};
+}
 
 const GAP = 2;
 
@@ -62,9 +63,9 @@ export function PostFeedItem({
   };
 
   return (
-    <View className="mb-4 bg-white rounded-2xl border border-slate-100 p-4">
+    <View style={styles.card}>
       {/* Post Header */}
-      <View className="flex-row items-center mb-3">
+      <View style={styles.headerRow}>
         {post.owner.avatarUrl ? (
           <Image
             source={{ uri: post.owner.avatarUrl }}
@@ -73,17 +74,17 @@ export function PostFeedItem({
             contentFit="cover"
           />
         ) : (
-          <View className="w-10 h-10 rounded-full bg-slate-200 items-center justify-center">
-            <Text className="text-slate-500 font-medium">
+          <View style={styles.avatarFallback}>
+            <Text style={styles.avatarFallbackText}>
               {post.owner.name?.charAt(0).toUpperCase() ?? '?'}
             </Text>
           </View>
         )}
-        <View className="ml-3 flex-1">
-          <Text className="font-medium text-slate-900">
+        <View style={styles.headerTextWrap}>
+          <Text style={styles.ownerName}>
             {post.owner.name ?? 'Unknown'}
           </Text>
-          <Text className="text-xs text-slate-500">
+          <Text style={styles.timeText}>
             {formatRelativeTime(post.created_at)}
           </Text>
         </View>
@@ -91,10 +92,11 @@ export function PostFeedItem({
         {isPostOwner && onDeletePost && (
           <Pressable
             onPress={handleMenuPress}
-            className="p-2 -mr-2 active:bg-slate-100 rounded-full"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Feather name="more-horizontal" size={20} color="#64748b" />
+            <View style={styles.menuButton}>
+              <Feather name="more-horizontal" size={20} color="#64748b" />
+            </View>
           </Pressable>
         )}
       </View>
@@ -102,8 +104,7 @@ export function PostFeedItem({
       {/* Media Grid */}
       {mediaCount > 0 && (
         <View
-          className="flex-row flex-wrap"
-          style={{ gap: GAP, marginHorizontal: -GAP / 2 }}
+          style={styles.mediaGrid}
         >
           {post.media.map((media) => (
             <MediaTile
@@ -117,8 +118,8 @@ export function PostFeedItem({
                 if (!isLoaded || media.type !== 'video') return null;
 
                 return (
-                  <View className="absolute inset-0 items-center justify-center">
-                    <View className="w-8 h-8 rounded-full bg-black/50 items-center justify-center">
+                  <View style={styles.videoOverlay}>
+                    <View style={styles.playButton}>
                       <Feather name="play" size={16} color="white" />
                     </View>
                   </View>
@@ -129,9 +130,9 @@ export function PostFeedItem({
         </View>
       )}
 
-      {/* Photo count indicator for posts with many photos */}
+      {/* Photo count indicator */}
       {mediaCount > 0 && (
-        <Text className="text-xs text-slate-500 mt-2">
+        <Text style={styles.mediaCount}>
           {mediaCount} item{mediaCount > 1 ? 's' : ''}
         </Text>
       )}
@@ -153,3 +154,76 @@ export function PostFeedItem({
 }
 
 export default memo(PostFeedItem);
+
+const styles = StyleSheet.create((theme) => ({
+  card: {
+    marginBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.xl,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    padding: theme.spacing.lg,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  avatarFallback: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarFallbackText: {
+    color: theme.colors.textTertiary,
+    fontWeight: theme.fontWeights.medium,
+  },
+  headerTextWrap: {
+    marginLeft: theme.spacing.md,
+    flex: 1,
+  },
+  ownerName: {
+    fontWeight: theme.fontWeights.medium,
+    color: theme.colors.textPrimary,
+  },
+  timeText: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.textTertiary,
+  },
+  menuButton: {
+    padding: theme.spacing.sm,
+    marginRight: -theme.spacing.sm,
+    borderRadius: theme.radii.full,
+  },
+  mediaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GAP,
+    marginHorizontal: -GAP / 2,
+  },
+  videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButton: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.overlay,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mediaCount: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.textTertiary,
+    marginTop: theme.spacing.sm,
+  },
+}));

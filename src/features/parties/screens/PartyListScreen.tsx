@@ -5,7 +5,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { FlatList, View, Text, Pressable } from 'react-native';
+import { FlatList, View, Text } from 'react-native';
 import { PartyCard } from '../components/PartyCard';
 import {
   Button,
@@ -29,7 +29,7 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -89,9 +89,9 @@ export default function PartyListScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
-      <View className="flex-1 bg-neutral-50 px-4">
-        <Text className="text-xl font-bold mb-4">Your Parties</Text>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.screenTitle}>Your Parties</Text>
         <Divider />
         <FlatList
           data={parties}
@@ -124,24 +124,15 @@ export default function PartyListScreen({ navigation }: Props) {
               }
             />
           }
-        ></FlatList>
+        />
       </View>
 
       {parties.length ? (
-        <Pressable
+        <Button
+          title="Create a Party"
           onPress={() => setModalVisible(true)}
-          className="h-12 px-4 rounded-full flex-row items-center justify-center rounded-full bg-blue-600 active:opacity-90"
-          style={{
-            position: 'absolute',
-            right: 20,
-            bottom: insets.bottom + 20,
-          }}
-        >
-          <Ionicons name="add" size={20} color="white" />
-          <Text className="text-white text-sm font-semibold">
-            Create a Party
-          </Text>
-        </Pressable>
+          style={[styles.fab, { bottom: insets.bottom }]}
+        />
       ) : null}
 
       <CreatePartyModal
@@ -153,3 +144,30 @@ export default function PartyListScreen({ navigation }: Props) {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  screenTitle: {
+    fontSize: theme.fontSizes.xl,
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.lg,
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+  },
+  fabText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSizes.sm,
+    fontWeight: theme.fontWeights.semibold,
+  },
+}));

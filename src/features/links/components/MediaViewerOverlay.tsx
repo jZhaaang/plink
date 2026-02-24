@@ -2,12 +2,13 @@ import { View, Text, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   currentIndex: number;
   totalCount: number;
   onClose: () => void;
-};
+}
 
 export default function MediaViewerOverlay({
   currentIndex,
@@ -30,16 +31,38 @@ export default function MediaViewerOverlay({
           paddingHorizontal: 16,
         }}
       >
-        <View className="flex-row items-center justify-between">
-          <Pressable onPress={onClose} className="p-2 -ml-2 rounded-full">
-            <Feather name="x" size={24} color="white" />
+        <View style={styles.row}>
+          <Pressable onPress={onClose}>
+            <View style={styles.closeButton}>
+              <Feather name="x" size={24} color="white" />
+            </View>
           </Pressable>
-          <Text className="text-white font-medium">
+          <Text style={styles.counter}>
             {currentIndex + 1} of {totalCount}
           </Text>
-          <View className="w-10" />
+          <View style={styles.spacer} />
         </View>
       </LinearGradient>
     </View>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  closeButton: {
+    padding: theme.spacing.sm,
+    marginLeft: -theme.spacing.sm,
+    borderRadius: theme.radii.full,
+  },
+  counter: {
+    color: theme.colors.textInverse,
+    fontWeight: theme.fontWeights.medium,
+  },
+  spacer: {
+    width: 40,
+  },
+}));
