@@ -358,7 +358,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                     <Pressable onPress={handleSeeAllMedia}>
                       <View style={styles.seeAllRow}>
                         <Text style={styles.seeAllText}>See all</Text>
-                        <Feather name="chevron-right" size={16} color="#2563eb" />
+                        <Feather
+                          name="chevron-right"
+                          size={16}
+                          color="#2563eb"
+                        />
                       </View>
                     </Pressable>
                   ) : undefined
@@ -511,14 +515,13 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.textInverse,
   },
   heroTitle: {
-    fontSize: theme.fontSizes['2xl'],
+    fontSize: theme.fontSizes.xl,
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textInverse,
   },
   heroSubtitle: {
     fontSize: theme.fontSizes.sm,
     color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
   },
   contentArea: {
     flex: 1,

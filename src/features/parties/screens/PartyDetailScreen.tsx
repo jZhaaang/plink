@@ -396,14 +396,13 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
   },
   heroTitle: {
-    fontSize: theme.fontSizes['2xl'],
+    fontSize: theme.fontSizes.xl,
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textInverse,
   },
   heroSubtitle: {
     fontSize: theme.fontSizes.sm,
     color: 'rgba(255,255,255,0.7)',
-    marginTop: theme.spacing.xs,
   },
   contentArea: {
     flex: 1,
