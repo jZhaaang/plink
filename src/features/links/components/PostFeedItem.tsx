@@ -36,17 +36,10 @@ export function PostFeedItem({
 
   const isPostOwner = currentUserId === post.owner_id;
   const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = screenWidth - 66;
+  const contentWidth = screenWidth - 70;
 
   const mediaCount = post.media.length;
-
-  const getItemSize = () => {
-    if (mediaCount === 1) return contentWidth;
-    if (mediaCount === 2) return (contentWidth - GAP) / 2;
-    return (contentWidth - GAP * 2) / 3;
-  };
-
-  const itemSize = getItemSize();
+  const itemSize = (contentWidth - GAP * 2) / 3;
 
   const handleMenuPress = (event: GestureResponderEvent) => {
     event.currentTarget.measureInWindow(
@@ -81,9 +74,7 @@ export function PostFeedItem({
           </View>
         )}
         <View style={styles.headerTextWrap}>
-          <Text style={styles.ownerName}>
-            {post.owner.name ?? 'Unknown'}
-          </Text>
+          <Text style={styles.ownerName}>{post.owner.name ?? 'Unknown'}</Text>
           <Text style={styles.timeText}>
             {formatRelativeTime(post.created_at)}
           </Text>
@@ -103,16 +94,13 @@ export function PostFeedItem({
 
       {/* Media Grid */}
       {mediaCount > 0 && (
-        <View
-          style={styles.mediaGrid}
-        >
+        <View style={styles.mediaGrid}>
           {post.media.map((media) => (
             <MediaTile
               key={media.id}
               uri={media.thumbnailUrl ?? media.url}
               width={itemSize}
               height={mediaCount === 1 ? itemSize * 0.75 : itemSize}
-              containerStyle={{ marginHorizontal: GAP / 2 }}
               onPress={() => onMediaPress?.(media)}
               renderOverlay={(isLoaded) => {
                 if (!isLoaded || media.type !== 'video') return null;
