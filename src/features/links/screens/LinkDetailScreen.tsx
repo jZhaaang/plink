@@ -283,7 +283,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           </View>
           <Text style={styles.heroTitle}>{link.name}</Text>
           <Text style={styles.heroSubtitle}>
-            Created by {owner?.name ?? 'Unknown'}
+            {link.members.length}{' '}
+            {link.members.length === 1 ? 'member' : 'members'}
           </Text>
         </HeroBanner>
 
@@ -318,12 +319,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               </View>
 
               {/* Members row */}
-              <View style={[styles.membersRow, { marginBottom: 12 }]}>
+              <View style={[styles.membersRow]}>
                 <AvatarStack avatarUris={memberAvatars} size={32} />
-                <Text style={styles.infoText}>
-                  {link.members.length} member
-                  {link.members.length !== 1 ? 's' : ''}
-                </Text>
+                <Text style={styles.infoText}>Created by {owner?.name}</Text>
               </View>
 
               <CardSection>
@@ -536,7 +534,7 @@ const styles = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing.sm,
   },
   infoText: {
-    fontSize: theme.fontSizes.sm,
+    fontSize: theme.fontSizes.xs,
     color: theme.colors.textTertiary,
     marginLeft: theme.spacing.sm,
   },
@@ -548,20 +546,18 @@ const styles = StyleSheet.create((theme) => ({
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: theme.spacing.xs,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: theme.fontSizes.xl,
+    fontSize: theme.fontSizes.lg,
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textSecondary,
   },
   statLabel: {
     fontSize: theme.fontSizes.xs,
     color: theme.colors.textPlaceholder,
-    marginTop: 2,
   },
   statDivider: {
     width: 1,
