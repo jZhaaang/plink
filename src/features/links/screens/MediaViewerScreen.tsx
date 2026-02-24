@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { View, useWindowDimensions, StatusBar, FlatList } from 'react-native';
+import { View, useWindowDimensions, StatusBar } from 'react-native';
 import {
   GestureViewer,
   useGestureViewerState,
@@ -11,6 +11,7 @@ import { PartyStackParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaViewerOverlay from '../components/MediaViewerOverlay';
+import { FlatList } from 'react-native-gesture-handler';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'MediaViewer'>;
 
