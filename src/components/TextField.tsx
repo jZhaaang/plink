@@ -25,7 +25,7 @@ export default function TextField({
   ...rest
 }: TextFieldProps) {
   return (
-    <>
+    <View>
       {header && <Text style={styles.header}>{header}</Text>}
       <View style={[styles.container, containerStyle]}>
         {left}
@@ -36,7 +36,7 @@ export default function TextField({
         />
         {right}
       </View>
-    </>
+    </View>
   );
 }
 
@@ -45,6 +45,7 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.xs,
     fontWeight: theme.fontWeights.medium,
     color: theme.colors.iconSecondary,
+    marginBottom: theme.spacing.xs,
   },
   container: {
     flexDirection: 'row',
