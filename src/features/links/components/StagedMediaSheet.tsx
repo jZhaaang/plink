@@ -186,10 +186,9 @@ export default function StagedMediaSheet({
                     <Pressable
                       onPress={() => onRemove(item.asset.uri)}
                       hitSlop={8}
+                      style={styles.removeButton}
                     >
-                      <View style={styles.removeButton}>
-                        <Feather name="x" size={12} color="white" />
-                      </View>
+                      <Feather name="x" size={12} color="white" />
                     </Pressable>
                   </View>
                 ))}
@@ -250,9 +249,7 @@ export default function StagedMediaSheet({
 
                       {showRemaining && (
                         <View style={styles.remainingOverlay}>
-                          <Text style={styles.remainingText}>
-                            +{remaining}
-                          </Text>
+                          <Text style={styles.remainingText}>+{remaining}</Text>
                         </View>
                       )}
                     </View>
@@ -264,11 +261,13 @@ export default function StagedMediaSheet({
                 {assets.length} item{assets.length === 1 ? '' : 's'} ready
               </Text>
 
-              <Pressable
-                onPress={onUpload}
-                disabled={uploading}
-              >
-                <View style={[styles.uploadMiniButton, uploading && { opacity: 0.5 }]}>
+              <Pressable onPress={onUpload} disabled={uploading}>
+                <View
+                  style={[
+                    styles.uploadMiniButton,
+                    uploading && { opacity: 0.5 },
+                  ]}
+                >
                   <Ionicons name="arrow-up" size={16} color="white" />
                 </View>
               </Pressable>
@@ -289,10 +288,7 @@ export default function StagedMediaSheet({
           ]}
           pointerEvents={isCollapsed ? 'none' : 'auto'}
         >
-          <Pressable
-            onPress={onUpload}
-            disabled={uploading}
-          >
+          <Pressable onPress={onUpload} disabled={uploading}>
             <View style={[styles.postButton, uploading && { opacity: 0.5 }]}>
               <Ionicons name="arrow-up" size={18} color="white" />
               <Text style={styles.postButtonText}>Post</Text>
