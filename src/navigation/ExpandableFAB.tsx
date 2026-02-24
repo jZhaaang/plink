@@ -6,17 +6,18 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { StyleSheet } from 'react-native-unistyles';
 
 export type FABAction = {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   onPress: () => void;
 };
 
-type Props = {
+interface Props {
   actions: FABAction[];
   isExpanded: SharedValue<number>;
   menuOpen: boolean;
-};
+}
 
 const ITEM_SIZE = 48;
 const ITEM_GAP = 12;
@@ -34,7 +35,7 @@ export default function ExpandableFAB({
   return (
     <View
       pointerEvents="box-none"
-      className="absolute bottom-0 items-center w-16"
+      style={styles.container}
     >
       {actions.map((action, index) => {
         const targetX = startX + index * (ITEM_SIZE + ITEM_GAP);
@@ -82,14 +83,10 @@ function FABItem({
   return (
     <Animated.View
       pointerEvents={menuOpen ? 'auto' : 'none'}
-      className="absolute bottom-0 rounded-full bg-blue-500 items-center justify-center shadow-lg"
-      style={[
-        { width: ITEM_SIZE, height: ITEM_SIZE, elevation: 6 },
-        animatedStyle,
-      ]}
+      style={[styles.fabItem, animatedStyle]}
     >
       <Pressable
-        className="w-full h-full items-center justify-center"
+        style={styles.fabItemPressable}
         onPress={action.onPress}
       >
         <MaterialCommunityIcons name={action.icon} size={22} color="#ffffff" />
@@ -97,3 +94,30 @@ function FABItem({
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    alignItems: 'center',
+    width: 64,
+  },
+  fabItem: {
+    position: 'absolute',
+    bottom: 0,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.info,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
+    elevation: 6,
+    ...theme.shadows.lg,
+  },
+  fabItemPressable: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));

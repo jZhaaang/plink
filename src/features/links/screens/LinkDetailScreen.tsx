@@ -41,6 +41,7 @@ import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
 import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -152,9 +153,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     .filter((url): url is string => !!url);
   const owner = link.members.find((m) => m.id === link.owner_id);
 
-  /* -----------------------
-      Navigation Handlers
-     -----------------------*/
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
     navigation.navigate('MediaViewer', {
@@ -166,10 +164,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const handleSeeAllMedia = () => {
     navigation.navigate('AllMedia', { linkId });
   };
-
-  /* -----------------------
-      Dropdown Menu
-     -----------------------*/
 
   const handleMenuPress = (event: GestureResponderEvent) => {
     event.currentTarget.measureInWindow(
@@ -258,7 +252,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   return (
     <>
-      <View className="flex-1 bg-neutral-50">
+      <View style={styles.root}>
         <StatusBar style="light" />
 
         <HeroBanner
@@ -275,25 +269,28 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           onBack={() => navigation.goBack()}
           onMenuPress={handleMenuPress}
         >
-          <View className="flex-row items-center mb-1">
+          <View style={styles.heroBadgeRow}>
             <View
-              className={`px-2.5 py-0.5 rounded-full ${isActive ? 'bg-green-500/80' : 'bg-white/20'}`}
+              style={[
+                styles.statusBadge,
+                isActive ? styles.statusBadgeActive : styles.statusBadgeEnded,
+              ]}
             >
-              <Text className="text-xs font-semibold text-white">
+              <Text style={styles.statusBadgeText}>
                 {isActive ? 'Active' : 'Ended'}
               </Text>
             </View>
           </View>
-          <Text className="text-2xl font-bold text-white">{link.name}</Text>
-          <Text className="text-sm text-white/70 mt-0.5">
-            Created by {owner.name ?? 'Unknown'}
+          <Text style={styles.heroTitle}>{link.name}</Text>
+          <Text style={styles.heroSubtitle}>
+            Created by {owner?.name ?? 'Unknown'}
           </Text>
         </HeroBanner>
 
-        <View className="flex-1 bg-neutral-50">
+        <View style={styles.contentArea}>
           <ScrollView
-            className="flex-1"
-            contentContainerClassName="pb-40"
+            style={styles.scrollView}
+            contentContainerStyle={{ paddingBottom: 160 }}
             refreshControl={
               <RefreshControl
                 refreshing={linkLoading}
@@ -301,19 +298,19 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               />
             }
           >
-            <Card className="mx-4 mt-4">
+            <Card style={{ marginHorizontal: 16, marginTop: 16 }}>
               {/* Time info */}
-              <View className="flex-row items-center mb-2">
+              <View style={styles.infoRow}>
                 <Feather name="calendar" size={14} color="#64748b" />
-                <Text className="text-sm text-slate-500 ml-2">
+                <Text style={styles.infoText}>
                   {isActive
                     ? `Started ${startFormatted.date} at ${startFormatted.time}`
                     : `${startFormatted.date} — ${endFormatted.date}`}
                 </Text>
               </View>
-              <View className="flex-row items-center mb-3">
+              <View style={[styles.infoRow, { marginBottom: 12 }]}>
                 <Feather name="clock" size={14} color="#64748b" />
-                <Text className="text-sm text-slate-500 ml-2">
+                <Text style={styles.infoText}>
                   {isActive
                     ? `Active for ${formatDuration(link.created_at, null)}`
                     : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
@@ -321,9 +318,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               </View>
 
               {/* Members row */}
-              <View className="flex-row items-center justify-between mb-3">
+              <View style={[styles.membersRow, { marginBottom: 12 }]}>
                 <AvatarStack avatarUris={memberAvatars} size={32} />
-                <Text className="text-sm text-slate-500">
+                <Text style={styles.infoText}>
                   {link.members.length} member
                   {link.members.length !== 1 ? 's' : ''}
                 </Text>
@@ -331,21 +328,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
               <CardSection>
                 {/* Stats row */}
-                <View className="flex-row justify-around pt-1">
-                  <View className="items-center">
-                    <Text className="text-xl font-bold text-slate-800">
-                      {link.postCount}
-                    </Text>
-                    <Text className="text-xs text-slate-400 mt-0.5">
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{link.postCount}</Text>
+                    <Text style={styles.statLabel}>
                       Post{link.postCount > 1 ? 's' : ''}
                     </Text>
                   </View>
-                  <View className="w-px bg-slate-100 self-stretch" />
-                  <View className="items-center">
-                    <Text className="text-xl font-bold text-slate-800">
-                      {link.mediaCount}
-                    </Text>
-                    <Text className="text-xs text-slate-400 mt-0.5">
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{link.mediaCount}</Text>
+                    <Text style={styles.statLabel}>
                       Item{link.mediaCount > 1 ? 's' : ''}
                     </Text>
                   </View>
@@ -353,23 +346,20 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               </CardSection>
             </Card>
 
-            <Divider className="my-6" />
+            <Divider style={{ marginVertical: 24 }} />
 
             {/* All Items Section */}
-            <View className="px-4 pb-8">
+            <View style={styles.section}>
               <SectionHeader
                 title="All Items"
                 count={link.mediaCount}
                 action={
                   link.mediaCount > 6 ? (
-                    <Pressable
-                      onPress={handleSeeAllMedia}
-                      className="flex-row items-center"
-                    >
-                      <Text className="text-blue-600 text-sm font-medium">
-                        See all
-                      </Text>
-                      <Feather name="chevron-right" size={16} color="#2563eb" />
+                    <Pressable onPress={handleSeeAllMedia}>
+                      <View style={styles.seeAllRow}>
+                        <Text style={styles.seeAllText}>See all</Text>
+                        <Feather name="chevron-right" size={16} color="#2563eb" />
+                      </View>
                     </Pressable>
                   ) : undefined
                 }
@@ -396,10 +386,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               )}
             </View>
 
-            <Divider className="my-6" />
+            <Divider style={{ marginVertical: 24 }} />
 
             {/* Post Feed Section */}
-            <View className="px-4">
+            <View style={styles.section}>
               <SectionHeader title="Posts" count={link.postCount} />
 
               {link.postCount === 0 ? (
@@ -425,7 +415,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               )}
             </View>
 
-            <Divider className="my-6" />
+            <Divider style={{ marginVertical: 24 }} />
           </ScrollView>
 
           {/* Bottom Actions (for active links) */}
@@ -493,3 +483,98 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     </>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  root: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  heroBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    borderRadius: theme.radii.full,
+  },
+  statusBadgeActive: {
+    backgroundColor: 'rgba(34,197,94,0.8)',
+  },
+  statusBadgeEnded: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  statusBadgeText: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textInverse,
+  },
+  heroTitle: {
+    fontSize: theme.fontSizes['2xl'],
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textInverse,
+  },
+  heroSubtitle: {
+    fontSize: theme.fontSizes.sm,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 2,
+  },
+  contentArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  infoText: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+    marginLeft: theme.spacing.sm,
+  },
+  membersRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: theme.spacing.xs,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: theme.fontSizes.xl,
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textSecondary,
+  },
+  statLabel: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.textPlaceholder,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: theme.colors.borderLight,
+    alignSelf: 'stretch',
+  },
+  section: {
+    paddingHorizontal: theme.spacing.lg,
+  },
+  seeAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  seeAllText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSizes.sm,
+    fontWeight: theme.fontWeights.medium,
+  },
+}));

@@ -10,15 +10,16 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   assets: StagedAsset[];
   onAddFromGallery: () => void;
   onRemove: (uri: string) => void;
   onClearAll: () => void;
   onUpload: () => void;
   uploading: boolean;
-};
+}
 
 const GRID_COLUMNS = 3;
 const GRID_GAP = 8;
@@ -119,7 +120,7 @@ export default function StagedMediaSheet({
       enableDynamicSizing={false}
       enablePanDownToClose={false}
     >
-      <View className="flex-1">
+      <View style={styles.sheetInner}>
         <BottomSheetScrollView
           onContentSizeChange={(_, h) => setContentHeight(h)}
           contentContainerStyle={{
@@ -134,29 +135,20 @@ export default function StagedMediaSheet({
             pointerEvents={index === 1 ? 'auto' : 'none'}
           >
             {/* Header */}
-            <View
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.96)',
-                borderBottomWidth: 1,
-                borderBottomColor: '#f1f5f9',
-                zIndex: 10,
-                paddingBottom: 8,
-                marginBottom: 12,
-              }}
-            >
-              <View className="flex-row items-center justify-between pt-1">
-                <Text className="text-base font-semibold text-slate-800">
+            <View style={styles.expandedHeader}>
+              <View style={styles.expandedHeaderRow}>
+                <Text style={styles.expandedTitle}>
                   {assets.length} item{assets.length === 1 ? '' : 's'} ready
                 </Text>
                 <Pressable onPress={onClearAll} hitSlop={8}>
-                  <Text className="text-sm text-slate-400">Clear all</Text>
+                  <Text style={styles.clearAllText}>Clear all</Text>
                 </Pressable>
               </View>
             </View>
 
             {/* Staged Assets */}
-            <View className="flex-1">
-              <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
+            <View style={styles.gridContainer}>
+              <View style={styles.gridWrap}>
                 {assets.map((item) => (
                   <View
                     key={item.id}
@@ -174,8 +166,8 @@ export default function StagedMediaSheet({
                       transition={150}
                     />
                     {item.thumbnailStatus === 'generating' && (
-                      <View className="absolute inset-0 items-center justify-center">
-                        <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
+                      <View style={styles.tileOverlay}>
+                        <View style={styles.tileOverlayIcon}>
                           <Ionicons
                             name="time-outline"
                             size={14}
@@ -185,33 +177,33 @@ export default function StagedMediaSheet({
                       </View>
                     )}
                     {item.asset.type === 'video' && (
-                      <View className="absolute inset-0 items-center justify-center">
-                        <View className="h-8 w-8 items-center justify-center rounded-full bg-black/50">
+                      <View style={styles.tileOverlay}>
+                        <View style={styles.tileOverlayIcon}>
                           <Feather name="play" size={14} color="white" />
                         </View>
                       </View>
                     )}
                     <Pressable
                       onPress={() => onRemove(item.asset.uri)}
-                      className="absolute -right-2 -top-2 h-6 w-6 items-center justify-center rounded-full bg-black/70"
                       hitSlop={8}
                     >
-                      <Feather name="x" size={12} color="white" />
+                      <View style={styles.removeButton}>
+                        <Feather name="x" size={12} color="white" />
+                      </View>
                     </Pressable>
                   </View>
                 ))}
 
-                <Pressable
-                  onPress={onAddFromGallery}
-                  style={{
-                    width: tileSize,
-                    height: tileSize,
-                    borderRadius: 12,
-                  }}
-                  className="items-center justify-center border-2 border-dashed border-slate-200"
-                >
-                  <Feather name="plus" size={24} color="#94a3b8" />
-                  <Text className="mt-1 text-xs text-slate-400">Add</Text>
+                <Pressable onPress={onAddFromGallery}>
+                  <View
+                    style={[
+                      styles.addTile,
+                      { width: tileSize, height: tileSize },
+                    ]}
+                  >
+                    <Feather name="plus" size={24} color="#94a3b8" />
+                    <Text style={styles.addTileText}>Add</Text>
+                  </View>
                 </Pressable>
               </View>
             </View>
@@ -230,8 +222,8 @@ export default function StagedMediaSheet({
             ]}
             pointerEvents={index === 0 ? 'auto' : 'none'}
           >
-            <View className="flex-row items-center gap-3">
-              <View className="flex-row items-center">
+            <View style={styles.collapsedRow}>
+              <View style={styles.previewStack}>
                 {preview.map((item, i) => {
                   const showRemaining =
                     i === preview.length - 1 && remaining > 0;
@@ -257,8 +249,8 @@ export default function StagedMediaSheet({
                       />
 
                       {showRemaining && (
-                        <View className="absolute inset-0 items-center justify-center bg-black/40">
-                          <Text className="text-[11px] font-semibold text-white">
+                        <View style={styles.remainingOverlay}>
+                          <Text style={styles.remainingText}>
                             +{remaining}
                           </Text>
                         </View>
@@ -268,16 +260,17 @@ export default function StagedMediaSheet({
                 })}
               </View>
 
-              <Text className="flex-1 text-sm font-medium text-slate-700">
+              <Text style={styles.collapsedLabel}>
                 {assets.length} item{assets.length === 1 ? '' : 's'} ready
               </Text>
 
               <Pressable
                 onPress={onUpload}
                 disabled={uploading}
-                className="h-10 px-4 rounded-lg bg-blue-600 flex-row items-center justify-center gap-1.5 disabled:opacity-50"
               >
-                <Ionicons name="arrow-up" size={16} color="white" />
+                <View style={[styles.uploadMiniButton, uploading && { opacity: 0.5 }]}>
+                  <Ionicons name="arrow-up" size={16} color="white" />
+                </View>
               </Pressable>
             </View>
           </Animated.View>
@@ -299,13 +292,147 @@ export default function StagedMediaSheet({
           <Pressable
             onPress={onUpload}
             disabled={uploading}
-            className="h-12 rounded-full bg-blue-600 px-5 flex-row items-center justify-center gap-2 disabled:opacity-50"
           >
-            <Ionicons name="arrow-up" size={18} color="white" />
-            <Text className="text-white text-sm font-semibold">Post</Text>
+            <View style={[styles.postButton, uploading && { opacity: 0.5 }]}>
+              <Ionicons name="arrow-up" size={18} color="white" />
+              <Text style={styles.postButtonText}>Post</Text>
+            </View>
           </Pressable>
         </Animated.View>
       </View>
     </BottomSheet>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  sheetInner: {
+    flex: 1,
+  },
+  expandedHeader: {
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+    zIndex: 10,
+    paddingBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  expandedHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: theme.spacing.xs,
+  },
+  expandedTitle: {
+    fontSize: theme.fontSizes.base,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textSecondary,
+  },
+  clearAllText: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textPlaceholder,
+  },
+  gridContainer: {
+    flex: 1,
+  },
+  gridWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GRID_GAP,
+  },
+  tileOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tileOverlayIcon: {
+    height: 32,
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.overlay,
+  },
+  removeButton: {
+    position: 'absolute',
+    right: -8,
+    top: -8,
+    height: 24,
+    width: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.full,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  addTile: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.border,
+    borderRadius: theme.radii.md,
+  },
+  addTileText: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.textPlaceholder,
+  },
+  collapsedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  previewStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  remainingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  remainingText: {
+    fontSize: 11,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textInverse,
+  },
+  collapsedLabel: {
+    flex: 1,
+    fontSize: theme.fontSizes.sm,
+    fontWeight: theme.fontWeights.medium,
+    color: theme.colors.textSecondary,
+  },
+  uploadMiniButton: {
+    height: 40,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  postButton: {
+    height: 48,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+  },
+  postButtonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSizes.sm,
+    fontWeight: theme.fontWeights.semibold,
+  },
+}));

@@ -14,13 +14,14 @@ import {
 import { Camera } from 'react-native-vision-camera';
 import { Feather } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface Props {
   visible: boolean;
   initialMode: 'photo' | 'video';
   onCapture: (assets: ImagePicker.ImagePickerAsset[]) => void;
   onClose: () => void;
-};
+}
 
 export default function CameraModal({
   visible,
@@ -116,18 +117,17 @@ export default function CameraModal({
         statusBarTranslucent
         onRequestClose={handleClose}
       >
-        <View className="flex-1 bg-black items-center justify-center">
-          <Text className="text-white text-base">
-            Camera permissions required
-          </Text>
+        <View style={styles.fullscreenBlack}>
+          <Text style={styles.permText}>Camera permissions required</Text>
           <Pressable
             onPress={() => {
               requestCameraPermission();
               requestMicrophonePermission();
             }}
-            className="mt-4 px-5 py-3 bg-blue-600 rounded-lg"
           >
-            <Text className="text-white font-semibold">Grant</Text>
+            <View style={styles.grantButton}>
+              <Text style={styles.grantText}>Grant</Text>
+            </View>
           </Pressable>
         </View>
       </Modal>
@@ -142,8 +142,8 @@ export default function CameraModal({
         statusBarTranslucent
         onRequestClose={handleClose}
       >
-        <View className="flex-1 bg-black items-center justify-center">
-          <Text className="text-white text-base">Loading camera...</Text>
+        <View style={styles.fullscreenBlack}>
+          <Text style={styles.permText}>Loading camera...</Text>
         </View>
       </Modal>
     );
@@ -156,41 +156,37 @@ export default function CameraModal({
       statusBarTranslucent
       onRequestClose={handleClose}
     >
-      <View className="flex-1 bg-black">
+      <View style={styles.root}>
         <StatusBar barStyle="light-content" />
 
         {/* Camera layer — always rendered */}
-        <View className="absolute inset-0">
+        <View style={styles.absoluteFill}>
           {/* Top bar */}
           <View
-            className="absolute top-0 left-0 right-0 bg-black"
-            style={{ height: topBarHeight }}
+            style={[styles.topBar, { height: topBarHeight }]}
           >
             <Pressable
               onPress={
                 capturedAsset ? () => setCapturedAsset(null) : handleClose
               }
-              className="absolute left-4 p-2 bg-black/40 rounded-full"
-              style={{ top: insets.top + 12 }}
             >
-              <Feather name="x" size={24} color="white" />
+              <View style={[styles.circleButton, { top: insets.top + 12, left: 16, position: 'absolute' }]}>
+                <Feather name="x" size={24} color="white" />
+              </View>
             </Pressable>
 
             {!capturedAsset && (
-              <Pressable
-                onPress={toggleCameraPosition}
-                className="absolute right-4 p-2 bg-black/40 rounded-full"
-                style={{ top: insets.top + 12 }}
-              >
-                <Feather name="refresh-cw" size={22} color="white" />
+              <Pressable onPress={toggleCameraPosition}>
+                <View style={[styles.circleButton, { top: insets.top + 12, right: 16, position: 'absolute' }]}>
+                  <Feather name="refresh-cw" size={22} color="white" />
+                </View>
               </Pressable>
             )}
           </View>
 
-          {/* Camera preview — stays mounted */}
+          {/* Camera preview */}
           <View
-            className="absolute left-0 right-0 overflow-hidden bg-black"
-            style={{ top: previewTop, height: previewHeight }}
+            style={[styles.previewWrap, { top: previewTop, height: previewHeight }]}
           >
             <Camera
               ref={cameraRef}
@@ -208,58 +204,72 @@ export default function CameraModal({
 
           {/* Shutter button */}
           <View
-            className="absolute left-0 right-0 items-center"
-            style={{ bottom: controlsBottom + 80 }}
+            style={[styles.shutterRow, { bottom: controlsBottom + 80 }]}
           >
             <Pressable
               onPress={captureMode === 'photo' ? takePhoto : undefined}
               onPressIn={captureMode === 'video' ? startRecording : undefined}
               onPressOut={captureMode === 'video' ? stopRecording : undefined}
-              className="w-20 h-20 rounded-full border-4 border-white items-center justify-center"
             >
-              <View
-                className={`w-16 h-16 rounded-full ${isRecording ? 'bg-red-500' : 'bg-white'}`}
-              />
+              <View style={styles.shutterOuter}>
+                <View
+                  style={[
+                    styles.shutterInner,
+                    isRecording && styles.shutterRecording,
+                  ]}
+                />
+              </View>
             </Pressable>
           </View>
 
           {/* Mode toggle */}
           {!capturedAsset && (
             <View
-              className="absolute left-0 right-0 items-center"
-              style={{ bottom: controlsBottom }}
+              style={[styles.modeToggleRow, { bottom: controlsBottom }]}
             >
-              <View className="mt-4 flex-row bg-black/40 rounded-full p-1">
+              <View style={styles.modeToggle}>
                 <Pressable
                   disabled={isRecording}
                   onPress={() => setCaptureMode('photo')}
-                  className={`px-4 py-2 rounded-full ${captureMode === 'photo' ? 'bg-white' : ''}`}
                 >
-                  <Text
-                    className={
-                      captureMode === 'photo'
-                        ? 'text-black font-semibold'
-                        : 'text-white'
-                    }
+                  <View
+                    style={[
+                      styles.modeOption,
+                      captureMode === 'photo' && styles.modeOptionActive,
+                    ]}
                   >
-                    Photo
-                  </Text>
+                    <Text
+                      style={
+                        captureMode === 'photo'
+                          ? styles.modeTextActive
+                          : styles.modeTextInactive
+                      }
+                    >
+                      Photo
+                    </Text>
+                  </View>
                 </Pressable>
 
                 <Pressable
                   disabled={isRecording}
                   onPress={() => setCaptureMode('video')}
-                  className={`px-4 py-2 rounded-full ${captureMode === 'video' ? 'bg-white' : ''}`}
                 >
-                  <Text
-                    className={
-                      captureMode === 'video'
-                        ? 'text-black font-semibold'
-                        : 'text-white'
-                    }
+                  <View
+                    style={[
+                      styles.modeOption,
+                      captureMode === 'video' && styles.modeOptionActive,
+                    ]}
                   >
-                    Video
-                  </Text>
+                    <Text
+                      style={
+                        captureMode === 'video'
+                          ? styles.modeTextActive
+                          : styles.modeTextInactive
+                      }
+                    >
+                      Video
+                    </Text>
+                  </View>
                 </Pressable>
               </View>
             </View>
@@ -268,10 +278,9 @@ export default function CameraModal({
 
         {/* Preview layer — overlaid on top when asset exists */}
         {capturedAsset && (
-          <View className="absolute inset-0">
+          <View style={styles.absoluteFill}>
             <View
-              className="absolute left-0 right-0 overflow-hidden bg-transparent"
-              style={{ top: previewTop, height: previewHeight }}
+              style={[styles.previewWrapTransparent, { top: previewTop, height: previewHeight }]}
             >
               {capturedAsset.type === 'video' ? (
                 <VideoView
@@ -291,24 +300,20 @@ export default function CameraModal({
             </View>
 
             {/* X button to discard */}
-            <Pressable
-              onPress={() => setCapturedAsset(null)}
-              className="absolute left-4 p-2 bg-black/40 rounded-full"
-              style={{ top: insets.top + 12 }}
-            >
-              <Feather name="x" size={24} color="white" />
+            <Pressable onPress={() => setCapturedAsset(null)}>
+              <View style={[styles.circleButton, { position: 'absolute', left: 16, top: insets.top + 12 }]}>
+                <Feather name="x" size={24} color="white" />
+              </View>
             </Pressable>
 
-            {/* Confirm button — same position as shutter */}
+            {/* Confirm button */}
             <View
-              className="absolute left-0 right-0 items-center"
-              style={{ bottom: controlsBottom + 80 }}
+              style={[styles.shutterRow, { bottom: controlsBottom + 80 }]}
             >
-              <Pressable
-                onPress={handleConfirm}
-                className="w-20 h-20 rounded-full bg-blue-600 items-center justify-center"
-              >
-                <Feather name="send" size={28} color="white" />
+              <Pressable onPress={handleConfirm}>
+                <View style={styles.confirmButton}>
+                  <Feather name="send" size={28} color="white" />
+                </View>
               </Pressable>
             </View>
           </View>
@@ -317,3 +322,124 @@ export default function CameraModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  root: {
+    flex: 1,
+    backgroundColor: theme.colors.black,
+  },
+  fullscreenBlack: {
+    flex: 1,
+    backgroundColor: theme.colors.black,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  permText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSizes.base,
+  },
+  grantButton: {
+    marginTop: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radii.md,
+  },
+  grantText: {
+    color: theme.colors.textInverse,
+    fontWeight: theme.fontWeights.semibold,
+  },
+  absoluteFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  topBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: theme.colors.black,
+  },
+  circleButton: {
+    padding: theme.spacing.sm,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: theme.radii.full,
+  },
+  previewWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.black,
+  },
+  previewWrapTransparent: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+  },
+  shutterRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  shutterOuter: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.radii.full,
+    borderWidth: 4,
+    borderColor: theme.colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shutterInner: {
+    width: 64,
+    height: 64,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.white,
+  },
+  shutterRecording: {
+    backgroundColor: '#ef4444',
+  },
+  modeToggleRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  modeToggle: {
+    marginTop: theme.spacing.lg,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: theme.radii.full,
+    padding: theme.spacing.xs,
+  },
+  modeOption: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radii.full,
+  },
+  modeOptionActive: {
+    backgroundColor: theme.colors.white,
+  },
+  modeTextActive: {
+    color: theme.colors.black,
+    fontWeight: theme.fontWeights.semibold,
+  },
+  modeTextInactive: {
+    color: theme.colors.white,
+  },
+  confirmButton: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));

@@ -1,7 +1,7 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveLinkContext } from '../providers/ActiveLinkProvider';
-import { Pressable, TouchableOpacity, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinkRow } from '../lib/models';
 import { NavigationState, PartialState, Route } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ExpandableFAB, { FABAction } from './ExpandableFAB';
+import { StyleSheet } from 'react-native-unistyles';
 
 type NestedRoute = Route<string> & {
   state?: NavigationState | PartialState<NavigationState>;
@@ -122,17 +123,18 @@ export default function CustomTabBar({
       {/* Backdrop to dismiss menu */}
       {menuOpen && (
         <Pressable
-          className="absolute left-0 right-0 bottom-0"
-          style={{ top: -2000 }}
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: -2000 }}
           onPress={closeMenu}
         />
       )}
       <View
-        className="flex-row bg-white border-t border-slate-200 items-end"
-        style={{
-          paddingBottom: 10 + insets.bottom,
-          height: 50 + insets.bottom,
-        }}
+        style={[
+          styles.tabBar,
+          {
+            paddingBottom: 10 + insets.bottom,
+            height: 50 + insets.bottom,
+          },
+        ]}
       >
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -140,7 +142,7 @@ export default function CustomTabBar({
 
           if (route.name === 'Link') {
             return (
-              <View key={route.key} className="flex-1 items-center">
+              <View key={route.key} style={styles.centerTab}>
                 {/* Expandable action items */}
                 {showFAB && (
                   <ExpandableFAB
@@ -151,7 +153,7 @@ export default function CustomTabBar({
                 )}
 
                 {/* Main center button */}
-                <TouchableOpacity
+                <Pressable
                   onPress={() => {
                     if (showFAB) {
                       toggleMenu();
@@ -159,30 +161,29 @@ export default function CustomTabBar({
                       handleCenterPress(navigation, activeLink);
                     }
                   }}
-                  activeOpacity={0.8}
-                  className="w-16 h-16 rounded-full bg-blue-500 items-center justify-center"
                 >
-                  {showFAB ? (
-                    <View className="w-16 h-16">
-                      <Animated.View
-                        className="absolute inset-0 items-center justify-center"
-                        style={centerRotationStyle}
-                      >
-                        <MaterialCommunityIcons
-                          name="plus"
-                          size={28}
-                          color="#ffffff"
-                        />
-                      </Animated.View>
-                    </View>
-                  ) : (
-                    <MaterialCommunityIcons
-                      name={centerIcon}
-                      size={28}
-                      color="#ffffff"
-                    />
-                  )}
-                </TouchableOpacity>
+                  <View style={styles.centerButton}>
+                    {showFAB ? (
+                      <View style={styles.centerButtonInner}>
+                        <Animated.View
+                          style={[styles.centerIconWrap, centerRotationStyle]}
+                        >
+                          <MaterialCommunityIcons
+                            name="plus"
+                            size={28}
+                            color="#ffffff"
+                          />
+                        </Animated.View>
+                      </View>
+                    ) : (
+                      <MaterialCommunityIcons
+                        name={centerIcon}
+                        size={28}
+                        color="#ffffff"
+                      />
+                    )}
+                  </View>
+                </Pressable>
               </View>
             );
           }
@@ -200,20 +201,62 @@ export default function CustomTabBar({
           };
 
           return (
-            <TouchableOpacity
+            <Pressable
               key={route.key}
               onPress={onPress}
-              className="flex-1 items-center justify-center"
+              style={{ flex: 1 }}
             >
-              {options.tabBarIcon?.({
-                focused: isFocused,
-                color: isFocused ? '#3b82f6' : '#94a3b8',
-                size: 24,
-              })}
-            </TouchableOpacity>
+              <View style={styles.tab}>
+                {options.tabBarIcon?.({
+                  focused: isFocused,
+                  color: isFocused ? '#3b82f6' : '#94a3b8',
+                  size: 24,
+                })}
+              </View>
+            </Pressable>
           );
         })}
       </View>
     </>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    alignItems: 'flex-end',
+  },
+  centerTab: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  centerButton: {
+    width: 64,
+    height: 64,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.info,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerButtonInner: {
+    width: 64,
+    height: 64,
+  },
+  centerIconWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));
