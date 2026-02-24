@@ -44,7 +44,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
   },
   title: {
-    fontSize: theme.fontSizes.lg,
+    fontSize: theme.fontSizes.base,
     fontWeight: theme.fontWeights.semibold,
     color: theme.colors.textPrimary,
     marginRight: theme.spacing.sm,
