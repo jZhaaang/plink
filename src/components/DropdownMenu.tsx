@@ -51,7 +51,7 @@ const menuItemStyles = StyleSheet.create((theme) => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
     variants: {
       pressed: {
@@ -61,8 +61,8 @@ const menuItemStyles = StyleSheet.create((theme) => ({
     },
   },
   label: {
-    marginLeft: theme.spacing.md,
-    fontSize: theme.fontSizes.base,
+    marginLeft: theme.spacing.sm,
+    fontSize: theme.fontSizes.sm,
     variants: {
       isDanger: {
         true: { color: theme.colors.errorDark },
@@ -104,7 +104,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.md,
     overflow: 'hidden',
-    minWidth: 200,
+    minWidth: 180,
     borderWidth: 1,
     borderColor: theme.colors.border,
     ...theme.shadows.lg,
