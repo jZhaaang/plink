@@ -3,50 +3,62 @@ import {
   ActivityIndicatorProps,
   View,
   Text,
+  ViewStyle,
 } from 'react-native';
-import { cn } from './cn';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 type Tone = 'brand' | 'inverse' | 'muted';
 
-const COLORS: Record<Tone, string> = {
-  brand: '#2563eb',
-  inverse: '#ffffff',
-  muted: '#64748b',
-};
-
-type SpinnerProps = {
+interface SpinnerProps {
   size?: ActivityIndicatorProps['size'];
   tone?: Tone;
-};
-
-export function Spinner({ size = 'small', tone = 'brand' }: SpinnerProps) {
-  return <ActivityIndicator size={size} color={COLORS[tone]} />;
 }
 
-type LoadingScreenProps = {
+export function Spinner({ size = 'small', tone = 'brand' }: SpinnerProps) {
+  const theme = UnistylesRuntime.getTheme();
+  const colors: Record<Tone, string> = {
+    brand: theme.colors.spinnerBrand,
+    inverse: theme.colors.spinnerInverse,
+    muted: theme.colors.spinnerMuted,
+  };
+  return <ActivityIndicator size={size} color={colors[tone]} />;
+}
+
+interface LoadingScreenProps {
   label?: string;
   tone?: Exclude<Tone, 'muted'>;
-  className?: string;
-};
+  style?: ViewStyle;
+}
 
 export function LoadingScreen({
   label,
   tone = 'brand',
-  className,
+  style,
 }: LoadingScreenProps) {
-  const textClassName = tone === 'inverse' ? 'text-white/70' : 'text-slate-500';
+  styles.useVariants({ tone });
 
   return (
-    <View
-      className={cn(
-        'flex-1 items-center justify-center bg-neutral-50',
-        className,
-      )}
-    >
+    <View style={[styles.container, style]}>
       <Spinner size="large" tone={tone} />
-      {label ? (
-        <Text className={cn('mt-3', textClassName)}>{label}</Text>
-      ) : null}
+      {label ? <Text style={styles.label}>{label}</Text> : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.background,
+  },
+  label: {
+    marginTop: theme.spacing.md,
+    variants: {
+      tone: {
+        brand: { color: theme.colors.textTertiary },
+        inverse: { color: 'rgba(255,255,255,0,7)' },
+      },
+    },
+  },
+}));

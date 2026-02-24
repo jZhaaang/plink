@@ -1,35 +1,29 @@
-import { View, Text, ViewProps } from 'react-native';
-import { cn } from './cn';
+import { View, Text, ViewProps, ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = ViewProps & {
+interface SectionHeaderProps extends Omit<ViewProps, 'style'> {
   title: string;
   count?: number;
   action?: React.ReactNode;
-  className?: string;
-};
+  style?: ViewStyle;
+}
 
 export default function SectionHeader({
   title,
   count,
   action,
-  className,
+  style,
   ...rest
-}: Props) {
+}: SectionHeaderProps) {
   return (
-    <View
-      {...rest}
-      className={cn('flex-row items-center justify-between mb-3', className)}
-    >
-      <View className="flex-row items-center">
-        <Text
-          className="text-lg font-semibold text-slate-900 mr-2"
-          numberOfLines={1}
-        >
+    <View {...rest} style={[styles.container, style]}>
+      <View style={styles.left}>
+        <Text style={styles.title} numberOfLines={1}>
           {title}
         </Text>
         {count !== undefined && (
-          <View className="bg-slate-100 rounded-full px-2 py-0.5">
-            <Text className="text-sm text-slate-600">{count}</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{count}</Text>
           </View>
         )}
       </View>
@@ -37,3 +31,32 @@ export default function SectionHeader({
     </View>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.md,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+    marginRight: theme.spacing.sm,
+  },
+  badge: {
+    backgroundColor: theme.colors.surfacePressed,
+    borderRadius: theme.radii.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+  },
+  badgeText: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.iconSecondary,
+  },
+}));

@@ -4,20 +4,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet } from 'react-native-unistyles';
 
-type BannerSource = {
+interface BannerSource {
   uri: string;
   cropX?: number;
   cropY?: number;
-} | null;
+}
 
-type HeroBannerProps = {
-  banner: BannerSource;
+interface HeroBannerProps {
+  banner: BannerSource | null;
   gradientColors?: [string, string];
   onBack: () => void;
   onMenuPress?: (event: GestureResponderEvent) => void;
   children?: ReactNode;
-};
+}
 
 export default function HeroBanner({
   banner,
@@ -64,7 +65,7 @@ export default function HeroBanner({
           <>
             {renderImage({ width: '100%', height: insets.top + 40 }, 20)}
             <View
-              className="absolute inset-0 bg-black/20"
+              style={styles.statusBarOverlay}
               pointerEvents="none"
             />
           </>
@@ -79,43 +80,41 @@ export default function HeroBanner({
       </View>
 
       {/* Hero image */}
-      <View className="w-full" style={{ aspectRatio: 2.5 }}>
+      <View style={styles.heroContainer}>
         {renderImage({ width: '100%', height: '100%' })}
 
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.6)']}
-          className="absolute bottom-0 left-0 right-0 h-28"
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 112 }}
         />
 
         {/* Overlay content (title, subtitle, badges) */}
-        <View className="absolute bottom-0 left-0 right-0 px-5 pb-4">
+        <View style={styles.overlayContent}>
           {children}
         </View>
         {/* Floating nav bar */}
         <View
-          className="absolute top-0 left-0 right-0"
+          style={styles.navBar}
           pointerEvents="box-none"
         >
           <View
-            className="flex-row items-center justify-between px-4 py-2"
+            style={styles.navRow}
             pointerEvents="box-none"
           >
-            <Pressable
-              onPress={onBack}
-              className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-            >
-              <Feather name="arrow-left" size={20} color="#fff" />
+            <Pressable onPress={onBack}>
+              <View style={styles.navButton}>
+                <Feather name="arrow-left" size={20} color="#fff" />
+              </View>
             </Pressable>
 
             {onMenuPress ? (
-              <Pressable
-                onPress={onMenuPress}
-                className="w-9 h-9 rounded-full bg-black/30 items-center justify-center"
-              >
-                <Feather name="more-vertical" size={20} color="#fff" />
+              <Pressable onPress={onMenuPress}>
+                <View style={styles.navButton}>
+                  <Feather name="more-vertical" size={20} color="#fff" />
+                </View>
               </Pressable>
             ) : (
-              <View className="w-9" />
+              <View style={styles.navSpacer} />
             )}
           </View>
         </View>
@@ -123,3 +122,50 @@ export default function HeroBanner({
     </>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  statusBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: theme.colors.overlayLight,
+  },
+  heroContainer: {
+    width: '100%',
+    aspectRatio: 2.5,
+  },
+  overlayContent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
+  },
+  navBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
+  navButton: {
+    width: 36,
+    height: 36,
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.overlayMedium,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navSpacer: {
+    width: 36,
+  },
+}));

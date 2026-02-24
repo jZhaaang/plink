@@ -1,8 +1,17 @@
-import { View, ViewProps } from 'react-native';
-import { cn } from './cn';
+import { View, ViewProps, ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = ViewProps & { className?: string };
-
-export default function Divider({ className, ...rest }: Props) {
-  return <View {...rest} className={cn('h-[1px] bg-slate-200', className)} />;
+interface DividerProps extends Omit<ViewProps, 'style'> {
+  style?: ViewStyle;
 }
+
+export default function Divider({ style, ...rest }: DividerProps) {
+  return <View style={[styles.line, style]} {...rest} />;
+}
+
+const styles = StyleSheet.create((theme) => ({
+  line: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+}));

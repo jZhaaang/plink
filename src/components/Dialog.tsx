@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet } from 'react-native-unistyles';
 import Button from './Button';
 import Modal from './Modal';
 
 export type DialogVariant = 'error' | 'success' | 'info';
 
-export type DialogProps = {
+export interface DialogProps {
   visible: boolean;
   onClose: () => void;
   title?: string;
@@ -16,7 +17,7 @@ export type DialogProps = {
   onPrimary?: () => void;
   secondaryLabel?: string;
   onSecondary?: () => void;
-};
+}
 
 const variantIcon: Record<DialogVariant, keyof typeof Ionicons.glyphMap> = {
   error: 'alert-circle',
@@ -40,41 +41,56 @@ export default function Dialog({
   onPrimary,
   secondaryLabel,
   onSecondary,
-  ...rest
 }: DialogProps) {
   return (
-    <Modal visible={visible} onClose={onClose} {...rest}>
-      <View className="items-center gap-3">
+    <Modal visible={visible} onClose={onClose}>
+      <View style={styles.body}>
         <Ionicons
           name={variantIcon[variant]}
           size={32}
           color={variantColour[variant]}
         />
-        {title ? (
-          <Text className="text-lg font-semibold text-slate-900 text-center">
-            {title}
-          </Text>
-        ) : null}
-        {message ? (
-          <Text className="text-center text-slate-600">{message}</Text>
-        ) : null}
+        {title ? <Text style={styles.title}>{title}</Text> : null}
+        {message ? <Text style={styles.message}>{message}</Text> : null}
       </View>
 
-      <View className="mt-5 flex-row gap-3">
+      <View style={styles.actions}>
         {secondaryLabel ? (
           <Button
             title={secondaryLabel}
             onPress={onSecondary ?? onClose}
             variant="outline"
-            className="flex-1"
+            style={{ flex: 1 }}
           />
         ) : null}
         <Button
           title={primaryLabel}
           onPress={onPrimary ?? onClose}
-          className="flex-1"
+          style={{ flex: 1 }}
         />
       </View>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  body: {
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+    textAlign: 'center',
+  },
+  message: {
+    textAlign: 'center',
+    color: theme.colors.iconSecondary,
+  },
+  actions: {
+    marginTop: theme.spacing.xl,
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+  },
+}));

@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import { memo, ReactNode, useState } from 'react';
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
 
-type Props = {
+interface MediaTileProps {
   uri: string;
   width: number;
   height: number;
@@ -10,7 +11,7 @@ type Props = {
   onPress?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   renderOverlay?: (isLoaded: boolean) => ReactNode;
-};
+}
 
 export function MediaTile({
   uri,
@@ -20,34 +21,55 @@ export function MediaTile({
   onPress,
   containerStyle,
   renderOverlay,
-}: Props) {
+}: MediaTileProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [pressed, setPressed] = useState(false);
+
+  styles.useVariants({ pressed });
 
   return (
     <Pressable
       onPress={onPress}
-      className="active:opacity-80"
-      style={[{ width, height }, containerStyle]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
     >
-      <Image
-        source={{ uri }}
-        style={{ width, height, borderRadius }}
-        contentFit="cover"
-        cachePolicy="memory-disk"
-        transition={200}
-        onLoad={() => setIsLoaded(true)}
-      />
-
-      {!isLoaded && (
-        <View
-          className="absolute inset-0 bg-slate-300/70"
-          style={{ borderRadius }}
+      <View style={[styles.wrapper, { width, height }, containerStyle]}>
+        <Image
+          source={{ uri }}
+          style={{ width, height, borderRadius }}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          transition={200}
+          onLoad={() => setIsLoaded(true)}
         />
-      )}
 
-      {renderOverlay?.(isLoaded)}
+        {!isLoaded && (
+          <View style={[styles.loadingPlaceholder, { borderRadius }]} />
+        )}
+
+        {renderOverlay?.(isLoaded)}
+      </View>
     </Pressable>
   );
 }
 
 export default memo(MediaTile);
+
+const styles = StyleSheet.create(() => ({
+  wrapper: {
+    variants: {
+      pressed: {
+        true: { opacity: 0.8 },
+        false: {},
+      },
+    },
+  },
+  loadingPlaceholder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(203,213,225,0.7)',
+  },
+}));

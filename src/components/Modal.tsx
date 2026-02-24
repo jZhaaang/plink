@@ -6,32 +6,34 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  View,
+  ViewStyle,
 } from 'react-native';
-import { cn } from './cn';
+import { StyleSheet } from 'react-native-unistyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-type Props = {
+interface ModalComponentProps {
   visible: boolean;
   onClose: () => void;
   children: React.ReactNode;
   animationType?: ModalProps['animationType'];
-  contentClassName?: string;
-  backdropClassName?: string;
+  contentStyle?: ViewStyle;
+  backdropStyle?: ViewStyle;
   disableBackdropDismiss?: boolean;
   scrollEnabled?: boolean;
-};
+}
 
 export default function Modal({
   visible,
   onClose,
   children,
   animationType = 'fade',
-  contentClassName,
-  backdropClassName,
+  contentStyle,
+  backdropStyle,
   disableBackdropDismiss = false,
   scrollEnabled = true,
   ...rest
-}: Props) {
+}: ModalComponentProps) {
   return (
     <RNModal
       visible={visible}
@@ -41,34 +43,53 @@ export default function Modal({
       onRequestClose={onClose}
       {...rest}
     >
-      <Pressable
-        onPress={disableBackdropDismiss ? undefined : onClose}
-        className={cn(
-          'flex-1 items-center justify-center bg-black/50',
-          backdropClassName,
-        )}
-      >
+      <View style={[styles.backdrop, backdropStyle]}>
+        <Pressable
+          onPress={disableBackdropDismiss ? undefined : onClose}
+          style={StyleSheet.absoluteFill}
+        />
         <KeyboardAvoidingView
           behavior={Platform.select({ ios: 'padding', android: 'padding' })}
-          className="w-full items-center"
+          style={styles.keyboardView}
         >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
-            className={cn('w-[88%] rounded-2xl bg-white p-5', contentClassName)}
-          >
-            <SafeAreaView edges={['bottom', 'left', 'right']}>
-              <ScrollView
-                scrollEnabled={scrollEnabled}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                contentContainerClassName="flex-grow-1"
-              >
-                {children}
-              </ScrollView>
-            </SafeAreaView>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            <View style={[styles.content, contentStyle]}>
+              <SafeAreaView edges={['bottom', 'left', 'right']}>
+                <ScrollView
+                  scrollEnabled={scrollEnabled}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                >
+                  {children}
+                </ScrollView>
+              </SafeAreaView>
+            </View>
           </Pressable>
         </KeyboardAvoidingView>
-      </Pressable>
+      </View>
     </RNModal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  backdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.overlay,
+  },
+  keyboardView: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  content: {
+    width: '88%',
+    borderRadius: theme.radii.xl,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.xl,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+}));

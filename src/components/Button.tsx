@@ -1,61 +1,119 @@
-import { Pressable, Text, PressableProps } from 'react-native';
-import { cn } from './cn';
+import { Pressable, Text, View, type PressableProps } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
 import { Spinner } from './Loading';
+import { useState } from 'react';
 
 type Variant = 'primary' | 'outline' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
 
-type Props = PressableProps & {
+interface ButtonProps extends PressableProps {
   title: string;
-  loading?: boolean;
   variant?: Variant;
   size?: Size;
-  className?: string;
-  textClassName?: string;
-};
-
-const base = 'rounded-2xl active:opacity-90 disabled:opacity-60';
-const sizes: Record<Size, string> = {
-  sm: 'py-2 px-3',
-  md: 'py-3 px-4',
-  lg: 'py-4 px-5',
-};
-
-const variants: Record<Variant, { root: string; text: string }> = {
-  primary: { root: 'bg-blue-600', text: 'text-white' },
-  outline: { root: 'border border-slate-300 bg-white', text: 'text-slate-900' },
-  ghost: { root: 'bg-transparent', text: 'text-slate-900' },
-};
+  loading?: boolean;
+}
 
 export default function Button({
   title,
-  loading,
   variant = 'primary',
   size = 'md',
-  className,
-  textClassName,
+  loading = false,
+  disabled = false,
+  style,
+  onPressIn,
+  onPressOut,
   ...rest
-}: Props) {
-  const v = variants[variant];
+}: ButtonProps) {
+  const [pressed, setPressed] = useState(false);
+  const isDisabled = disabled || loading;
+  const isOutlinePressed = pressed && variant === 'outline';
+
+  styles.useVariants({ variant, size, isDisabled, pressed, isOutlinePressed });
+
   return (
     <Pressable
+      disabled={isDisabled}
+      onPressIn={(e) => {
+        setPressed(true);
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        setPressed(false);
+        onPressOut?.(e);
+      }}
+      style={style}
       {...rest}
-      className={cn(base, sizes[size], v.root, className)}
-      accessibilityRole="button"
     >
-      {loading ? (
-        <Spinner tone={v.text.includes('white') ? 'inverse' : 'muted'} />
-      ) : (
-        <Text
-          className={cn(
-            'text-center text-base font-semibold',
-            v.text,
-            textClassName,
-          )}
-        >
-          {title}
-        </Text>
-      )}
+      <View style={styles.container}>
+        {loading ? (
+          <Spinner tone={variant === 'primary' ? 'inverse' : 'muted'} />
+        ) : (
+          <Text style={styles.label}>{title}</Text>
+        )}
+      </View>
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: theme.radii.lg,
+    variants: {
+      variant: {
+        primary: { backgroundColor: theme.colors.primary },
+        outline: {
+          backgroundColor: theme.colors.surface,
+          borderWidth: 1,
+          borderColor: theme.colors.borderInput,
+        },
+        ghost: { backgroundColor: 'transparent' },
+      },
+      size: {
+        sm: {
+          paddingVertical: theme.spacing.sm,
+          paddingHorizontal: theme.spacing.md,
+        },
+        md: {
+          paddingVertical: theme.spacing.md,
+          paddingHorizontal: theme.spacing.lg,
+        },
+        lg: {
+          paddingVertical: theme.spacing.lg,
+          paddingHorizontal: theme.spacing.xl,
+        },
+      },
+      pressed: {
+        true: { opacity: 0.85 },
+        false: {},
+      },
+      isDisabled: {
+        true: { opacity: 0.6 },
+        false: {},
+      },
+      isOutlinePressed: {
+        true: { backgroundColor: theme.colors.surfacePressed },
+        false: {},
+      },
+    },
+  },
+
+  label: {
+    fontWeight: theme.fontWeights.semibold,
+    textAlign: 'center',
+    variants: {
+      variant: {
+        primary: { color: theme.colors.primaryText },
+        outline: { color: theme.colors.textPrimary },
+        ghost: { color: theme.colors.textPrimary },
+      },
+      size: {
+        sm: { fontSize: theme.fontSizes.xs },
+        md: { fontSize: theme.fontSizes.sm },
+        lg: { fontSize: theme.fontSizes.base },
+      },
+    },
+  },
+}));

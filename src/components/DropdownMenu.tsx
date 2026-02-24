@@ -1,20 +1,21 @@
 import { Feather } from '@expo/vector-icons';
-import { ComponentProps } from 'react';
+import { ComponentProps, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
-type DropdownMenuProps = {
+interface DropdownMenuProps {
   visible: boolean;
   onClose: () => void;
   anchor: { x: number; y: number } | null;
   children: React.ReactNode;
-};
+}
 
-type DropdownMenuItemProps = {
+interface DropdownMenuItemProps {
   icon: ComponentProps<typeof Feather>['name'];
   label: string;
   onPress: () => void;
   variant?: 'default' | 'danger';
-};
+}
 
 export function DropdownMenuItem({
   icon,
@@ -22,22 +23,54 @@ export function DropdownMenuItem({
   onPress,
   variant = 'default',
 }: DropdownMenuItemProps) {
+  const [pressed, setPressed] = useState(false);
   const isDanger = variant === 'danger';
+  const theme = UnistylesRuntime.getTheme();
+
+  menuItemStyles.useVariants({ pressed, isDanger });
 
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center px-4 py-3 active:bg-slate-100"
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
     >
-      <Feather name={icon} size={18} color={isDanger ? '#dc2626' : '#475569'} />
-      <Text
-        className={`ml-3 text-base ${isDanger ? 'text-red-600' : 'text-slate-700'}`}
-      >
-        {label}
-      </Text>
+      <View style={menuItemStyles.row}>
+        <Feather
+          name={icon}
+          size={18}
+          color={isDanger ? theme.colors.errorDark : theme.colors.iconSecondary}
+        />
+        <Text style={menuItemStyles.label}>{label}</Text>
+      </View>
     </Pressable>
   );
 }
+
+const menuItemStyles = StyleSheet.create((theme) => ({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    variants: {
+      pressed: {
+        true: { backgroundColor: theme.colors.surfacePressed },
+        false: {},
+      },
+    },
+  },
+  label: {
+    marginLeft: theme.spacing.md,
+    fontSize: theme.fontSizes.base,
+    variants: {
+      isDanger: {
+        true: { color: theme.colors.errorDark },
+        false: { color: theme.colors.textSecondary },
+      },
+    },
+  },
+}));
 
 export default function DropdownMenu({
   visible,
@@ -49,14 +82,12 @@ export default function DropdownMenu({
 
   return (
     <Modal visible={visible} transparent onRequestClose={onClose}>
-      <Pressable className="flex-1" onPress={onClose}>
+      <Pressable style={styles.overlay} onPress={onClose}>
         <View
-          style={{
-            position: 'absolute',
-            top: anchor.y,
-            right: 12,
-          }}
-          className="bg-white rounded-lg shadow-lg overflow-hidden min-w-[200px] border border-slate-200"
+          style={[
+            styles.menu,
+            { position: 'absolute', top: anchor.y, right: 12 },
+          ]}
         >
           <Pressable onPress={(e) => e.stopPropagation()}>{children}</Pressable>
         </View>
@@ -64,3 +95,18 @@ export default function DropdownMenu({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  overlay: {
+    flex: 1,
+  },
+  menu: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.md,
+    overflow: 'hidden',
+    minWidth: 200,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadows.lg,
+  },
+}));

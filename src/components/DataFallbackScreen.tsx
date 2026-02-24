@@ -1,26 +1,27 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native-unistyles';
 import { Button, EmptyState } from '.';
 
-type Props = {
+interface DataFallbackScreenProps {
   title?: string;
   message?: string;
   actionLabel?: string;
   onAction?: () => void;
-};
+}
 
 export default function DataFallbackScreen({
   title = 'Unable to load content',
   message = 'Please try again.',
   actionLabel = 'Retry',
   onAction,
-}: Props) {
+}: DataFallbackScreenProps) {
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-neutral-50">
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
       <EmptyState
         icon="alert-circle"
         title={title}
         message={message}
-        className="flex-1 justify-center px-6"
+        style={styles.emptyState}
         action={
           onAction ? <Button title={actionLabel} onPress={onAction} /> : null
         }
@@ -28,3 +29,15 @@ export default function DataFallbackScreen({
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing['2xl'],
+  },
+}));

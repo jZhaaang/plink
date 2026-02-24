@@ -1,18 +1,22 @@
 import { View, Text } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
 import Modal from './Modal';
 
-export type UploadProgress = {
+export interface UploadProgress {
   total: number;
   completed: number;
   failed: number;
-};
+}
 
-type Props = {
+interface UploadProgressModalProps {
   visible: boolean;
   progress: UploadProgress | null;
-};
+}
 
-export default function UploadProgressModal({ visible, progress }: Props) {
+export default function UploadProgressModal({
+  visible,
+  progress,
+}: UploadProgressModalProps) {
   if (!progress) return null;
 
   const percentage = Math.round((progress.completed / progress.total) * 100);
@@ -22,35 +26,60 @@ export default function UploadProgressModal({ visible, progress }: Props) {
       visible={visible}
       onClose={() => {}}
       disableBackdropDismiss
-      contentClassName="w-[75%] p-6"
+      contentStyle={styles.modalContent}
     >
-      <View className="items-center">
-        {/* Title */}
-        <Text className="text-lg font-semibold text-slate-800 mb-1">
-          Uploading Media
-        </Text>
-
-        {/* Count */}
-        <Text className="text-sm text-slate-500 mb-4">
+      <View style={styles.body}>
+        <Text style={styles.title}>Uploading Media</Text>
+        <Text style={styles.count}>
           {progress.completed} of {progress.total}
         </Text>
 
-        {/* Progress bar background */}
-        <View className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-          {/* Progress bar fill */}
-          <View
-            className="h-full bg-blue-600 rounded-full"
-            style={{ width: `${percentage}%` }}
-          />
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${percentage}%` }]} />
         </View>
 
-        {/* Failed indicator (if any) */}
         {progress.failed > 0 && (
-          <Text className="text-xs text-red-500 mt-2">
-            {progress.failed} failed
-          </Text>
+          <Text style={styles.failedText}>{progress.failed} failed</Text>
         )}
       </View>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  modalContent: {
+    width: '75%',
+    padding: theme.spacing['2xl'],
+  },
+  body: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xs,
+  },
+  count: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textTertiary,
+    marginBottom: theme.spacing.lg,
+  },
+  progressTrack: {
+    width: '100%',
+    height: 8,
+    backgroundColor: theme.colors.border,
+    borderRadius: theme.radii.full,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radii.full,
+  },
+  failedText: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.error,
+    marginTop: theme.spacing.sm,
+  },
+}));
