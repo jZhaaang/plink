@@ -27,6 +27,7 @@ export default {
     'expo-font',
     'expo-video',
     'expo-notifications',
+    'react-native-edge-to-edge',
     [
       'react-native-vision-camera',
       {
