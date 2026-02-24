@@ -100,7 +100,7 @@ export function PostFeedItem({
               key={media.id}
               uri={media.thumbnailUrl ?? media.url}
               width={itemSize}
-              height={mediaCount === 1 ? itemSize * 0.75 : itemSize}
+              height={itemSize}
               onPress={() => onMediaPress?.(media)}
               renderOverlay={(isLoaded) => {
                 if (!isLoaded || media.type !== 'video') return null;
