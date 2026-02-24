@@ -10,6 +10,7 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
@@ -50,24 +51,20 @@ export default function SignInScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
-      <View className="flex-1 gap-8 px-6">
-        <View className="pt-2">
-          <Text className="text-2xl font-extrabold tracking-tight text-slate-900">
-            plink
-          </Text>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.logoWrap}>
+          <Text style={styles.logo}>plink</Text>
         </View>
 
-        <View className="gap-2">
-          <Text className="text-3xl font-bold text-slate-900">
-            Welcome back
-          </Text>
-          <Text className="text-slate-600">Log in to continue</Text>
+        <View style={styles.headingGroup}>
+          <Text style={styles.heading}>Welcome back</Text>
+          <Text style={styles.subheading}>Log in to continue</Text>
         </View>
 
-        <View className="mt-2 gap-4">
-          <View className="gap-1">
-            <Text className="text-xs font-medium text-slate-600">Email</Text>
+        <View style={styles.form}>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Email</Text>
             <TextField
               left={<Ionicons name="mail-outline" size={18} color="#64748b" />}
               placeholder="you@example.com"
@@ -79,8 +76,8 @@ export default function SignInScreen({ navigation }: Props) {
             />
           </View>
 
-          <View className="gap-1">
-            <Text className="text-xs font-medium text-slate-600">Password</Text>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Password</Text>
             <TextField
               left={
                 <Ionicons
@@ -117,13 +114,71 @@ export default function SignInScreen({ navigation }: Props) {
           />
         </View>
 
-        <View className="mt-auto mb-6 flex-row justify-center gap-1">
-          <Text className="text-slate-600">No account?</Text>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>No account?</Text>
           <Pressable onPress={() => navigation.navigate('SignUp')}>
-            <Text className="font-semibold text-slate-900">Create one</Text>
+            <Text style={styles.footerLink}>Create one</Text>
           </Pressable>
         </View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+  },
+  container: {
+    flex: 1,
+    gap: theme.spacing['3xl'],
+    paddingHorizontal: theme.spacing['2xl'],
+  },
+  logoWrap: {
+    paddingTop: theme.spacing.sm,
+  },
+  logo: {
+    fontSize: theme.fontSizes['2xl'],
+    fontWeight: theme.fontWeights.extrabold,
+    letterSpacing: -0.6,
+    color: theme.colors.textPrimary,
+  },
+  headingGroup: {
+    gap: theme.spacing.sm,
+  },
+  heading: {
+    fontSize: theme.fontSizes['3xl'],
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+  },
+  subheading: {
+    color: theme.colors.iconSecondary,
+  },
+  form: {
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.lg,
+  },
+  fieldGroup: {
+    gap: theme.spacing.xs,
+  },
+  fieldLabel: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.medium,
+    color: theme.colors.iconSecondary,
+  },
+  footer: {
+    marginTop: 'auto',
+    marginBottom: theme.spacing['2xl'],
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+  },
+  footerText: {
+    color: theme.colors.iconSecondary,
+  },
+  footerLink: {
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+}));

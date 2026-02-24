@@ -17,6 +17,7 @@ import { isValidUsername, normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import * as Burnt from 'burnt';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
@@ -128,64 +129,56 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   if (!ready) return <LoadingScreen label="Loading..." />;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
-      <View className="flex-1 gap-8 px-6">
-        <View className="pt-2">
-          <Text className="text-2xl font-extrabold tracking-tight text-slate-900">
-            plink
-          </Text>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.logoWrap}>
+          <Text style={styles.logo}>plink</Text>
         </View>
 
-        <View className="gap-2">
-          <Text className="text-3xl font-bold text-slate-900">
-            Complete your profile
-          </Text>
-          <Text className="text-slate-600">Add a name and a photo</Text>
+        <View style={styles.headingGroup}>
+          <Text style={styles.heading}>Complete your profile</Text>
+          <Text style={styles.subheading}>Add a name and a photo</Text>
         </View>
 
-        <View className="items-center gap-3">
-          <Pressable
-            onPress={handleChoosePhoto}
-            className="h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-slate-200"
-          >
-            {imageUri ? (
-              <Image
-                source={{ uri: imageUri }}
-                cachePolicy="memory-disk"
-                contentFit="cover"
-                style={{ width: 112, height: 112 }}
-              />
-            ) : (
-              <Ionicons name="camera-outline" size={26} color="#64748b" />
-            )}
+        <View style={styles.avatarSection}>
+          <Pressable onPress={handleChoosePhoto}>
+            <View style={styles.avatarCircle}>
+              {imageUri ? (
+                <Image
+                  source={{ uri: imageUri }}
+                  cachePolicy="memory-disk"
+                  contentFit="cover"
+                  style={{ width: 112, height: 112 }}
+                />
+              ) : (
+                <Ionicons name="camera-outline" size={26} color="#64748b" />
+              )}
+            </View>
           </Pressable>
 
-          <View className="flex-row gap-3">
+          <View style={styles.avatarActions}>
             <Button
               title="Choose photo"
               variant="outline"
               size="sm"
               onPress={handleChoosePhoto}
-              textClassName="text-sm font-normal text-slate-600"
             />
             <Button
               title="Take photo"
               variant="outline"
               size="sm"
               onPress={handleTakePhoto}
-              textClassName="text-sm font-normal text-slate-600"
             />
             <Button
               title="Remove photo"
               variant="outline"
               size="sm"
               onPress={() => setImageUri(null)}
-              textClassName="text-sm font-normal text-slate-600"
             />
           </View>
         </View>
 
-        <View className="gap-1">
+        <View style={styles.fieldGroup}>
           <TextField
             header="Name"
             left={<Ionicons name="person-outline" size={18} color="#64748b" />}
@@ -197,7 +190,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
           />
           <TextField
             header="Username"
-            left={<Text className="text-slate-400 text-base">@</Text>}
+            left={<Text style={styles.atSymbol}>@</Text>}
             placeholder="username"
             value={username}
             onChangeText={(text) =>
@@ -209,7 +202,7 @@ export default function CompleteProfileScreen({ navigation }: Props) {
             returnKeyType="done"
             onSubmitEditing={handleSave}
           />
-          <Text className="pl-1 text-[11px] text-slate-500">
+          <Text style={styles.hint}>
             4-12 characters. Others will find you by this.
           </Text>
         </View>
@@ -224,3 +217,64 @@ export default function CompleteProfileScreen({ navigation }: Props) {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+  },
+  container: {
+    flex: 1,
+    gap: theme.spacing['3xl'],
+    paddingHorizontal: theme.spacing['2xl'],
+  },
+  logoWrap: {
+    paddingTop: theme.spacing.sm,
+  },
+  logo: {
+    fontSize: theme.fontSizes['2xl'],
+    fontWeight: theme.fontWeights.extrabold,
+    letterSpacing: -0.6,
+    color: theme.colors.textPrimary,
+  },
+  headingGroup: {
+    gap: theme.spacing.sm,
+  },
+  heading: {
+    fontSize: theme.fontSizes['3xl'],
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+  },
+  subheading: {
+    color: theme.colors.iconSecondary,
+  },
+  avatarSection: {
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  avatarCircle: {
+    height: 112,
+    width: 112,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: theme.radii.full,
+    backgroundColor: theme.colors.border,
+  },
+  avatarActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+  },
+  fieldGroup: {
+    gap: theme.spacing.xs,
+  },
+  atSymbol: {
+    color: theme.colors.textPlaceholder,
+    fontSize: theme.fontSizes.base,
+  },
+  hint: {
+    paddingLeft: theme.spacing.xs,
+    fontSize: 11,
+    color: theme.colors.textTertiary,
+  },
+}));

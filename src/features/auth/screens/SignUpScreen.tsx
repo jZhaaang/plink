@@ -11,6 +11,7 @@ import { isValidEmail, normalize } from '../../../lib/utils/validation';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { logger } from '../../../lib/telemetry/logger';
+import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
 
@@ -56,26 +57,22 @@ export default function SignUpScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
-      <View className="flex-1 gap-8 px-6">
-        <View className="pt-2">
-          <Text className="text-2xl font-extrabold tracking-tight text-slate-900">
-            plink
-          </Text>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.logoWrap}>
+          <Text style={styles.logo}>plink</Text>
         </View>
 
-        <View className="gap-2">
-          <Text className="text-3xl font-bold text-slate-900">
-            Create your account
-          </Text>
-          <Text className="text-slate-600">
+        <View style={styles.headingGroup}>
+          <Text style={styles.heading}>Create your account</Text>
+          <Text style={styles.subheading}>
             Join and start sharing memories
           </Text>
         </View>
 
-        <View className="mt-2 gap-4">
-          <View className="gap-1">
-            <Text className="text-xs font-medium text-slate-600">Email</Text>
+        <View style={styles.form}>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Email</Text>
             <TextField
               left={<Ionicons name="mail-outline" size={18} color="#64748b" />}
               placeholder="you@example.com"
@@ -89,8 +86,8 @@ export default function SignUpScreen({ navigation }: Props) {
             />
           </View>
 
-          <View className="gap-1">
-            <Text className="text-xs font-medium text-slate-600">Password</Text>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Password</Text>
             <TextField
               left={
                 <Ionicons
@@ -115,13 +112,11 @@ export default function SignUpScreen({ navigation }: Props) {
                 </Pressable>
               }
             />
-            <Text className="pl-1 text-[11px] text-slate-500">
-              Minimum 6 characters
-            </Text>
+            <Text style={styles.hint}>Minimum 6 characters</Text>
           </View>
 
-          <View className="gap-1">
-            <Text className="text-xs font-medium text-slate-600">Confirm</Text>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Confirm</Text>
             <TextField
               left={
                 <Ionicons
@@ -148,13 +143,76 @@ export default function SignUpScreen({ navigation }: Props) {
           />
         </View>
 
-        <View className="mt-auto mb-6 flex-row justify-center gap-1">
-          <Text className="text-slate-600">Already have an account?</Text>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account?</Text>
           <Pressable onPress={() => navigation.navigate('SignIn')}>
-            <Text className="font-semibold text-slate-900">Log in</Text>
+            <Text style={styles.footerLink}>Log in</Text>
           </Pressable>
         </View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+  },
+  container: {
+    flex: 1,
+    gap: theme.spacing['3xl'],
+    paddingHorizontal: theme.spacing['2xl'],
+  },
+  logoWrap: {
+    paddingTop: theme.spacing.sm,
+  },
+  logo: {
+    fontSize: theme.fontSizes['2xl'],
+    fontWeight: theme.fontWeights.extrabold,
+    letterSpacing: -0.6,
+    color: theme.colors.textPrimary,
+  },
+  headingGroup: {
+    gap: theme.spacing.sm,
+  },
+  heading: {
+    fontSize: theme.fontSizes['3xl'],
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+  },
+  subheading: {
+    color: theme.colors.iconSecondary,
+  },
+  form: {
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.lg,
+  },
+  fieldGroup: {
+    gap: theme.spacing.xs,
+  },
+  fieldLabel: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.medium,
+    color: theme.colors.iconSecondary,
+  },
+  hint: {
+    paddingLeft: theme.spacing.xs,
+    fontSize: 11,
+    color: theme.colors.textTertiary,
+  },
+  footer: {
+    marginTop: 'auto',
+    marginBottom: theme.spacing['2xl'],
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+  },
+  footerText: {
+    color: theme.colors.iconSecondary,
+  },
+  footerLink: {
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
+  },
+}));
