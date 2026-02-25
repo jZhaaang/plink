@@ -3,7 +3,7 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { StagedAsset } from '../hooks/useStagedMedia';
+import { StagedAsset } from '../hooks/useStagedMediaActions';
 import Animated, {
   Extrapolation,
   interpolate,

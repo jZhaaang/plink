@@ -26,7 +26,7 @@ import {
   LoadingScreen,
   DataFallbackScreen,
 } from '../../../components';
-import { useStagedMedia } from '../hooks/useStagedMedia';
+import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
 import UploadProgressModal from '../../../components/UploadProgressModal';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
@@ -37,9 +37,7 @@ import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
-import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useAuth } from '../../../providers/AuthProvider';
-import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -78,14 +76,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const { uploadAction, clearUploadAction } = useActiveLinkContext();
 
-  const onUploadError = useCallback((error: unknown) => {
-    Burnt.toast({
-      title: `Upload failed: ${getErrorMessage(error)}`,
-      preset: 'error',
-      haptic: 'error',
-    });
-  }, []);
-
   const {
     stagedAssets,
     stageAssets,
@@ -96,11 +86,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     uploading,
     progress,
     hasAssets,
-  } = useStagedMedia({
+  } = useStagedMediaActions({
     linkId,
     partyId,
     userId,
-    onError: onUploadError,
   });
 
   const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null);
