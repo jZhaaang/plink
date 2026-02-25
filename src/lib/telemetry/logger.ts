@@ -23,7 +23,11 @@ function log(level: LogLevel, message: string, data?: LogData) {
 
   if (level === 'error') {
     const err =
-      context?.error instanceof Error ? context.error : new Error(message);
+      context?.error instanceof Error
+        ? context.error
+        : context?.err instanceof Error
+          ? context.err
+          : new Error(message);
     captureError(err, { message, ...context });
   } else if (level !== 'debug') {
     addBreadcrumb(message, context);
