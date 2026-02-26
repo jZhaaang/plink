@@ -52,7 +52,10 @@ export default function Modal({
           behavior={Platform.select({ ios: 'padding', android: 'padding' })}
           style={styles.keyboardView}
         >
-          <Pressable onPress={(e) => e.stopPropagation()}>
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            style={styles.contentWrapper}
+          >
             <View style={[styles.content, contentStyle]}>
               <SafeAreaView edges={['bottom', 'left', 'right']}>
                 <ScrollView
@@ -80,6 +83,10 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.overlay,
   },
   keyboardView: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  contentWrapper: {
     width: '100%',
     alignItems: 'center',
   },
