@@ -37,7 +37,13 @@ export async function resolveLinkPostMediaItems(
       allPaths.push(media.thumbnail_path);
     }
   }
-  const urlMap = await linksStorage.getUrls(allPaths);
+
+  let urlMap = null;
+  try {
+    urlMap = await linksStorage.getUrls(allPaths);
+  } catch (err) {
+    logger.error('Error resolving link post media items', { err });
+  }
 
   const resolved = new Map<string, LinkPostMedia>();
   for (const media of mediaItems) {

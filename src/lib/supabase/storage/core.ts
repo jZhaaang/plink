@@ -1,6 +1,4 @@
 import { supabase } from '../client';
-import { logger } from '../../telemetry/logger';
-
 export type Bucket = 'avatars' | 'parties' | 'links';
 export const BUCKET_PRIVACY: Record<Bucket, 'public' | 'private'> = {
   avatars: 'public',
@@ -27,20 +25,16 @@ export async function uploadFile(
     contentType: opts.contentType,
     upsert: opts.upsert,
   });
-  if (error) {
-    logger.error('Error uploading file:', error.message);
-    throw error;
-  }
+
+  if (error) throw error;
 }
 
 export async function removeFile(bucket: Bucket, paths: string[]) {
   if (paths.length === 0) return;
 
   const { error } = await supabase.storage.from(bucket).remove(paths);
-  if (error) {
-    logger.error('Error removing file:', error.message);
-    throw error;
-  }
+
+  if (error) throw error;
 }
 
 type CachedUrl = { url: string; expiresAt: number };
@@ -83,10 +77,7 @@ export async function getUrls(
     .from(bucket)
     .createSignedUrls(uncached, ttl);
 
-  if (error) {
-    logger.error('Error creating signed urls:', error.message);
-    throw error;
-  }
+  if (error) throw error;
 
   const expiresAt = now + ttl * 1000;
   for (const d of data) {
@@ -116,14 +107,7 @@ export async function getPathsById(
           sortBy: { column: 'name', order: 'asc' },
         });
 
-      if (error) {
-        logger.error('Error listing storage prefix:', {
-          bucket,
-          prefix: currentPrefix,
-          detail: error.message,
-        });
-        throw error;
-      }
+      if (error) throw error;
 
       if (!data || data.length === 0) break;
 
