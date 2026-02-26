@@ -1,11 +1,8 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import { FlatList, View, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlatList, View, Text, Pressable } from 'react-native';
 import { PartyCard } from '../components/PartyCard';
 import {
   Button,
@@ -30,6 +27,7 @@ import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
 import { StyleSheet } from 'react-native-unistyles';
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -89,7 +87,7 @@ export default function PartyListScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.container}>
         <Text style={styles.screenTitle}>Your Parties</Text>
         <Divider />
@@ -128,11 +126,17 @@ export default function PartyListScreen({ navigation }: Props) {
       </View>
 
       {parties.length ? (
-        <Button
-          title="Create a Party"
+        <Pressable
           onPress={() => setModalVisible(true)}
-          style={[styles.fab, { bottom: insets.bottom }]}
-        />
+          style={[
+            styles.fab,
+            {
+              bottom: insets.bottom,
+            },
+          ]}
+        >
+          <Ionicons name="add" size={24} color="white" />
+        </Pressable>
       ) : null}
 
       <CreatePartyModal
@@ -141,12 +145,12 @@ export default function PartyListScreen({ navigation }: Props) {
         onSubmit={(name, bannerUri) => handleSubmit(name, bannerUri)}
         loading={loading}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  safeArea: {
+  root: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
@@ -162,8 +166,15 @@ const styles = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing.lg,
   },
   fab: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radii.full,
+    width: 48,
+    height: 48,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'absolute',
-    right: 20,
+    right: 30,
   },
   fabText: {
     color: theme.colors.textInverse,

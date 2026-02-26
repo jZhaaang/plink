@@ -63,11 +63,8 @@ export default function HeroBanner({
       <View style={{ height: insets.top, overflow: 'hidden' }}>
         {banner ? (
           <>
-            {renderImage({ width: '100%', height: insets.top + 40 }, 20)}
-            <View
-              style={styles.statusBarOverlay}
-              pointerEvents="none"
-            />
+            {renderImage({ width: '100%', height: insets.top + 40 }, 100)}
+            <View style={styles.statusBarOverlay} pointerEvents="none" />
           </>
         ) : (
           <LinearGradient
@@ -85,22 +82,20 @@ export default function HeroBanner({
 
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.6)']}
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 112 }}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 112,
+          }}
         />
 
         {/* Overlay content (title, subtitle, badges) */}
-        <View style={styles.overlayContent}>
-          {children}
-        </View>
+        <View style={styles.overlayContent}>{children}</View>
         {/* Floating nav bar */}
-        <View
-          style={styles.navBar}
-          pointerEvents="box-none"
-        >
-          <View
-            style={styles.navRow}
-            pointerEvents="box-none"
-          >
+        <View style={styles.navBar} pointerEvents="box-none">
+          <View style={styles.navRow} pointerEvents="box-none">
             <Pressable onPress={onBack}>
               <View style={styles.navButton}>
                 <Feather name="arrow-left" size={20} color="#fff" />
@@ -140,9 +135,9 @@ const styles = StyleSheet.create((theme) => ({
     position: 'absolute',
     bottom: 0,
     left: 0,
-    right: 0,
     paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.lg,
+    gap: theme.spacing.xs,
   },
   navBar: {
     position: 'absolute',

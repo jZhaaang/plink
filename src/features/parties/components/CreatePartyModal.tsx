@@ -82,7 +82,12 @@ export default function CreatePartyModal({
       </View>
 
       {/* Banner picker */}
-      <Pressable onPress={chooseBanner}>
+      <Pressable
+        onPress={chooseBanner}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.85 : 1,
+        })}
+      >
         <View style={styles.bannerWrap}>
           {bannerUri ? (
             <ImageBackground
@@ -133,21 +138,20 @@ export default function CreatePartyModal({
             />
           }
           value={name}
+          placeholder="Enter a party name"
           onChangeText={setName}
           autoCapitalize="words"
           maxLength={30}
           returnKeyType="done"
         />
 
-        <View style={styles.submitWrap}>
-          <Button
-            title={isEditMode ? 'Save Changes' : 'Create Party'}
-            size="md"
-            onPress={handleSubmit}
-            loading={loading || localLoading}
-            disabled={!name.trim() || (isEditMode && !hasChanges)}
-          />
-        </View>
+        <Button
+          title={isEditMode ? 'Save Changes' : 'Create Party'}
+          size="md"
+          onPress={handleSubmit}
+          loading={loading || localLoading}
+          disabled={!name.trim() || (isEditMode && !hasChanges)}
+        />
       </View>
     </Modal>
   );
@@ -190,9 +194,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   formSection: {
     marginTop: theme.spacing.lg,
-    gap: theme.spacing.sm,
-  },
-  submitWrap: {
-    marginTop: theme.spacing['2xl'],
+    gap: theme.spacing.md,
   },
 }));

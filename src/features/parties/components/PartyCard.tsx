@@ -37,7 +37,10 @@ export function PartyCard(props: Props) {
   const memberCount = members?.length ?? 0;
 
   return (
-    <Pressable onPress={onPress}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+    >
       <View style={styles.card}>
         <View style={styles.bannerWrap}>
           {bannerUri ? (
@@ -74,9 +77,9 @@ export default memo(PartyCard);
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    borderRadius: theme.radii.xl,
+    borderRadius: theme.radii.lg,
     backgroundColor: theme.colors.background,
-    padding: theme.spacing.lg,
+    padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
     ...theme.shadows.md,
   },
@@ -92,14 +95,10 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.lg,
     backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    marginTop: -20,
-    marginBottom: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: theme.spacing.sm,
+    marginTop: -theme.spacing.lg,
+    marginBottom: theme.spacing.xs,
+    ...theme.shadows.md,
   },
   partyName: {
     flex: 1,
