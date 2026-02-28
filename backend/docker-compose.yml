@@ -1,0 +1,10 @@
+services:
+  media-service:
+    container_name: plink-media-service
+    image: plink-media-service
+    build: ./media-service
+    ports:
+      - '3001:3001'
+    env_file:
+      - ./media-service/.env
+    restart: unless-stopped
