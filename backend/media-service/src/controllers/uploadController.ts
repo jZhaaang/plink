@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
   S3Client,
   GetObjectCommand,
@@ -6,6 +6,7 @@ import {
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl as s3GetSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { AuthenticatedRequest } from '../middleware/authenticate';
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -18,7 +19,7 @@ const s3 = new S3Client({
 const BUCKET = process.env.S3_BUCKET;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'];
 
-export async function upload(req: Request, res: Response) {
+export async function upload(req: AuthenticatedRequest, res: Response) {
   try {
     const { key, contentType } = req.body;
 
@@ -47,7 +48,7 @@ export async function upload(req: Request, res: Response) {
   }
 }
 
-export async function getSignedUrl(req: Request, res: Response) {
+export async function getSignedUrl(req: AuthenticatedRequest, res: Response) {
   try {
     const key = req.params.key as string;
 
@@ -65,7 +66,7 @@ export async function getSignedUrl(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
     const key = req.params.key as string;
 
