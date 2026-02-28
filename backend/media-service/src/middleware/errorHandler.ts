@@ -4,7 +4,7 @@ export function errorHandler(
   err: Error,
   _req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ) {
   console.error(
     JSON.stringify({
@@ -15,5 +15,4 @@ export function errorHandler(
   );
 
   res.status(500).json({ error: 'Internal server error' });
-  next();
 }

@@ -1,6 +1,23 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+const required = [
+  'AWS_ACCESS_KEY_ID',
+  'AWS_SECRET_ACCESS_KEY',
+  'AWS_REGION',
+  'S3_BUCKET',
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_KEY',
+  'SUPABASE_JWT_SECRET',
+];
+
+for (const key of required) {
+  if (!process.env[key]) {
+    console.error(`Missing required env var: ${key}`);
+    process.exit(1);
+  }
+}
+
 import express from 'express';
 import cors from 'cors';
 import uploadRoutes from './routes/upload';

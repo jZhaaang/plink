@@ -28,6 +28,11 @@ export async function upload(req: AuthenticatedRequest, res: Response) {
       return;
     }
 
+    if (key.includes('..') || !key.match(/^(parties|links)\//)) {
+      res.status(400).json({ error: 'Invalid key format' });
+      return;
+    }
+
     if (!ALLOWED_TYPES.includes(contentType)) {
       res.status(400).json({ error: 'Unsupported file type' });
       return;
