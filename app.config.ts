@@ -4,6 +4,7 @@ export default {
   name: 'plink',
   slug: 'plink',
   scheme: 'plink',
+  version: '1.1.1',
   extra: {
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
@@ -15,10 +16,12 @@ export default {
   },
   android: {
     package: 'com.anonymous.plink',
+    versionCode: 3,
     googleServicesFile: './google-services.json',
   },
   ios: {
     bundleIdentifier: 'com.jimmy.plink',
+    buildNumber: '3',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
