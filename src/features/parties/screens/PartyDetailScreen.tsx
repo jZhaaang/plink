@@ -175,11 +175,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     try {
       const linkIds = (await getLinksByPartyId(partyId)).map((l) => l.id);
 
-      await Promise.all(
-        linkIds.map((linkId) => {
-          deleteBulk(`links/${linkId}`);
-        }),
-      );
+      await Promise.all(linkIds.map((linkId) => deleteBulk(`links/${linkId}`)));
       await deleteBulk(`parties/${partyId}`);
 
       await deleteParty(partyId);
