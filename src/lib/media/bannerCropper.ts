@@ -34,7 +34,8 @@ export async function pickPartyBannerFromLibrary(): Promise<CroppedBannerAsset |
       compressImageQuality: 0.7,
     });
     return toCroppedAsset(image);
-  } catch {
+  } catch (err) {
+    if (err?.code === 'E_PICKER_CANCELLED') return null;
     throw new Error('Error cropping image.');
   }
 }
