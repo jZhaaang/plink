@@ -88,6 +88,7 @@ export async function getPartyDetailById(partyId: string) {
     .from('parties')
     .select(`*,party_members (user_id,profiles (*)),links (*)`)
     .eq('id', partyId)
+    .order('created_at', { referencedTable: 'links', ascending: false })
     .single();
 
   if (error) throw error;
