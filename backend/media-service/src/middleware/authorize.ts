@@ -119,22 +119,20 @@ const accessCheckers: Record<string, AccessChecker> = {
   },
 };
 
-function parseKey(key: string): ParsedKey | null {
-  const parts = key.split('/');
-
+function parseKey(key: string[]): ParsedKey | null {
   // parties/{partyId}/banner.jpg
-  if (parts[0] === 'parties' && parts[1]) {
-    return { resource: 'parties', resourceId: parts[1] };
+  if (key[0] === 'parties' && key[1]) {
+    return { resource: 'parties', resourceId: key[1] };
   }
 
   // links/{linkId}/banner.jpg
-  if (parts[0] === 'links' && parts[1] && parts[2] === 'banner.jpg') {
-    return { resource: 'links', resourceId: parts[1] };
+  if (key[0] === 'links' && key[1] && key[2] === 'banner.jpg') {
+    return { resource: 'links', resourceId: key[1] };
   }
 
   // links/{linkId}/posts/{postId}/{mediaId}.ext
-  if (parts[0] === 'links' && parts[1] && parts[2] === 'posts' && parts[3]) {
-    return { resource: 'link-media', resourceId: parts[3], parentId: parts[1] };
+  if (key[0] === 'links' && key[1] && key[2] === 'posts' && key[3]) {
+    return { resource: 'link-media', resourceId: key[3], parentId: key[1] };
   }
 
   return null;
@@ -146,7 +144,7 @@ export function requireAccess(action: 'read' | 'write' | 'delete') {
     res: Response,
     next: NextFunction,
   ) => {
-    const key = req.body.key || req.params.key;
+    const key = req.params.key as string[];
     const userId = req.userId;
 
     if (!key || !userId) {

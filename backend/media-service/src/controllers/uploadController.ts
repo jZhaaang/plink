@@ -55,7 +55,7 @@ export async function upload(req: AuthenticatedRequest, res: Response) {
 
 export async function getSignedUrl(req: AuthenticatedRequest, res: Response) {
   try {
-    const key = req.params.key as string;
+    const key = (req.params.key as string[]).join('/');
 
     const command = new GetObjectCommand({
       Bucket: BUCKET,
@@ -73,7 +73,7 @@ export async function getSignedUrl(req: AuthenticatedRequest, res: Response) {
 
 export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
-    const key = req.params.key as string;
+    const key = (req.params.key as string[]).join('/');
 
     const command = new DeleteObjectCommand({
       Bucket: BUCKET,
