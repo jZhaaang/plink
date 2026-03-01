@@ -43,6 +43,7 @@ export async function resolveLinkPostMediaItems(
     urlMap = await linksStorage.getUrls(allPaths);
   } catch (err) {
     logger.error('Error resolving link post media items', { err });
+    return new Map();
   }
 
   const resolved = new Map<string, LinkPostMedia>();
