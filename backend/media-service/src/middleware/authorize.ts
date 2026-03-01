@@ -171,13 +171,16 @@ export function requireAccess(action: 'read' | 'write' | 'delete') {
     res: Response,
     next: NextFunction,
   ) => {
-    const key = req.params.key as string[];
+    const rawKey: string | string[] | undefined =
+      req.params.key ?? req.body?.key;
     const userId = req.userId;
 
-    if (!key || !userId) {
+    if (!rawKey || !userId) {
       res.status(400).json({ error: 'Invalid request' });
       return;
     }
+
+    const key: string[] = Array.isArray(rawKey) ? rawKey : rawKey.split('/');
 
     const parsed = parseKey(key);
     if (!parsed) {
