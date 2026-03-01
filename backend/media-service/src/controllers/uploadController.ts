@@ -1,22 +1,13 @@
 import { Response } from 'express';
 import {
-  S3Client,
   GetObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl as s3GetSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AuthenticatedRequest } from '../middleware/authenticate';
+import { BUCKET, s3 } from '../lib/s3';
 
-const s3 = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
-
-const BUCKET = process.env.S3_BUCKET;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'];
 
 export async function upload(req: AuthenticatedRequest, res: Response) {

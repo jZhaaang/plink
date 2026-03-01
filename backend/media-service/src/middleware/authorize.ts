@@ -63,14 +63,36 @@ const accessCheckers: Record<string, AccessChecker> = {
       return !!data;
     } else {
       // allow link owner to write/delete
-      const { data } = await supabase
+      const { data: linkOwner } = await supabase
         .from('links')
         .select('id')
         .eq('id', resourceId)
         .eq('owner_id', userId)
         .single();
 
-      return !!data;
+      if (linkOwner) return true;
+
+      if (action === 'delete') {
+        // allow party owner to delete links
+        const { data: link } = await supabase
+          .from('links')
+          .select('party_id')
+          .eq('id', resourceId)
+          .single();
+
+        if (!link) return false;
+
+        const { data: party } = await supabase
+          .from('parties')
+          .select('id')
+          .eq('id', link.party_id)
+          .eq('owner_id', userId)
+          .single();
+
+        return !!party;
+      }
+
+      return false;
     }
   },
 
@@ -123,6 +145,11 @@ function parseKey(key: string[]): ParsedKey | null {
   // parties/{partyId}/banner.jpg
   if (key[0] === 'parties' && key[1]) {
     return { resource: 'parties', resourceId: key[1] };
+  }
+
+  // links/{linkId}/
+  if (key[0] === 'links' && key[1] && !key[2]) {
+    return { resource: 'links', resourceId: key[1] };
   }
 
   // links/{linkId}/banner.jpg
