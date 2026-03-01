@@ -53,13 +53,21 @@ export function useVisionCamera() {
 
   const takePhoto = useCallback(async () => {
     if (!cameraRef.current) return;
-    const photo = await cameraRef.current.takePhoto();
-    setCapturedAsset({
-      uri: `file://${photo.path}`,
-      type: 'image',
-      width: photo.width,
-      height: photo.height,
-    });
+    try {
+      const photo = await cameraRef.current.takePhoto();
+      setCapturedAsset({
+        uri: `file://${photo.path}`,
+        type: 'image',
+        width: photo.width,
+        height: photo.height,
+      });
+    } catch {
+      Burnt.toast({
+        title: 'Failed to take photo',
+        preset: 'error',
+        haptic: 'error',
+      });
+    }
   }, []);
 
   const startRecording = useCallback(async () => {
