@@ -1,5 +1,5 @@
 import { Link, LinkPostMedia, LinkPostMediaRow, LinkRow } from '../models';
-import { links as linksStorage } from '../supabase/storage/links';
+import { links as linksStorage } from '../media-service/links';
 import { logger } from '../telemetry/logger';
 
 export async function resolveLink(link: LinkRow): Promise<Link> {

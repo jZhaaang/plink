@@ -13,7 +13,7 @@ import {
   deleteLinkPost,
 } from '../../../lib/supabase/queries/linkPosts';
 import { compressImage } from '../../../lib/media/compress';
-import { links as linksStorage } from '../../../lib/supabase/storage/links';
+import { links as linksStorage } from '../../../lib/media-service/links';
 import {
   createLinkPostMedia,
   deleteLinkPostMedia,

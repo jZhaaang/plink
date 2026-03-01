@@ -14,12 +14,13 @@ import {
 } from '../../../lib/supabase/queries/linkMembers';
 import { deleteLinkPostMedia } from '../../../lib/supabase/queries/linkPostMedia';
 import { deleteLinkPost } from '../../../lib/supabase/queries/linkPosts';
-import { links as linksStorage } from '../../../lib/supabase/storage/links';
+import { links as linksStorage } from '../../../lib/media-service/links';
 import { compressImage } from '../../../lib/media/compress';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { logger } from '../../../lib/telemetry/logger';
 import { LinkDetail } from '../../../lib/models';
+import { deleteBulk } from '../../../lib/media-service/client';
 
 type UseLinkDetailActionsParams = {
   linkId: string;
@@ -71,7 +72,11 @@ export function useLinkDetailActions({
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
         invalidate.activity();
-        Burnt.toast({ title: 'Link renamed', preset: 'done', haptic: 'success' });
+        Burnt.toast({
+          title: 'Link renamed',
+          preset: 'done',
+          haptic: 'success',
+        });
       } catch (err) {
         logger.error('Error updating link name', { err });
         await dialog.error('Failed to Edit Link Name', getErrorMessage(err));
@@ -98,7 +103,11 @@ export function useLinkDetailActions({
         invalidate.linkDetail(linkId);
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
-        Burnt.toast({ title: 'Banner updated', preset: 'done', haptic: 'success' });
+        Burnt.toast({
+          title: 'Banner updated',
+          preset: 'done',
+          haptic: 'success',
+        });
       } catch (err) {
         logger.error('Error updating link banner', { err });
         await dialog.error('Failed to Update Banner', getErrorMessage(err));
@@ -119,8 +128,7 @@ export function useLinkDetailActions({
     if (!confirmed) return;
 
     try {
-      const linkPaths = await linksStorage.getPathsById(linkId);
-      await linksStorage.remove(linkPaths);
+      await deleteBulk(`links/${linkId}`);
       await deleteLink(linkId);
       trackEvent('link_deleted', { link_id: linkId });
       trackEvent('link_post_deleted', {
@@ -129,7 +137,6 @@ export function useLinkDetailActions({
       });
       trackEvent('media_deleted', {
         link_id: linkId,
-        media_count: linkPaths.length,
       });
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
@@ -219,7 +226,11 @@ export function useLinkDetailActions({
         }
 
         invalidate.linkDetail(linkId);
-        Burnt.toast({ title: 'Post deleted', preset: 'done', haptic: 'success' });
+        Burnt.toast({
+          title: 'Post deleted',
+          preset: 'done',
+          haptic: 'success',
+        });
       } catch (err) {
         logger.error('Error deleting post', { err });
         await dialog.error('Failed to Delete Post', getErrorMessage(err));

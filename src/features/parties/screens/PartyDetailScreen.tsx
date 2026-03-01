@@ -23,7 +23,7 @@ import {
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
 import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
-import { links as linksStorage } from '../../../lib/supabase/storage/links';
+import { deleteBulk } from '../../../lib/media-service/client';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
@@ -175,15 +175,12 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     try {
       const linkIds = (await getLinksByPartyId(partyId)).map((l) => l.id);
 
-      const partyPaths = await partiesStorage.getPathsById(partyId);
-      await partiesStorage.remove(partyPaths);
-
       await Promise.all(
-        linkIds.map(async (linkId) => {
-          const linkPaths = await linksStorage.getPathsById(linkId);
-          await linksStorage.remove(linkPaths);
+        linkIds.map((linkId) => {
+          deleteBulk(`links/${linkId}`);
         }),
       );
+      await deleteBulk(`parties/${partyId}`);
 
       await deleteParty(partyId);
       trackEvent('party_deleted', { party_id: partyId });
