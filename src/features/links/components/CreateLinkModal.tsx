@@ -79,7 +79,7 @@ export default function CreateLinkModal({
       <View style={styles.submitWrap}>
         <Button
           title={isEditMode ? 'Save Changes' : 'Start Link'}
-          size="lg"
+          size="md"
           onPress={handleSubmit}
           loading={loading || localLoading}
           disabled={!name.trim() || (isEditMode && !hasChanges)}
