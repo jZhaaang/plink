@@ -1,5 +1,5 @@
 import { Party, PartyRow } from '../models';
-import { parties as partiesStorage } from '../supabase/storage/parties';
+import { parties as partiesStorage } from '../media-service/parties';
 import { logger } from '../telemetry/logger';
 
 export async function resolveParty(party: PartyRow): Promise<Party> {

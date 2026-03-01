@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
-import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
+import { parties as partiesStorage } from '../../../lib/media-service/parties';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlatList, View, Text, Pressable } from 'react-native';
 import { PartyCard } from '../components/PartyCard';
@@ -66,7 +66,10 @@ export default function PartyListScreen({ navigation }: Props) {
       let banner_path = null;
       if (bannerUri) {
         const compressed = await compressImage(bannerUri);
-        banner_path = await partiesStorage.upload(party.id, compressed.uri);
+        banner_path = await partiesStorage.uploadBanner(
+          party.id,
+          compressed.uri,
+        );
       }
 
       await updatePartyById(party.id, { banner_path });

@@ -22,7 +22,7 @@ import {
   deleteParty,
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
-import { parties as partiesStorage } from '../../../lib/supabase/storage/parties';
+import { parties as partiesStorage } from '../../../lib/media-service/parties';
 import { deleteBulk } from '../../../lib/media-service/client';
 import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
@@ -135,7 +135,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       if (bannerUri && bannerUri !== party?.bannerUrl) {
         const compressed = await compressImage(bannerUri);
-        const banner_path = await partiesStorage.upload(
+        const banner_path = await partiesStorage.uploadBanner(
           partyId,
           compressed.uri,
         );
