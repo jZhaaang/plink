@@ -41,7 +41,6 @@ type UploadProgress = {
 
 type UploadedAsset = {
   path: string;
-  thumbnailPath: string | null;
   mime: string;
   type: 'image' | 'video';
   duration_seconds: number | null;
@@ -55,6 +54,7 @@ export function useStagedMediaActions({
   const invalidate = useInvalidate();
 
   const [stagedAssets, setStagedAssets] = useState<StagedAsset[]>([]);
+  const [pendingMediaIds, setPendingMediaIds] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
 
@@ -92,19 +92,13 @@ export function useStagedMediaActions({
           ),
         );
         logger.warn('Error generating asset thumbnail:', { err, item });
+        Burnt.toast({
+          title: 'Failed to generate thumbnail',
+          preset: 'error',
+          haptic: 'warning',
+        });
       }
     });
-
-    const failedThumbnails = incoming.filter(
-      (item) => item.thumbnailStatus === 'failed',
-    ).length;
-    if (failedThumbnails) {
-      Burnt.toast({
-        title: `Failed to generate ${failedThumbnails} ${failedThumbnails === 1 ? 'thumbnail' : 'thumbnails'}`,
-        preset: 'error',
-        haptic: 'warning',
-      });
-    }
   }, []);
 
   const addFromGallery = useCallback(async () => {
@@ -157,29 +151,25 @@ export function useStagedMediaActions({
         stagedAssets.map(async (item): Promise<UploadedAsset> => {
           const mime = item.asset.mimeType ?? 'image/jpeg';
           const type = item.asset.type === 'video' ? 'video' : 'image';
+          const duration_seconds =
+            type === 'video' ? (item.asset.duration ?? null) : null;
 
-          let path,
-            thumbnailPath = null;
+          const path = linksStorage.path(linkId, post.id, mime);
+          const row = await createLinkPostMedia({
+            post_id: post.id,
+            path,
+            mime,
+            type,
+            duration_seconds,
+          });
+          if (row) insertedMediaIds.push(row.id);
 
           try {
             const uri =
               type === 'video'
                 ? item.asset.uri
                 : (await compressImage(item.asset.uri)).uri;
-            path = await linksStorage.upload(linkId, post.id, uri, mime);
-
-            if (item.thumbnailUri) {
-              try {
-                thumbnailPath = await linksStorage.upload(
-                  linkId,
-                  post.id,
-                  item.thumbnailUri,
-                  'image/jpeg',
-                );
-              } catch (err) {
-                logger.warn('Error uploading asset thumbnail', { err });
-              }
-            }
+            await linksStorage.uploadToPath(path, uri, mime);
           } catch (err) {
             logger.error('Error uploading asset', { err, asset: item });
             setProgress((prev) =>
@@ -192,11 +182,9 @@ export function useStagedMediaActions({
           );
           return {
             path,
-            thumbnailPath,
             mime,
             type,
-            duration_seconds:
-              type === 'video' ? (item.asset.duration ?? null) : null,
+            duration_seconds,
           };
         }),
       );
@@ -220,36 +208,22 @@ export function useStagedMediaActions({
         throw new Error('All uploads failed, post was not created.');
       }
 
-      await Promise.all(
-        successes.map(async (m) => {
-          try {
-            const row = await createLinkPostMedia({
-              post_id: post.id,
-              path: m.path,
-              thumbnail_path: m.thumbnailPath,
-              mime: m.mime,
-              type: m.type,
-              duration_seconds: m.duration_seconds,
-            });
-            if (row) insertedMediaIds.push(row.id);
-          } catch (err) {
-            logger.error('Error creating link post media', { err, media: m });
-          }
-        }),
-      );
-
       if (failures > 0) {
         Burnt.toast({
           title: `${failures} ${failures === 1 ? 'item' : 'items'} failed to upload`,
           preset: 'error',
           haptic: 'error',
         });
-      } else {
+      }
+
+      if (successes.length > 0) {
         Burnt.toast({
           title: `${successes.length} ${successes.length === 1 ? 'item' : 'items'} posted.`,
           preset: 'done',
           haptic: 'success',
         });
+
+        setPendingMediaIds(insertedMediaIds);
 
         trackEvent('media_uploaded', {
           link_id: linkId,
@@ -304,6 +278,8 @@ export function useStagedMediaActions({
     }
   }, [stagedAssets, linkId, userId, invalidate]);
 
+  const clearPendingMediaIds = () => setPendingMediaIds([]);
+
   return {
     stagedAssets,
     stageAssets,
@@ -314,5 +290,7 @@ export function useStagedMediaActions({
     uploading,
     progress,
     hasAssets: stagedAssets.length > 0,
+    pendingMediaIds,
+    clearPendingMediaIds,
   };
 }

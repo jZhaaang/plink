@@ -63,6 +63,16 @@ export const links = {
     return key;
   },
 
+  async uploadToPath(
+    path: string,
+    uri: string,
+    contentType: string,
+  ): Promise<void> {
+    const { uploadUrl } = await requestUploadUrl(path, contentType);
+    await uploadToPresignedUrl(uploadUrl, uri, contentType);
+    return;
+  },
+
   async getUrls(paths: string[]): Promise<Map<string, string>> {
     if (paths.length === 0) return new Map();
 

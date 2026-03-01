@@ -40,6 +40,7 @@ import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { useAuth } from '../../../providers/AuthProvider';
 import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet } from 'react-native-unistyles';
+import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -86,11 +87,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     uploading,
     progress,
     hasAssets,
+    pendingMediaIds,
+    clearPendingMediaIds,
   } = useStagedMediaActions({
     linkId,
     partyId,
     userId,
   });
+  useThumbnailSubscription(linkId, pendingMediaIds, clearPendingMediaIds);
 
   const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
