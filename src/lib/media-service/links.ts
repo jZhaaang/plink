@@ -11,17 +11,24 @@ async function uploadToPresignedUrl(
   uploadUrl: string,
   uri: string,
   contentType: string,
+  maxAttempts = 3,
 ): Promise<void> {
   const blob = await uriToBlob(uri);
 
-  const res = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': contentType },
-    body: blob,
-  });
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body: blob,
+    });
 
-  if (!res.ok) {
-    throw new Error(`S3 upload failed: ${res.status}`);
+    if (res.ok) return;
+
+    if (attempt === maxAttempts) {
+      throw new Error(`S3 upload failed: ${res.status}`);
+    }
+
+    await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt - 1)));
   }
 
   return;
