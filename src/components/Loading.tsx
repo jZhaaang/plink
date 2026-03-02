@@ -57,7 +57,7 @@ const styles = StyleSheet.create((theme) => ({
     variants: {
       tone: {
         brand: { color: theme.colors.textTertiary },
-        inverse: { color: 'rgba(255,255,255,0,7)' },
+        inverse: { color: 'rgba(255,255,255,0.7)' },
       },
     },
   },
