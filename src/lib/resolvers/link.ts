@@ -60,7 +60,7 @@ export async function resolveLinkPostMediaItems(
     const thumbnailUrl = media.thumbnail_path
       ? (urlMap.get(media.thumbnail_path) ?? null)
       : null;
-    if (!thumbnailUrl) {
+    if (!thumbnailUrl && !!media.thumbnail_path) {
       logger.warn('Missing resolved media URL for link media thumbnail', {
         mediaId: media.id,
         mediaPath: media.path,
