@@ -34,8 +34,6 @@ export default function MediaGrid({
 
   const handleLayout = (e: LayoutChangeEvent) => {
     setContainerWidth(e.nativeEvent.layout.width);
-    console.log(containerWidth);
-    console.log(playButtonSize);
   };
 
   if (containerWidth === 0) {
@@ -50,6 +48,7 @@ export default function MediaGrid({
     const isLastItem = hasOverflow && index === displayedMedia.length - 1;
     return (
       <MediaTile
+        key={index}
         uri={item.thumbnailUrl ?? item.url}
         width={itemSize}
         height={itemSize}
