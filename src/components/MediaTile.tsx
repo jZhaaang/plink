@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
 import { ReactNode, useState } from 'react';
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { Spinner } from './Loading';
 
 interface MediaTileProps {
-  uri: string;
+  uri: string | null;
   width: number;
   height: number;
   borderRadius?: number;
@@ -25,7 +26,7 @@ export default function MediaTile({
   const [isLoaded, setIsLoaded] = useState(false);
   const [pressed, setPressed] = useState(false);
 
-  styles.useVariants({ pressed });
+  const theme = UnistylesRuntime.getTheme();
 
   return (
     <Pressable
@@ -33,41 +34,50 @@ export default function MediaTile({
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
     >
-      <View style={[styles.wrapper, { width, height }, containerStyle]}>
-        <Image
-          source={{ uri }}
-          style={{ width, height, borderRadius }}
-          contentFit="cover"
-          cachePolicy="memory-disk"
-          transition={200}
-          onLoad={() => setIsLoaded(true)}
-        />
-
-        {!isLoaded && (
-          <View style={[styles.loadingPlaceholder, { borderRadius }]} />
+      <View
+        style={[
+          { width, height, opacity: pressed ? theme.opacity.pressed : 1 },
+          containerStyle,
+        ]}
+      >
+        {uri && (
+          <Image
+            source={{ uri }}
+            style={{ width, height, borderRadius }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={200}
+            onLoad={() => setIsLoaded(true)}
+          />
         )}
 
-        {renderOverlay?.(isLoaded)}
+        <View style={styles.overlay}>
+          {isLoaded ? (
+            renderOverlay?.(isLoaded)
+          ) : (
+            <View
+              style={[
+                styles.overlay,
+                { backgroundColor: theme.colors.lightGray, borderRadius },
+              ]}
+            >
+              <Spinner />
+            </View>
+          )}
+        </View>
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
-  wrapper: {
-    variants: {
-      pressed: {
-        true: { opacity: theme.opacity.pressed },
-        false: {},
-      },
-    },
-  },
-  loadingPlaceholder: {
+const styles = StyleSheet.create(() => ({
+  overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: theme.colors.lightGray,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }));

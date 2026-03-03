@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import MediaTile from './MediaTile';
 import { StyleSheet } from 'react-native-unistyles';
 import { useState } from 'react';
+import React from 'react';
 
 interface Props {
   media: LinkPostMedia[];
@@ -48,8 +49,8 @@ export default function MediaGrid({
     const isLastItem = hasOverflow && index === displayedMedia.length - 1;
     return (
       <MediaTile
-        key={index}
-        uri={item.thumbnailUrl ?? item.url}
+        key={item.id}
+        uri={item.thumbnailUrl ?? (item.type === 'video' ? null : item.url)}
         width={itemSize}
         height={itemSize}
         onPress={() => {
@@ -59,29 +60,29 @@ export default function MediaGrid({
             onMediaPress?.(item);
           }
         }}
-        renderOverlay={(isLoaded) => {
-          if (!isLoaded) return null;
-
+        renderOverlay={() => {
           if (isLastItem) {
             return (
-              <View style={styles.overflowOverlay}>
+              <View style={styles.overflowTint}>
                 <Text style={styles.overflowText}>+{overflowCount}</Text>
               </View>
             );
-          } else if (item.type === 'video') {
+          }
+
+          if (item.type === 'video') {
             return (
-              <View style={styles.videoOverlay}>
-                <View style={styles.playButton(playButtonSize)}>
-                  <Feather
-                    name="play"
-                    size={playButtonSize * 0.5}
-                    color="white"
-                    style={{ marginLeft: 3 }}
-                  />
-                </View>
+              <View style={styles.playButton(playButtonSize)}>
+                <Feather
+                  name="play"
+                  size={playButtonSize * 0.5}
+                  color="white"
+                  style={{ marginLeft: 3 }}
+                />
               </View>
             );
           }
+
+          return null;
         }}
       />
     );
@@ -117,30 +118,14 @@ const styles = StyleSheet.create((theme) => ({
     flexWrap: 'wrap',
     gap: GAP,
   },
-  overflowOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  overflowTint: {
     backgroundColor: theme.colors.overlay,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: theme.radii.lg,
   },
   overflowText: {
     color: theme.colors.textInverse,
     fontSize: theme.fontSizes.lg,
     fontWeight: theme.fontWeights.semibold,
-  },
-  videoOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   playButton: (size: number) => ({
     width: size,
