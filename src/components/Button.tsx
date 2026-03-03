@@ -86,11 +86,11 @@ const styles = StyleSheet.create((theme) => ({
         },
       },
       pressed: {
-        true: { opacity: 0.85 },
+        true: { opacity: theme.opacity.pressed },
         false: {},
       },
       isDisabled: {
-        true: { opacity: 0.6 },
+        true: { opacity: theme.opacity.disabled },
         false: {},
       },
       isOutlinePressed: {

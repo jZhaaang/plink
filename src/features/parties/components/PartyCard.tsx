@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import { AvatarStack } from '../../../components';
 
 interface Props {
@@ -29,6 +29,7 @@ function BannerFallback({ showIcon }: { showIcon?: boolean }) {
 
 export default function PartyCard(props: Props) {
   const { name, bannerUri, members, onPress } = props;
+  const theme = UnistylesRuntime.getTheme();
 
   const memberAvatarUris =
     members?.map((m) => m.avatarUrl).filter((url): url is string => !!url) ??
@@ -38,7 +39,9 @@ export default function PartyCard(props: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+      style={({ pressed }) => ({
+        opacity: pressed ? theme.opacity.pressed : 1,
+      })}
     >
       <View style={styles.card}>
         <View style={styles.bannerWrap}>

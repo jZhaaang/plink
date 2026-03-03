@@ -98,7 +98,6 @@ export const lightTheme = {
 
     icon: palette.slate500,
     iconSecondary: palette.slate600,
-    disabled: 0.6,
 
     spinnerBrand: palette.blue600,
     spinnerInverse: palette.white,
@@ -116,6 +115,11 @@ export const lightTheme = {
     warning: palette.amber600,
     badgeActive: 'rgba(34, 197, 94, 0.85)',
     badgeInactive: 'rgba(15, 23, 42, 0.85)',
+  },
+
+  opacity: {
+    pressed: 0.85,
+    disabled: 0.6,
   },
 
   spacing,

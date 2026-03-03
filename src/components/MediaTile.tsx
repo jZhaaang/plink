@@ -53,11 +53,11 @@ export default function MediaTile({
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   wrapper: {
     variants: {
       pressed: {
-        true: { opacity: 0.8 },
+        true: { opacity: theme.opacity.pressed },
         false: {},
       },
     },
@@ -68,6 +68,6 @@ const styles = StyleSheet.create(() => ({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(203,213,225,0.7)',
+    backgroundColor: theme.colors.lightGray,
   },
 }));

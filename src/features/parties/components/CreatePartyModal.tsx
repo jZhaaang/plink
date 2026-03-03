@@ -6,7 +6,7 @@ import { Party } from '../../../lib/models';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { pickPartyBannerFromLibrary } from '../../../lib/media/bannerCropper';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 interface Props {
   visible: boolean;
@@ -24,7 +24,7 @@ export default function CreatePartyModal({
   onSubmit,
 }: Props) {
   const isEditMode = !!initialParty;
-
+  const theme = UnistylesRuntime.getTheme();
   const [name, setName] = useState(initialParty?.name ?? '');
   const [bannerUri, setBannerUri] = useState<string | null>(
     initialParty?.bannerUrl ?? null,
@@ -85,7 +85,7 @@ export default function CreatePartyModal({
       <Pressable
         onPress={chooseBanner}
         style={({ pressed }) => ({
-          opacity: pressed ? 0.85 : 1,
+          opacity: pressed ? theme.opacity.pressed : 1,
         })}
       >
         <View style={styles.bannerWrap}>

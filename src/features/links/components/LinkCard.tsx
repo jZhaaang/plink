@@ -96,7 +96,7 @@ const cardStyles = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing.md,
     variants: {
       pressed: {
-        true: { opacity: 0.9 },
+        true: { opacity: theme.opacity.pressed },
         false: {},
       },
     },
