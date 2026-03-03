@@ -1,17 +1,12 @@
-import {
-  View,
-  Text,
-  Pressable,
-  useWindowDimensions,
-  GestureResponderEvent,
-} from 'react-native';
+import { View, Text, Pressable, GestureResponderEvent } from 'react-native';
 import { Image } from 'expo-image';
 import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
 import { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
-import { DropdownMenu, DropdownMenuItem, MediaTile } from '../../../components';
+import { DropdownMenu, DropdownMenuItem } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import MediaGrid from '../../../components/MediaGrid';
 
 interface Props {
   post: LinkPostWithMedia;
@@ -20,7 +15,7 @@ interface Props {
   onDeletePost?: (postId: string) => void;
 }
 
-const GAP = 2;
+const AVATAR_SIZE = 40;
 
 export default function PostFeedItem({
   post,
@@ -28,17 +23,14 @@ export default function PostFeedItem({
   currentUserId,
   onDeletePost,
 }: Props) {
+  const theme = UnistylesRuntime.getTheme();
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
     null,
   );
 
   const isPostOwner = currentUserId === post.owner_id;
-  const { width: screenWidth } = useWindowDimensions();
-  const contentWidth = screenWidth - 70;
-
   const mediaCount = post.media.length;
-  const itemSize = (contentWidth - GAP * 2) / 3;
 
   const handleMenuPress = (event: GestureResponderEvent) => {
     event.currentTarget.measureInWindow(
@@ -62,11 +54,11 @@ export default function PostFeedItem({
           <Image
             source={{ uri: post.owner.avatarUrl }}
             cachePolicy="memory-disk"
-            style={{ width: 40, height: 40, borderRadius: 20 }}
+            style={styles.avatar}
             contentFit="cover"
           />
         ) : (
-          <View style={styles.avatarFallback}>
+          <View style={[styles.avatar, styles.avatarFallback]}>
             <Text style={styles.avatarFallbackText}>
               {post.owner.name?.charAt(0).toUpperCase() ?? '?'}
             </Text>
@@ -85,7 +77,11 @@ export default function PostFeedItem({
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <View style={styles.menuButton}>
-              <Feather name="more-horizontal" size={20} color="#64748b" />
+              <Feather
+                name="more-horizontal"
+                size={20}
+                color={theme.colors.gray}
+              />
             </View>
           </Pressable>
         )}
@@ -93,35 +89,17 @@ export default function PostFeedItem({
 
       {/* Media Grid */}
       {mediaCount > 0 && (
-        <View style={styles.mediaGrid}>
-          {post.media.map((media) => (
-            <MediaTile
-              key={media.id}
-              uri={media.thumbnailUrl ?? media.url}
-              width={itemSize}
-              height={itemSize}
-              onPress={() => onMediaPress?.(media)}
-              renderOverlay={(isLoaded) => {
-                if (!isLoaded || media.type !== 'video') return null;
-
-                return (
-                  <View style={styles.videoOverlay}>
-                    <View style={styles.playButton}>
-                      <Feather name="play" size={16} color="white" />
-                    </View>
-                  </View>
-                );
-              }}
-            />
-          ))}
-        </View>
-      )}
-
-      {/* Photo count indicator */}
-      {mediaCount > 0 && (
-        <Text style={styles.mediaCount}>
-          {mediaCount} item{mediaCount > 1 ? 's' : ''}
-        </Text>
+        <>
+          <MediaGrid
+            media={post.media}
+            columns={3}
+            scrollEnabled={false}
+            onMediaPress={onMediaPress}
+          />
+          <Text style={styles.mediaCount}>
+            {mediaCount} item{mediaCount > 1 ? 's' : ''}
+          </Text>
+        </>
       )}
 
       <DropdownMenu
@@ -154,10 +132,12 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     marginBottom: theme.spacing.md,
   },
-  avatarFallback: {
-    width: 40,
-    height: 40,
+  avatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
     borderRadius: theme.radii.full,
+  },
+  avatarFallback: {
     backgroundColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
@@ -182,29 +162,6 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.sm,
     marginRight: -theme.spacing.sm,
     borderRadius: theme.radii.full,
-  },
-  mediaGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: GAP,
-    marginHorizontal: -GAP / 2,
-  },
-  videoOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: theme.radii.full,
-    backgroundColor: theme.colors.overlay,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   mediaCount: {
     fontSize: theme.fontSizes.xs,
