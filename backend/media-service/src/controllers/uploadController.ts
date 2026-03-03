@@ -46,7 +46,16 @@ export async function upload(req: AuthenticatedRequest, res: Response) {
 
     res.json({ uploadUrl: signedUrl, key });
   } catch (err) {
-    console.error('Upload error', err);
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'upload_error',
+        userId: req.userId,
+        key: req.body?.key,
+        contentType: req.body?.contentType,
+        reason: err instanceof Error ? err.message : 'Unknown error',
+      }),
+    );
     res.status(500).json({ error: 'Failed to generate upload URL' });
   }
 }
@@ -64,7 +73,16 @@ export async function getSignedUrl(req: AuthenticatedRequest, res: Response) {
 
     res.json({ url: signedUrl });
   } catch (err) {
-    console.error('Signed URL error', err);
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'signed_url_error',
+        userId: req.userId,
+        key: req.body?.key,
+        contentType: req.body?.contentType,
+        reason: err instanceof Error ? err.message : 'Unknown error',
+      }),
+    );
     res.status(500).json({ error: 'Failed to generate signed URL' });
   }
 }
@@ -82,7 +100,16 @@ export async function remove(req: AuthenticatedRequest, res: Response) {
 
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
-    console.error('Delete error', err);
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'delete_error',
+        userId: req.userId,
+        key: req.body?.key,
+        contentType: req.body?.contentType,
+        reason: err instanceof Error ? err.message : 'Unknown error',
+      }),
+    );
     res.status(500).json({ error: 'Failed to delete file' });
   }
 }

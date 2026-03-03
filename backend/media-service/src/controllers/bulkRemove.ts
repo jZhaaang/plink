@@ -29,7 +29,16 @@ export async function bulkRemove(req: AuthenticatedRequest, res: Response) {
 
     res.json({ deleted: objects.length });
   } catch (err) {
-    console.error('Bulk delete error', err);
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: 'bulk_delete_error',
+        userId: req.userId,
+        key: req.body?.key,
+        contentType: req.body?.contentType,
+        reason: err instanceof Error ? err.message : 'Unknown error',
+      }),
+    );
     res.status(500).json({ error: 'Failed to bulk delete' });
   }
 }
