@@ -41,6 +41,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
+import JoinLinkBanner from '../components/JoinLinkBanner';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -427,6 +428,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 />
               )}
             </>
+          )}
+
+          {isActive && !isMember && (
+            <JoinLinkBanner
+              onJoin={linkActions.joinLink}
+              memberCount={link.members.length}
+            />
           )}
 
           {/* Dropdown Menu */}
