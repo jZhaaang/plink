@@ -395,7 +395,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   heroSubtitle: {
     fontSize: theme.fontSizes.sm,
-    color: 'rgba(255,255,255,0.7)',
+    color: theme.colors.textInverseMuted,
   },
   contentArea: {
     flex: 1,

@@ -1,6 +1,6 @@
 import { View, Text, ViewProps, ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 interface EmptyStateProps extends Omit<ViewProps, 'style'> {
   icon?: keyof typeof Feather.glyphMap;
@@ -18,11 +18,13 @@ export default function EmptyState({
   style,
   ...rest
 }: EmptyStateProps) {
+  const theme = UnistylesRuntime.getTheme();
+
   return (
     <View {...rest} style={[styles.container, style]}>
       {icon && (
         <View style={styles.iconWrapper}>
-          <Feather name={icon} size={24} color="#64748b" />
+          <Feather name={icon} size={24} color={theme.colors.gray} />
         </View>
       )}
       <Text style={styles.title}>{title}</Text>

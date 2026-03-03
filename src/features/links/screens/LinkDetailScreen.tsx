@@ -495,10 +495,10 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.full,
   },
   statusBadgeActive: {
-    backgroundColor: 'rgba(34,197,94,0.8)',
+    backgroundColor: theme.colors.badgeActive,
   },
   statusBadgeEnded: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: theme.colors.badgeInactive,
   },
   statusBadgeText: {
     fontSize: theme.fontSizes.xs,
@@ -512,7 +512,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   heroSubtitle: {
     fontSize: theme.fontSizes.sm,
-    color: 'rgba(255,255,255,0.7)',
+    color: theme.colors.textInverseMuted,
   },
   contentArea: {
     flex: 1,

@@ -83,12 +83,7 @@ export default function DropdownMenu({
   return (
     <Modal visible={visible} transparent onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
-        <View
-          style={[
-            styles.menu,
-            { position: 'absolute', top: anchor.y, right: 12 },
-          ]}
-        >
+        <View style={styles.menu(anchor.y)}>
           <Pressable onPress={(e) => e.stopPropagation()}>{children}</Pressable>
         </View>
       </Pressable>
@@ -100,7 +95,10 @@ const styles = StyleSheet.create((theme) => ({
   overlay: {
     flex: 1,
   },
-  menu: {
+  menu: (yAnchor: number) => ({
+    position: 'absolute',
+    top: yAnchor,
+    right: 12,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.md,
     overflow: 'hidden',
@@ -108,5 +106,5 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.colors.border,
     ...theme.shadows.lg,
-  },
+  }),
 }));

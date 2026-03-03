@@ -27,8 +27,6 @@ const palette = {
   amber600: '#d97706',
 
   white: '#ffffff',
-  gray300: '#d1d5db',
-  gray700: '#374151',
   black: '#000000',
 } as const;
 
@@ -83,6 +81,7 @@ export const lightTheme = {
     textTertiary: palette.slate500,
     textPlaceholder: palette.slate400,
     textInverse: palette.white,
+    textInverseMuted: 'rgba(255,255,255,0.7)',
 
     border: palette.slate200,
     borderLight: palette.slate100,
@@ -106,16 +105,17 @@ export const lightTheme = {
     spinnerMuted: palette.slate600,
 
     white: palette.white,
-    lightGray: palette.gray300,
-    darkGray: palette.gray700,
+    lightGray: palette.slate300,
+    gray: palette.slate500,
+    darkGray: palette.slate700,
     black: palette.black,
 
     accentSurface: palette.blue50,
     accentSurfaceLight: palette.blue100,
     accentText: palette.blue700,
     warning: palette.amber600,
-    badgeActive: 'rgba(16, 185, 129, 0.9)',
-    badgeInactive: 'rgba(15, 23, 42, 0.65)',
+    badgeActive: 'rgba(34, 197, 94, 0.85)',
+    badgeInactive: 'rgba(15, 23, 42, 0.85)',
   },
 
   spacing,

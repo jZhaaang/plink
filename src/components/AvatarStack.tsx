@@ -25,30 +25,12 @@ export default function AvatarStack({
           key={i}
           source={{ uri }}
           cachePolicy="memory-disk"
-          style={{
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-            borderWidth: 1,
-            borderColor: 'white',
-            marginLeft: i > 0 ? -size / 3 : 0,
-          }}
+          style={styles.image(size, i)}
         />
       ))}
 
       {overflow > 0 && (
-        <View
-          style={[
-            styles.overflowBadge,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              borderWidth: 1,
-              marginLeft: -size / 3,
-            },
-          ]}
-        >
+        <View style={styles.overflowBadge(size)}>
           <Text style={styles.overflowText}>+{overflow}</Text>
         </View>
       )}
@@ -61,13 +43,25 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  overflowBadge: {
+  image: (size: number, index: number) => ({
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    borderWidth: 1,
+    borderColor: theme.colors.white,
+    marginLeft: index > 0 ? -size / 4 : 0,
+  }),
+  overflowBadge: (size: number) => ({
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    borderWidth: 1,
+    marginLeft: -size / 4,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
     backgroundColor: theme.colors.lightGray,
     borderColor: theme.colors.white,
-  },
+  }),
   overflowText: {
     fontSize: theme.fontSizes.xs,
     fontWeight: theme.fontWeights.bold,

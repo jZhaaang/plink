@@ -6,7 +6,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   header?: string;
@@ -24,6 +24,8 @@ export default function TextField({
   inputStyle,
   ...rest
 }: TextFieldProps) {
+  const theme = UnistylesRuntime.getTheme();
+
   return (
     <View>
       {header && <Text style={styles.header}>{header}</Text>}
@@ -31,7 +33,7 @@ export default function TextField({
         {left}
         <TextInput
           {...rest}
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={theme.colors.textPlaceholder}
           style={[styles.input, inputStyle]}
         />
         {right}
