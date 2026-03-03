@@ -10,5 +10,6 @@
     "**/*.tsx",
     "global.d.ts"
   ],
+  "exclude": ["backend", "lambda"],
   "extends": "expo/tsconfig.base"
 }
