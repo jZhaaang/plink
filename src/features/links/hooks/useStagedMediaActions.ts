@@ -45,6 +45,7 @@ type UploadedAsset = {
   type: 'image' | 'video';
   duration_seconds: number | null;
 };
+
 export function useStagedMediaActions({
   linkId,
   partyId,
@@ -154,47 +155,66 @@ export function useStagedMediaActions({
           const duration_seconds =
             type === 'video' ? (item.asset.duration ?? null) : null;
 
-          const path = linksStorage.path(linkId, post.id, mime);
-          const row = await createLinkPostMedia({
-            post_id: post.id,
-            path,
-            mime,
-            type,
-            duration_seconds,
-          });
-          if (row) insertedMediaIds.push(row.id);
+          let path = null;
 
           try {
             const uri =
               type === 'video'
                 ? item.asset.uri
                 : (await compressImage(item.asset.uri)).uri;
-            await linksStorage.uploadToPath(path, uri, mime);
+            const uploadMime = type === 'video' ? mime : 'image/jpeg'; // images are compressed to JPEG
+            path = await linksStorage.upload(linkId, post.id, uri, uploadMime);
+
+            const row = await createLinkPostMedia({
+              post_id: post.id,
+              path,
+              mime,
+              type,
+              duration_seconds,
+            });
+            if (row) insertedMediaIds.push(row.id);
+
+            uploadedPaths.push(path);
+
+            setProgress((prev) =>
+              prev ? { ...prev, completed: prev.completed + 1 } : prev,
+            );
+            return {
+              path,
+              mime,
+              type,
+              duration_seconds,
+            };
           } catch (err) {
-            logger.error('Error uploading asset', { err, asset: item });
+            if (path) {
+              try {
+                await linksStorage.remove([path]);
+              } catch (cleanupErr) {
+                logger.error('Cleanup failed: Error removing uploaded path', {
+                  err: cleanupErr,
+                  path,
+                  linkId,
+                  postId: post.id,
+                });
+              }
+            }
+
+            logger.error('Error processing asset', { err, asset: item });
             setProgress((prev) =>
               prev ? { ...prev, failed: prev.failed + 1 } : prev,
             );
+            throw err;
           }
-
-          setProgress((prev) =>
-            prev ? { ...prev, completed: prev.completed + 1 } : prev,
-          );
-          return {
-            path,
-            mime,
-            type,
-            duration_seconds,
-          };
         }),
       );
+
+      setUploading(false);
+      setProgress(null);
 
       const successes = uploadedResults
         .filter((res) => res.status === 'fulfilled')
         .map((res) => res.value);
       const failures = uploadedResults.length - successes.length;
-
-      for (const item of successes) uploadedPaths.push(item.path);
 
       if (successes.length === 0) {
         try {
@@ -216,26 +236,26 @@ export function useStagedMediaActions({
         });
       }
 
-      if (successes.length > 0) {
-        Burnt.toast({
-          title: `${successes.length} ${successes.length === 1 ? 'item' : 'items'} posted.`,
-          preset: 'done',
-          haptic: 'success',
-        });
+      Burnt.toast({
+        title: `${successes.length} ${successes.length === 1 ? 'item' : 'items'} posted.`,
+        preset: 'done',
+        haptic: 'success',
+      });
 
-        setPendingMediaIds(insertedMediaIds);
+      setPendingMediaIds(insertedMediaIds);
 
-        trackEvent('media_uploaded', {
-          link_id: linkId,
-          count: successes.length,
-        });
-        invalidate.linkDetail(linkId);
-        invalidate.partyDetail(partyId);
-        invalidate.activity();
-        setStagedAssets([]);
-      }
+      trackEvent('media_uploaded', {
+        link_id: linkId,
+        count: successes.length,
+      });
+      invalidate.linkDetail(linkId);
+      invalidate.partyDetail(partyId);
+      invalidate.activity();
+      setStagedAssets([]);
     } catch (err) {
       const originalErr = err;
+      setUploading(false);
+      setProgress(null);
 
       if (insertedMediaIds.length) {
         try {
@@ -256,7 +276,7 @@ export function useStagedMediaActions({
           await linksStorage.remove(uploadedPaths);
         } catch (cleanupErr) {
           logger.error(
-            'Cleanup failed: Error removing uploaded sotrage paths',
+            'Cleanup failed: Error removing uploaded storage paths',
             { err: cleanupErr, uploadedPaths, linkId },
           );
         }
@@ -271,10 +291,8 @@ export function useStagedMediaActions({
         linkId,
         stagedAssets,
       });
-      await dialog.error('Failed to Upload Items');
-    } finally {
-      setUploading(false);
-      setProgress(null);
+      await dialog.error('Failed to Upload Items', originalErr.message);
+      console.log(originalErr);
     }
   }, [stagedAssets, linkId, userId, invalidate]);
 
