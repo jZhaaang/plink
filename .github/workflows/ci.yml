@@ -18,5 +18,9 @@ jobs:
       - run: npm ci
       - name: Link
         run: npm run lint
-      - name: Type check
+      - name: Expo App type check
         run: npx tsc --noEmit
+      - name: Media Service type check
+        run: cd backend/media-service && npm ci && npx tsc --noEmit
+      - name: Lambda type check
+        run: cd lambda && npm ci && npx tsc --noEmit
