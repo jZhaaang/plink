@@ -5,7 +5,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, LoadingScreen, TextField } from '../../../components';
-import { avatars as avatarsStorage } from '../../../lib/supabase/storage/avatars';
+import { profiles as profilesStorage } from '../../../lib/media-service/profiles';
 import { RootStackParamList } from '../../../navigation/types';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { updateUserProfile } from '../../../lib/supabase/queries/users';
@@ -102,11 +102,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
 
       if (imageUri) {
         const compressed = await compressImage(imageUri, 512, 0.6);
-        avatarPath = await avatarsStorage.upload(userId, compressed.uri);
+        avatarPath = await profilesStorage.upload(
+          userId,
+          { type: 'avatar' },
+          compressed.uri,
+        );
       } else {
         const encodedName = encodeURIComponent(name.trim());
-        avatarPath = await avatarsStorage.upload(
+        avatarPath = await profilesStorage.upload(
           userId,
+          { type: 'avatar' },
           `https://ui-avatars.com/api/?name=${encodedName}&background=random&rounded=true&length=1&format=jpg&size=128`,
         );
       }

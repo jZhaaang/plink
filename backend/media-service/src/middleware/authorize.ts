@@ -18,6 +18,16 @@ type AccessChecker = (
 ) => Promise<boolean>;
 
 const accessCheckers: Record<string, AccessChecker> = {
+  profiles: async (userId, resourceId, action) => {
+    if (action === 'read') {
+      // allow any user to read
+      return true;
+    } else {
+      // allow user to write/read
+      return userId === resourceId;
+    }
+  },
+
   parties: async (userId, resourceId, action) => {
     if (action === 'read') {
       // allow party members to read
@@ -142,7 +152,11 @@ const accessCheckers: Record<string, AccessChecker> = {
 };
 
 function parseKey(key: string[]): ParsedKey | null {
-  // parties/{partyId}/banner.jpg
+  if (key[0] === 'profiles' && key[1]) {
+    return { resource: 'profiles', resourceId: key[1] };
+  }
+
+  // parties/{partyId}/banner
   if (key[0] === 'parties' && key[1]) {
     return { resource: 'parties', resourceId: key[1] };
   }
@@ -152,7 +166,7 @@ function parseKey(key: string[]): ParsedKey | null {
     return { resource: 'links', resourceId: key[1] };
   }
 
-  // links/{linkId}/banner.jpg
+  // links/{linkId}/banner
   if (key[0] === 'links' && key[1] && key[2] === 'banner.jpg') {
     return { resource: 'links', resourceId: key[1] };
   }

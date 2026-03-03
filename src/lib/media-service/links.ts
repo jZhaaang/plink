@@ -1,122 +1,38 @@
 import { randomUUID } from 'expo-crypto';
 import { extFromMime } from '../utils/extFromMime';
-import { deleteFile, getSignedUrl, requestUploadUrl } from './client';
+import { deleteBulk } from './client';
+import { uploadFile, getUrls, removeFiles } from './core';
 
-async function uriToBlob(uri: string): Promise<Blob> {
-  const response = await fetch(uri);
-  return response.blob();
-}
-
-async function uploadToPresignedUrl(
-  uploadUrl: string,
-  uri: string,
-  contentType: string,
-  maxAttempts = 3,
-): Promise<void> {
-  const blob = await uriToBlob(uri);
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const res = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': contentType },
-      body: blob,
-    });
-
-    if (res.ok) return;
-
-    if (attempt === maxAttempts) {
-      throw new Error(`S3 upload failed: ${res.status}`);
-    }
-
-    await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt - 1)));
-  }
-
-  return;
-}
-
-type CachedUrl = { url: string; expiresAt: number };
-const urlCache = new Map<string, CachedUrl>();
-const CACHE_BUFFER = 60_000;
+type UploadType = { type: 'post'; postId: string } | { type: 'banner' };
 
 export const links = {
-  path(linkId: string, postId: string, contentType: string) {
-    return `links/${linkId}/posts/${postId}/${randomUUID()}.${extFromMime(contentType)}`;
-  },
+  path(linkId: string, target: UploadType, contentType: string) {
+    const ext = extFromMime(contentType);
 
-  bannerPath(linkId: string, contentType: string = 'image/jpeg') {
-    return `links/${linkId}/banner.${extFromMime(contentType)}`;
+    switch (target.type) {
+      case 'post':
+        return `links/${linkId}/posts/${target.postId}/${randomUUID()}.${ext}`;
+      case 'banner':
+        return `links/${linkId}/banner`;
+    }
   },
 
   async upload(
     linkId: string,
-    postId: string,
+    target: UploadType,
     uri: string,
     contentType: string = 'image/jpeg',
   ): Promise<string> {
-    const key = this.path(linkId, postId, contentType);
-    const { uploadUrl } = await requestUploadUrl(key, contentType);
-    await uploadToPresignedUrl(uploadUrl, uri, contentType);
+    const key = this.path(linkId, target, contentType);
+    await uploadFile(key, uri, contentType);
     return key;
   },
 
-  async uploadBanner(
-    linkId: string,
-    uri: string,
-    contentType: string = 'image/jpeg',
-  ): Promise<string> {
-    const key = this.bannerPath(linkId, contentType);
-    const { uploadUrl } = await requestUploadUrl(key, contentType);
-    await uploadToPresignedUrl(uploadUrl, uri, contentType);
-    return key;
-  },
+  getUrls,
 
-  async uploadToPath(
-    path: string,
-    uri: string,
-    contentType: string,
-  ): Promise<void> {
-    const { uploadUrl } = await requestUploadUrl(path, contentType);
-    await uploadToPresignedUrl(uploadUrl, uri, contentType);
-    return;
-  },
+  remove: removeFiles,
 
-  async getUrls(paths: string[]): Promise<Map<string, string>> {
-    if (paths.length === 0) return new Map();
-
-    const now = Date.now();
-    const result = new Map<string, string>();
-    const uncached: string[] = [];
-
-    for (const p of paths) {
-      const cached = urlCache.get(p);
-      if (cached && cached.expiresAt - CACHE_BUFFER > now) {
-        result.set(p, cached.url);
-      } else {
-        uncached.push(p);
-      }
-    }
-
-    const urlResults = await Promise.allSettled(
-      uncached.map(async (path) => {
-        const url = await getSignedUrl(path);
-        return { path, url };
-      }),
-    );
-
-    const expiresAt = now + 3600 * 1000;
-    for (const r of urlResults) {
-      if (r.status === 'fulfilled') {
-        result.set(r.value.path, r.value.url);
-        urlCache.set(r.value.path, { url: r.value.url, expiresAt });
-      }
-    }
-
-    return result;
-  },
-
-  async remove(paths: string[]): Promise<void> {
-    if (paths.length === 0) return;
-    await Promise.allSettled(paths.map((p) => deleteFile(p)));
-    return;
+  async removeAll(linkId: string): Promise<void> {
+    await deleteBulk(`links/${linkId}`);
   },
 };

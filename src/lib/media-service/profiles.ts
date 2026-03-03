@@ -1,23 +1,23 @@
 import { deleteBulk } from './client';
 import { uploadFile, getUrls, removeFiles } from './core';
 
-type UploadType = { type: 'banner' };
+type UploadType = { type: 'avatar' };
 
-export const parties = {
-  path(partyId: string, target: UploadType) {
+export const profiles = {
+  path(userId: string, target: UploadType) {
     switch (target.type) {
-      case 'banner':
-        return `parties/${partyId}/banner`;
+      case 'avatar':
+        return `profiles/${userId}/avatar`;
     }
   },
 
   async upload(
-    partyId: string,
+    userId: string,
     target: UploadType,
     uri: string,
     contentType: string = 'image/jpeg',
   ): Promise<string> {
-    const key = this.path(partyId, target);
+    const key = this.path(userId, target);
     await uploadFile(key, uri, contentType);
     return key;
   },
@@ -26,7 +26,7 @@ export const parties = {
 
   remove: removeFiles,
 
-  async removeAll(partyId: string): Promise<void> {
-    await deleteBulk(`parties/${partyId}`);
+  async removeAll(userId: string): Promise<void> {
+    await deleteBulk(`profiles/${userId}`);
   },
 };

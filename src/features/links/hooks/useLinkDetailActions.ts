@@ -90,8 +90,9 @@ export function useLinkDetailActions({
       setSavingBanner(true);
       try {
         const compressed = await compressImage(croppedUri);
-        const bannerPath = await linksStorage.uploadBanner(
+        const bannerPath = await linksStorage.upload(
           linkId,
+          { type: 'banner' },
           compressed.uri,
           'image/jpeg',
         );

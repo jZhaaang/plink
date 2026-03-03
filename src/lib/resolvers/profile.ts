@@ -1,12 +1,12 @@
 import { Profile, ProfileRow } from '../models';
-import { avatars as avatarsStorage } from '../supabase/storage/avatars';
+import { profiles as profilesStorage } from '../media-service/profiles';
 import { logger } from '../telemetry/logger';
 
 export async function resolveProfile(profile: ProfileRow): Promise<Profile> {
   if (!profile.avatar_path) return { ...profile, avatarUrl: undefined };
 
   try {
-    const urlMap = await avatarsStorage.getUrls([profile.avatar_path]);
+    const urlMap = await profilesStorage.getUrls([profile.avatar_path]);
     const avatarUrl = urlMap.get(profile.avatar_path);
 
     if (!avatarUrl) {

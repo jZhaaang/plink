@@ -14,7 +14,7 @@ import {
   TextField,
 } from '../../../components';
 import { signOut } from '../../../lib/supabase/queries/auth';
-import { avatars as avatarsStorage } from '../../../lib/supabase/storage/avatars';
+import { profiles as profilesStorage } from '../../../lib/media-service/profiles';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../hooks/useProfile';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
@@ -132,10 +132,14 @@ export default function ProfileScreen() {
       let avatarPath = profile.avatar_path;
       if (imageUri) {
         const compressed = await compressImage(imageUri, 512, 0.6);
-        const newPath = await avatarsStorage.upload(userId, compressed.uri);
+        const newPath = await profilesStorage.upload(
+          userId,
+          { type: 'avatar' },
+          compressed.uri,
+        );
         const oldPath = avatarPath;
         avatarPath = newPath;
-        if (oldPath) await avatarsStorage.remove([oldPath]);
+        if (oldPath) await profilesStorage.remove([oldPath]);
       }
 
       await updateUserProfile(userId, {

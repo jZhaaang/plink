@@ -66,8 +66,9 @@ export default function PartyListScreen({ navigation }: Props) {
       let banner_path = null;
       if (bannerUri) {
         const compressed = await compressImage(bannerUri);
-        banner_path = await partiesStorage.uploadBanner(
+        banner_path = await partiesStorage.upload(
           party.id,
+          { type: 'banner' },
           compressed.uri,
         );
       }

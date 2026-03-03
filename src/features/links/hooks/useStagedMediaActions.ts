@@ -163,7 +163,12 @@ export function useStagedMediaActions({
                 ? item.asset.uri
                 : (await compressImage(item.asset.uri)).uri;
             const uploadMime = type === 'video' ? mime : 'image/jpeg'; // images are compressed to JPEG
-            path = await linksStorage.upload(linkId, post.id, uri, uploadMime);
+            path = await linksStorage.upload(
+              linkId,
+              { type: 'post', postId: post.id },
+              uri,
+              uploadMime,
+            );
 
             const row = await createLinkPostMedia({
               post_id: post.id,
@@ -292,7 +297,6 @@ export function useStagedMediaActions({
         stagedAssets,
       });
       await dialog.error('Failed to Upload Items', originalErr.message);
-      console.log(originalErr);
     }
   }, [stagedAssets, linkId, userId, invalidate]);
 
