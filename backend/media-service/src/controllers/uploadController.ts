@@ -8,7 +8,14 @@ import { getSignedUrl as s3GetSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AuthenticatedRequest } from '../middleware/authenticate';
 import { BUCKET, s3 } from '../lib/s3';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'];
+const ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'video/mp4',
+  'video/quicktime',
+];
 
 export async function upload(req: AuthenticatedRequest, res: Response) {
   try {
