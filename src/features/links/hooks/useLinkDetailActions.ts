@@ -214,9 +214,11 @@ export function useLinkDetailActions({
             )
           : null;
 
+        await linksStorage.remove(
+          post.media.flatMap((m) => [m.path, m.thumbnail_path]),
+        );
         await Promise.all(post.media.map((m) => deleteLinkPostMedia(m.id)));
         await deleteLinkPost(postId);
-        await linksStorage.remove(post.media.map((m) => m.path));
 
         if (isDeletingBanner) {
           await updateLinkById(linkId, {
