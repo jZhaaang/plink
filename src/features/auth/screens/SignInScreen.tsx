@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Pressable, Platform } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../../navigation/types';
@@ -10,16 +10,18 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
 export default function SignInScreen({ navigation }: Props) {
   const dialog = useDialog();
+  const theme = UnistylesRuntime.getTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secure, setSecure] = useState(true);
+  const [fieldError, setFieldError] = useState('');
 
   const [loading, setLoading] = useState(false);
 
@@ -28,13 +30,6 @@ export default function SignInScreen({ navigation }: Props) {
 
     const normalizedEmail = normalize(email);
     if (!normalizedEmail || !password) {
-      if (__DEV__ && Platform.OS === 'android') {
-        await signInWithEmail('jimmy.zhaang@gmail.com', 'testing');
-        return;
-      } else if (__DEV__ && Platform.OS === 'ios') {
-        await signInWithEmail('isniffcookies@gmail.com', 'popcorn');
-        return;
-      }
       await dialog.error('Missing info', 'Enter your email and password.');
       return;
     }
@@ -43,8 +38,15 @@ export default function SignInScreen({ navigation }: Props) {
     try {
       await signInWithEmail(normalizedEmail, password);
     } catch (err) {
-      logger.error('Error signing in with email:', { err });
-      await dialog.error('Sign In Failed', getErrorMessage(err));
+      const message = getErrorMessage(err);
+
+      if (message === 'Incorrect email or password.') {
+        setFieldError('Incorrect email or password');
+        return;
+      } else {
+        logger.error('Error signing in with email:', { err });
+        await dialog.error('Sign In Failed', message);
+      }
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,13 @@ export default function SignInScreen({ navigation }: Props) {
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>Email</Text>
             <TextField
-              left={<Ionicons name="mail-outline" size={18} color="#64748b" />}
+              left={
+                <Ionicons
+                  name="mail-outline"
+                  size={18}
+                  color={theme.colors.gray}
+                />
+              }
               placeholder="you@example.com"
               keyboardType="email-address"
               textContentType="emailAddress"
@@ -98,11 +106,14 @@ export default function SignInScreen({ navigation }: Props) {
                   <Ionicons
                     name={secure ? 'eye-off-outline' : 'eye-outline'}
                     size={18}
-                    color="#64748b"
+                    color={theme.colors.gray}
                   />
                 </Pressable>
               }
             />
+            {fieldError ? (
+              <Text style={styles.fieldError}>{fieldError}</Text>
+            ) : null}
           </View>
 
           <Button
@@ -166,6 +177,11 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.xs,
     fontWeight: theme.fontWeights.medium,
     color: theme.colors.iconSecondary,
+  },
+  fieldError: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.error,
+    marginTop: theme.spacing.xs,
   },
   footer: {
     marginTop: 'auto',
