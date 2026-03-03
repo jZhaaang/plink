@@ -10,4 +10,8 @@ export { default as SectionHeader } from './SectionHeader';
 export { default as EmptyState } from './EmptyState';
 export { default as DropdownMenu, DropdownMenuItem } from './DropdownMenu';
 export { Spinner, LoadingScreen } from './Loading';
+export { default as AvatarStack } from './AvatarStack';
+export { default as MediaTile } from './MediaTile';
+export { default as MediaGrid } from './MediaTile';
+export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as DataFallbackScreen } from './DataFallbackScreen';

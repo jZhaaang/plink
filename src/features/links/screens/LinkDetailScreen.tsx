@@ -12,8 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
-import AvatarStack from '../../../components/AvatarStack';
-import MediaGrid from '../components/MediaGrid';
+import MediaGrid from '../../../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
 import CreateLinkModal from '../components/CreateLinkModal';
 import {
@@ -25,6 +24,7 @@ import {
   Card,
   LoadingScreen,
   DataFallbackScreen,
+  AvatarStack,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';

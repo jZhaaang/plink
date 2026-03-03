@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
-import MediaGrid from '../components/MediaGrid';
+import MediaGrid from '../../../components/MediaGrid';
 import { LinkPostMedia } from '../../../lib/models';
 import { LoadingScreen } from '../../../components';
 import { StyleSheet } from 'react-native-unistyles';

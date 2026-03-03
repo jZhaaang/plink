@@ -1,7 +1,7 @@
 import { FlatList, useWindowDimensions, View, Text } from 'react-native';
-import { LinkPostMedia } from '../../../lib/models';
+import { LinkPostMedia } from '../lib/models';
 import { Feather } from '@expo/vector-icons';
-import MediaTile from '../../../components/MediaTile';
+import MediaTile from './MediaTile';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface Props {

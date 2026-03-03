@@ -2,9 +2,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
-import AvatarStack from '../../../components/AvatarStack';
 import { memo } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
+import { AvatarStack } from '../../../components';
 
 interface Props {
   name: string;

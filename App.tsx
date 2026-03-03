@@ -5,7 +5,7 @@ import { DialogProvider } from './src/providers/DialogProvider';
 import { AuthProvider } from './src/providers/AuthProvider';
 import * as Sentry from '@sentry/react-native';
 import { initMonitoring } from './src/lib/telemetry/monitoring';
-import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { ErrorBoundary } from './src/components';
 
 initMonitoring();
 

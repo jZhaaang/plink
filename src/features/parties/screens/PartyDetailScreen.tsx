@@ -24,7 +24,6 @@ import {
 } from '../../../lib/supabase/queries/parties';
 import { parties as partiesStorage } from '../../../lib/media-service/parties';
 import { deleteBulk } from '../../../lib/media-service/client';
-import AvatarStack from '../../../components/AvatarStack';
 import LinkCard from '../../links/components/LinkCard';
 import CreateLinkModal from '../../links/components/CreateLinkModal';
 import CreatePartyModal from '../components/CreatePartyModal';
@@ -38,6 +37,7 @@ import {
   Divider,
   LoadingScreen,
   DataFallbackScreen,
+  AvatarStack,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { StatusBar } from 'expo-status-bar';
