@@ -1,0 +1,42 @@
+name: Deploy Lambda
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lambda/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install and build
+        run: |
+          cd lambda
+          npm ci
+          npx tsc
+
+      - name: Package
+        run: |
+          cd lambda
+          zip -r ../lambda.zip dist/ node_modules/
+
+      - name: Deploy
+        run: |
+          aws lambda update-function-code \
+            --function-name plink-media-processor \
+            --zip-file fileb://lambda.zip
