@@ -277,14 +277,7 @@ export function useStagedMediaActions({
       }
 
       if (uploadedPaths.length) {
-        try {
-          await linksStorage.remove(uploadedPaths);
-        } catch (cleanupErr) {
-          logger.error(
-            'Cleanup failed: Error removing uploaded storage paths',
-            { err: cleanupErr, uploadedPaths, linkId },
-          );
-        }
+        await linksStorage.remove(uploadedPaths);
       }
 
       trackEvent('media_upload_failed', {
