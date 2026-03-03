@@ -126,6 +126,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
   const handleEditParty = async (name: string, bannerUri: string | null) => {
     setEditLoading(true);
+    let bannerPath = null;
+
     try {
       const updates: PartyUpdate = {};
 
@@ -135,12 +137,12 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       if (bannerUri && bannerUri !== party?.bannerUrl) {
         const compressed = await compressImage(bannerUri);
-        const banner_path = await partiesStorage.upload(
+        bannerPath = await partiesStorage.upload(
           partyId,
           { type: 'banner' },
           compressed.uri,
         );
-        updates.banner_path = banner_path;
+        updates.banner_path = bannerPath;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -157,6 +159,9 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         haptic: 'success',
       });
     } catch (err) {
+      if (bannerPath) {
+        await partiesStorage.remove([bannerPath]);
+      }
       logger.error('Error updating party', { err });
       await dialog.error('Failed to Update Party', getErrorMessage(err));
     } finally {

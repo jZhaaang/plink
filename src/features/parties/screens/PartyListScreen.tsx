@@ -60,20 +60,21 @@ export default function PartyListScreen({ navigation }: Props) {
     }
 
     setLoading(true);
+    let bannerPath = null;
+
     try {
       const party = await createParty({ name, owner_id: userId });
 
-      let banner_path = null;
       if (bannerUri) {
         const compressed = await compressImage(bannerUri);
-        banner_path = await partiesStorage.upload(
+        bannerPath = await partiesStorage.upload(
           party.id,
           { type: 'banner' },
           compressed.uri,
         );
       }
 
-      await updatePartyById(party.id, { banner_path });
+      await updatePartyById(party.id, { banner_path: bannerPath });
       trackEvent('party_created', { party_id: party.id });
       invalidate.parties();
       Burnt.toast({
@@ -82,6 +83,9 @@ export default function PartyListScreen({ navigation }: Props) {
         haptic: 'success',
       });
     } catch (err) {
+      if (bannerPath) {
+        await partiesStorage.remove([bannerPath]);
+      }
       logger.error('Error creating party', { err });
       await dialog.error('Failed to Create a Party', getErrorMessage(err));
     } finally {
