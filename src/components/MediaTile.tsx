@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { memo, ReactNode, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -13,7 +13,7 @@ interface MediaTileProps {
   renderOverlay?: (isLoaded: boolean) => ReactNode;
 }
 
-export function MediaTile({
+export default function MediaTile({
   uri,
   width,
   height,
@@ -52,8 +52,6 @@ export function MediaTile({
     </Pressable>
   );
 }
-
-export default memo(MediaTile);
 
 const styles = StyleSheet.create(() => ({
   wrapper: {

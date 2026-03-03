@@ -2,7 +2,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, View, Text } from 'react-native';
 import { Image } from 'expo-image';
-import { memo } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import { AvatarStack } from '../../../components';
 
@@ -28,7 +27,7 @@ function BannerFallback({ showIcon }: { showIcon?: boolean }) {
   );
 }
 
-export function PartyCard(props: Props) {
+export default function PartyCard(props: Props) {
   const { name, bannerUri, members, onPress } = props;
 
   const memberAvatarUris =
@@ -72,8 +71,6 @@ export function PartyCard(props: Props) {
     </Pressable>
   );
 }
-
-export default memo(PartyCard);
 
 const styles = StyleSheet.create((theme) => ({
   card: {

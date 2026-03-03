@@ -2,7 +2,7 @@ import { Pressable, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { Link } from '../../../lib/models';
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface Props {
@@ -16,7 +16,7 @@ function formatDate(dateString: string | null): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function LinkCard({ link, onPress }: Props) {
+export default function LinkCard({ link, onPress }: Props) {
   const isActive = !link.end_time;
   const [pressed, setPressed] = useState(false);
 
@@ -53,7 +53,13 @@ export function LinkCard({ link, onPress }: Props) {
 
           <LinearGradient
             colors={['transparent', 'rgba(15,23,42,0.72)']}
-            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 96 }}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 96,
+            }}
           />
 
           <View style={cardStyles.badgeWrap}>
@@ -79,8 +85,6 @@ export function LinkCard({ link, onPress }: Props) {
     </Pressable>
   );
 }
-
-export default memo(LinkCard);
 
 const cardStyles = StyleSheet.create((theme) => ({
   card: {

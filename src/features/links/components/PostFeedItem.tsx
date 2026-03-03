@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { DropdownMenu, DropdownMenuItem, MediaTile } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
@@ -22,7 +22,7 @@ interface Props {
 
 const GAP = 2;
 
-export function PostFeedItem({
+export default function PostFeedItem({
   post,
   onMediaPress,
   currentUserId,
@@ -139,8 +139,6 @@ export function PostFeedItem({
     </View>
   );
 }
-
-export default memo(PostFeedItem);
 
 const styles = StyleSheet.create((theme) => ({
   card: {

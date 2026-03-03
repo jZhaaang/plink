@@ -3,7 +3,7 @@ import { ActivityFeedItem } from '../../../lib/models';
 import { Pressable, View, Text } from 'react-native';
 import { activityLine } from '../hooks/useActivityFeed';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface Props {
@@ -32,7 +32,7 @@ function iconForType(
   }
 }
 
-export function ActivityListItem({ item, onPress }: Props) {
+export default function ActivityListItem({ item, onPress }: Props) {
   const [pressed, setPressed] = useState(false);
 
   styles.useVariants({ pressed });
@@ -63,8 +63,6 @@ export function ActivityListItem({ item, onPress }: Props) {
     </Pressable>
   );
 }
-
-export default memo(ActivityListItem);
 
 const styles = StyleSheet.create((theme) => ({
   card: {

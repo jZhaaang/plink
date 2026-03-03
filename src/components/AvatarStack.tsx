@@ -1,6 +1,5 @@
 import { Text, View } from 'react-native';
 import { Image } from 'expo-image';
-import { memo } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface AvatarStackProps {
@@ -9,7 +8,7 @@ interface AvatarStackProps {
   size?: number;
 }
 
-export function AvatarStack({
+export default function AvatarStack({
   avatarUris,
   maxVisible = 5,
   size = 40,
@@ -56,8 +55,6 @@ export function AvatarStack({
     </View>
   );
 }
-
-export default memo(AvatarStack);
 
 const styles = StyleSheet.create((theme) => ({
   row: {

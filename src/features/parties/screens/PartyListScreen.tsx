@@ -3,7 +3,7 @@ import { PartyStackParamList } from '../../../navigation/types';
 import { parties as partiesStorage } from '../../../lib/media-service/parties';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlatList, View, Text, Pressable } from 'react-native';
-import { PartyCard } from '../components/PartyCard';
+import PartyCard from '../components/PartyCard';
 import {
   Button,
   DataFallbackScreen,
