@@ -30,6 +30,6 @@ jobs:
 
       - name: Build and push image
         run: |
-          IMAGE=${{ steps.ecr.outputs.registry }}/plink-media-service:${{ github.sha }}
+          IMAGE=${{ steps.ecr.outputs.registry }}/plink-media-service:latest
           docker build -t $IMAGE backend/media-service
           docker push $IMAGE
