@@ -119,8 +119,15 @@ const styles = StyleSheet.create((theme) => ({
     gap: GAP,
   },
   overflowTint: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: theme.colors.overlay,
     borderRadius: theme.radii.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   overflowText: {
     color: theme.colors.textInverse,
