@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Burnt from 'burnt';
 import {
   Camera,
@@ -26,7 +26,17 @@ export function useVisionCamera() {
   );
   const [captureMode, setCaptureMode] = useState<'photo' | 'video'>('photo');
   const [isRecording, setIsRecording] = useState(false);
-  const device = useCameraDevice(cameraPosition);
+  const isRecordingRef = useRef(false);
+
+  const device = useCameraDevice(cameraPosition, {
+    physicalDevices: [
+      'ultra-wide-angle-camera',
+      'wide-angle-camera',
+      'telephoto-camera',
+    ],
+  });
+
+  const [zoom, setZoom] = useState<number>(device?.neutralZoom ?? 1);
 
   const {
     hasPermission: hasCameraPermission,
@@ -37,19 +47,35 @@ export function useVisionCamera() {
     requestPermission: requestMicrophonePermission,
   } = useMicrophonePermission();
 
-  const photoFormat = useCameraFormat(device, [
-    { photoAspectRatio: 4 / 3 },
-    { videoAspectRatio: 4 / 3 },
-    { videoResolution: 'max' },
+  const format = useCameraFormat(device, [
+    { photoAspectRatio: 16 / 9 },
     { photoResolution: 'max' },
-  ]);
-  const videoFormat = useCameraFormat(device, [
-    { videoAspectRatio: 16 / 9 },
-    { fps: 30 },
+    { videoResolution: 'max' },
   ]);
 
-  const format = captureMode === 'photo' ? photoFormat : videoFormat;
-  const previewRatio = captureMode === 'photo' ? 3 / 4 : 9 / 16;
+  const zoomStops = useMemo(() => {
+    if (!device) return [{ label: '1x', value: 1 }];
+    const neutral = device.neutralZoom;
+    const stops: { label: string; value: number }[] = [];
+
+    // 0.5x
+    if (device.minZoom < neutral) {
+      const ratio = device.minZoom / neutral;
+      stops.push({
+        label: `${parseFloat(ratio.toFixed(1))}x`,
+        value: device.minZoom,
+      });
+    }
+
+    // 1x
+    stops.push({ label: '1x', value: neutral });
+
+    // 2x
+    if (device.maxZoom >= neutral * 2) {
+      stops.push({ label: '2x', value: neutral * 2 });
+    }
+    return stops;
+  }, [device]);
 
   const takePhoto = useCallback(async () => {
     if (!cameraRef.current) return;
@@ -71,11 +97,14 @@ export function useVisionCamera() {
   }, []);
 
   const startRecording = useCallback(async () => {
-    if (!cameraRef.current || isRecording) return;
+    if (!cameraRef.current || isRecordingRef.current) return;
+    isRecordingRef.current = true;
     setIsRecording(true);
 
     cameraRef.current.startRecording({
       onRecordingFinished: (video) => {
+        isRecordingRef.current = false;
+        setIsRecording(false);
         setCapturedAsset({
           uri: `file://${video.path}`,
           type: 'video',
@@ -83,9 +112,9 @@ export function useVisionCamera() {
           height: video.height,
           duration: video.duration,
         });
-        setIsRecording(false);
       },
       onRecordingError: () => {
+        isRecordingRef.current = false;
         setIsRecording(false);
         Burnt.toast({
           title: 'Recording failed',
@@ -94,16 +123,27 @@ export function useVisionCamera() {
         });
       },
     });
-  }, [isRecording]);
+  }, []);
 
   const stopRecording = useCallback(async () => {
-    if (!cameraRef.current || !isRecording) return;
+    if (!cameraRef.current || !isRecordingRef.current) return;
     await cameraRef.current.stopRecording();
-  }, [isRecording]);
+  }, []);
 
   const toggleCameraPosition = useCallback(() => {
     setCameraPosition((prev) => (prev === 'front' ? 'back' : 'front'));
   }, []);
+
+  const reset = useCallback(() => {
+    setCapturedAsset(null);
+    setZoom(device?.neutralZoom ?? 1);
+    setCaptureMode('photo');
+    setIsRecording(false);
+  }, [device]);
+
+  useEffect(() => {
+    if (device) setZoom(device.neutralZoom);
+  }, [device]);
 
   return {
     cameraRef,
@@ -112,7 +152,9 @@ export function useVisionCamera() {
     toggleCameraPosition,
     captureMode,
     setCaptureMode,
-    previewRatio,
+    zoom,
+    setZoom,
+    zoomStops,
     format,
     isRecording,
     capturedAsset,
@@ -124,5 +166,6 @@ export function useVisionCamera() {
     takePhoto,
     startRecording,
     stopRecording,
+    reset,
   };
 }
