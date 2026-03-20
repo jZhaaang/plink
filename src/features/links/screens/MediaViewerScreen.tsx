@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -19,12 +19,22 @@ type MediaItemProps = {
   url: string;
   width: number;
   height: number;
+  isActive?: boolean;
 };
 
-function VideoItem({ url, width, height }: MediaItemProps) {
+function VideoItem({ url, width, height, isActive }: MediaItemProps) {
   const player = useVideoPlayer(url, (p) => {
     p.loop = false;
   });
+
+  useEffect(() => {
+    if (isActive) {
+      player.play();
+    } else {
+      player.pause();
+      player.currentTime = 0;
+    }
+  }, [isActive, player]);
 
   return (
     <VideoView
@@ -58,20 +68,30 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
 
   const mediaItems = useMemo(() => {
     if (!link) return [];
-    return link.posts.flatMap((post) => post.media);
+    return link.posts
+      .flatMap((post) => post.media)
+      .map((item, index) => ({ ...item, index }));
   }, [link]);
 
   const mediaHeight = height - insets.bottom;
 
   const renderItem = useCallback(
     (item) => {
+      const isActive = item.index === currentIndex;
       if (item.type === 'video') {
-        return <VideoItem url={item.url} width={width} height={mediaHeight} />;
+        return (
+          <VideoItem
+            url={item.url}
+            width={width}
+            height={mediaHeight}
+            isActive={isActive}
+          />
+        );
       } else {
         return <ImageItem url={item.url} width={width} height={mediaHeight} />;
       }
     },
-    [width, mediaHeight],
+    [width, mediaHeight, currentIndex],
   );
 
   return (
