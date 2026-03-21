@@ -108,6 +108,7 @@ export default function PartyListScreen({ navigation }: Props) {
           renderItem={({ item }) => (
             <PartyCard
               name={item.name}
+              avatarUri={item.avatarUrl}
               bannerUri={item.bannerUrl}
               members={item.members}
               onPress={() =>

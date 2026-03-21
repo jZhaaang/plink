@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { LinkPostMedia } from '../../../lib/models';
-import { cropLinkBannerFromUrl } from '../../../lib/media/bannerCropper';
+import { cropLinkBannerFromUrl } from '../../../lib/media/cropper';
 import { Button, Modal, ModalHeader, Spinner } from '../../../components';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 interface Props {
   visible: boolean;
@@ -27,6 +27,7 @@ export default function EditLinkBannerModal({
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [croppedUri, setCroppedUri] = useState<string | null>(null);
   const [cropping, setCropping] = useState(false);
+  const theme = UnistylesRuntime.getTheme();
 
   useEffect(() => {
     if (!visible) return;
@@ -108,7 +109,7 @@ export default function EditLinkBannerModal({
             <Feather
               name={images.length > 0 ? 'crop' : 'image'}
               size={20}
-              color="#64748b"
+              color={theme.colors.gray}
             />
           </View>
           <Text style={styles.emptyText}>

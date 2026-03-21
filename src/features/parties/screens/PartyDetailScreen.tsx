@@ -124,8 +124,13 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     navigation.navigate('LinkDetail', { linkId, partyId });
   };
 
-  const handleEditParty = async (name: string, bannerUri: string | null) => {
+  const handleEditParty = async (
+    name: string,
+    avatarUri: string | null,
+    bannerUri: string | null,
+  ) => {
     setEditLoading(true);
+    let avatarPath = null;
     let bannerPath = null;
 
     try {
@@ -133,6 +138,16 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       if (name !== party?.name) {
         updates.name = name;
+      }
+
+      if (avatarUri && avatarUri !== party?.avatarUrl) {
+        const compressed = await compressImage(avatarUri);
+        avatarPath = await partiesStorage.upload(
+          partyId,
+          { type: 'avatar' },
+          compressed.uri,
+        );
+        updates.avatar_path = avatarPath;
       }
 
       if (bannerUri && bannerUri !== party?.bannerUrl) {
@@ -159,6 +174,9 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         haptic: 'success',
       });
     } catch (err) {
+      if (avatarPath) {
+        await partiesStorage.remove([avatarPath]);
+      }
       if (bannerPath) {
         await partiesStorage.remove([bannerPath]);
       }
@@ -247,17 +265,12 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       <StatusBar style="light" />
 
       <HeroBanner
-        banner={party.bannerUrl ? { uri: party.bannerUrl } : null}
-        gradientColors={['#bfdbfe', '#3b82f6']}
+        variant="avatar-only"
+        avatarUri={party.avatarUrl ?? null}
+        bannerUri={party.bannerUrl ?? null}
         onBack={() => navigation.goBack()}
         onMenuPress={isOwner ? handleMenuPress : undefined}
-      >
-        <Text style={styles.heroTitle}>{party.name}</Text>
-        <Text style={styles.heroSubtitle}>
-          {party.members.length}{' '}
-          {party.members.length === 1 ? 'member' : 'members'}
-        </Text>
-      </HeroBanner>
+      />
 
       <View style={styles.contentArea}>
         <ScrollView

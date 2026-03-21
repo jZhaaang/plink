@@ -7,6 +7,7 @@ import { AvatarStack } from '../../../components';
 
 interface Props {
   name: string;
+  avatarUri?: string | null;
   bannerUri?: string | null;
   members?: { avatarUrl?: string }[];
   onPress?: () => void;
@@ -27,8 +28,13 @@ function BannerFallback({ showIcon }: { showIcon?: boolean }) {
   );
 }
 
-export default function PartyCard(props: Props) {
-  const { name, bannerUri, members, onPress } = props;
+export default function PartyCard({
+  name,
+  avatarUri,
+  bannerUri,
+  members,
+  onPress,
+}: Props) {
   const theme = UnistylesRuntime.getTheme();
 
   const memberAvatarUris =
@@ -57,18 +63,32 @@ export default function PartyCard(props: Props) {
           )}
         </View>
 
-        <View style={styles.infoPill}>
-          <Text style={styles.partyName} numberOfLines={1}>
-            {name}
-          </Text>
-
-          {memberCount > 0 && (
-            <AvatarStack
-              avatarUris={memberAvatarUris}
-              maxVisible={3}
-              size={22}
+        <View style={styles.infoRow}>
+          {avatarUri ? (
+            <Image
+              source={{ uri: avatarUri }}
+              cachePolicy="memory-disk"
+              contentFit="cover"
+              style={styles.partyAvatar}
             />
+          ) : (
+            <View style={styles.partyAvatar}>
+              <MaterialIcons name="group" size={18} color={theme.colors.gray} />
+            </View>
           )}
+
+          <View style={styles.infoPill}>
+            <Text style={styles.partyName} numberOfLines={1}>
+              {name}
+            </Text>
+            {memberCount > 0 && (
+              <AvatarStack
+                avatarUris={memberAvatarUris}
+                maxVisible={3}
+                size={22}
+              />
+            )}
+          </View>
         </View>
       </View>
     </Pressable>
@@ -80,6 +100,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.lg,
     backgroundColor: theme.colors.background,
     padding: theme.spacing.md,
+    paddingBottom: theme.spacing.sm,
     marginBottom: theme.spacing.md,
     ...theme.shadows.md,
   },
@@ -88,17 +109,37 @@ const styles = StyleSheet.create((theme) => ({
     overflow: 'hidden',
     aspectRatio: 2.5,
   },
-  infoPill: {
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginHorizontal: theme.spacing.md,
+    marginTop: -theme.spacing['2xl'],
+    marginBottom: theme.spacing.xs,
+  },
+  infoPill: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: theme.radii.lg,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
     backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
-    marginTop: -theme.spacing.lg,
-    marginBottom: theme.spacing.xs,
+    marginLeft: -theme.spacing.lg,
+    paddingLeft: theme.spacing.xl,
     ...theme.shadows.md,
+  },
+  partyAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radii.full,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
+    backgroundColor: theme.colors.lightGray,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
   partyName: {
     flex: 1,

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Modal, ModalHeader, TextField } from '../../../components';
-import { Pressable, Text, View, ImageBackground } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Party } from '../../../lib/models';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { pickPartyBannerFromLibrary } from '../../../lib/media/bannerCropper';
+import {
+  pickPartyAvatarFromLibrary,
+  pickPartyBannerFromLibrary,
+} from '../../../lib/media/cropper';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 interface Props {
@@ -13,7 +16,11 @@ interface Props {
   initialParty?: Party;
   loading?: boolean;
   onClose: () => void;
-  onSubmit: (name: string, bannerUri: string | null) => Promise<void>;
+  onSubmit: (
+    name: string,
+    avatarUri: string | null,
+    bannerUri: string | null,
+  ) => Promise<void>;
 }
 
 export default function CreatePartyModal({
@@ -26,6 +33,9 @@ export default function CreatePartyModal({
   const isEditMode = !!initialParty;
   const theme = UnistylesRuntime.getTheme();
   const [name, setName] = useState(initialParty?.name ?? '');
+  const [avatarUri, setAvatarUri] = useState<string | null>(
+    initialParty?.avatarUrl ?? null,
+  );
   const [bannerUri, setBannerUri] = useState<string | null>(
     initialParty?.bannerUrl ?? null,
   );
@@ -34,9 +44,19 @@ export default function CreatePartyModal({
   useEffect(() => {
     if (visible) {
       setName(initialParty?.name ?? '');
+      setAvatarUri(initialParty?.avatarUrl ?? null);
       setBannerUri(initialParty?.bannerUrl ?? null);
     }
   }, [visible, initialParty]);
+
+  const chooseAvatar = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+
+    const cropped = await pickPartyAvatarFromLibrary();
+    if (!cropped) return;
+    setAvatarUri(cropped.uri);
+  };
 
   const chooseBanner = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -50,7 +70,7 @@ export default function CreatePartyModal({
   const handleSubmit = async () => {
     setLocalLoading(true);
     try {
-      await onSubmit(name.trim(), bannerUri);
+      await onSubmit(name.trim(), avatarUri, bannerUri);
     } finally {
       setLocalLoading(false);
     }
@@ -66,6 +86,7 @@ export default function CreatePartyModal({
 
   const hasChanges =
     name.trim() !== (initialParty?.name ?? '') ||
+    avatarUri !== (initialParty?.bannerUrl ?? null) ||
     bannerUri !== (initialParty?.bannerUrl ?? null);
 
   return (
@@ -84,39 +105,47 @@ export default function CreatePartyModal({
       >
         <View style={styles.bannerWrap}>
           {bannerUri ? (
-            <ImageBackground
+            <Image
               source={{ uri: bannerUri }}
-              style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <View style={styles.bannerOverlay}>
-                <MaterialIcons name="edit" size={24} color="#ffffffcc" />
-              </View>
-            </ImageBackground>
+              contentFit="cover"
+              style={{ width: '100%', height: '100%' }}
+            />
           ) : (
-            <LinearGradient
-              colors={['#bfdbfe', '#3b82f6']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                width: '100%',
-                height: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View style={styles.emptyPicker}>
+              <View style={styles.emptyPickerIcon}>
+                <MaterialIcons
+                  name="add-photo-alternate"
+                  size={32}
+                  color={theme.colors.gray}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+      </Pressable>
+
+      {/* Avatar picker */}
+      <Pressable
+        onPress={chooseAvatar}
+        style={({ pressed }) => ({
+          opacity: pressed ? theme.opacity.pressed : 1,
+        })}
+      >
+        <View style={styles.avatarWrap}>
+          {avatarUri ? (
+            <Image
+              source={{ uri: avatarUri }}
+              contentFit="cover"
+              style={{ width: '100%', height: '100%' }}
+            />
+          ) : (
+            <View style={styles.emptyPicker}>
               <MaterialIcons
-                name="add-photo-alternate"
-                size={36}
-                color="#ffffff99"
+                name="add-a-photo"
+                size={24}
+                color={theme.colors.gray}
               />
-              <Text style={styles.addBannerText} numberOfLines={1}>
-                Add Banner
-              </Text>
-            </LinearGradient>
+            </View>
           )}
         </View>
       </Pressable>
@@ -152,22 +181,37 @@ export default function CreatePartyModal({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  bannerWrap: {
-    borderRadius: theme.radii.lg,
-    overflow: 'hidden',
-    aspectRatio: 2.5,
-  },
-  bannerOverlay: {
+  emptyPicker: {
     flex: 1,
-    width: '100%',
-    backgroundColor: theme.colors.overlayLight,
+    backgroundColor: theme.colors.lightGray,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addBannerText: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: theme.fontSizes.xs,
-    marginTop: theme.spacing.xs,
+  emptyPickerIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  emptyPickerText: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.iconSecondary,
+  },
+  bannerWrap: {
+    borderRadius: theme.radii.xl,
+    overflow: 'hidden',
+    aspectRatio: 2.5,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  avatarWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+    marginTop: -theme.spacing['3xl'],
+    marginLeft: theme.spacing.lg,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
   },
   formSection: {
     marginTop: theme.spacing.lg,

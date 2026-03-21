@@ -3,26 +3,46 @@ import { parties as partiesStorage } from '../media-service/parties';
 import { logger } from '../telemetry/logger';
 
 export async function resolveParty(party: PartyRow): Promise<Party> {
-  if (!party.banner_path) return { ...party, bannerUrl: null };
+  const paths = [];
+  if (party.avatar_path) paths.push(party.avatar_path);
+  if (party.banner_path) paths.push(party.banner_path);
+
+  if (paths.length === 0) {
+    return { ...party, bannerUrl: null, avatarUrl: null };
+  }
 
   try {
-    const bannerUrlMap = await partiesStorage.getUrls([party.banner_path]);
-    const bannerUrl = bannerUrlMap.get(party.banner_path) ?? null;
+    const urlMap = await partiesStorage.getUrls(paths);
 
-    if (!bannerUrl) {
+    const avatarUrl = party.avatar_path
+      ? (urlMap.get(party.avatar_path) ?? null)
+      : null;
+    const bannerUrl = party.banner_path
+      ? (urlMap.get(party.banner_path) ?? null)
+      : null;
+
+    if (party.avatar_path && !avatarUrl) {
+      logger.warn('Missing resolved avatar URL for party', {
+        partyId: party.id,
+        avatarPath: party.avatar_path,
+      });
+    }
+
+    if (party.banner_path && !bannerUrl) {
       logger.warn('Missing resolved banner URL for party', {
         partyId: party.id,
         bannerPath: party.banner_path,
       });
     }
 
-    return { ...party, bannerUrl };
+    return { ...party, avatarUrl, bannerUrl };
   } catch (error) {
-    logger.error('Error resolving party banner URL', {
+    logger.error('Error resolving party URLs', {
       partyId: party.id,
+      avatarPath: party.avatar_path,
       bannerPath: party.banner_path,
       error,
     });
-    return { ...party, bannerUrl: null };
+    return { ...party, avatarUrl: null, bannerUrl: null };
   }
 }

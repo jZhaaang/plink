@@ -1,11 +1,13 @@
 import { deleteBulk } from './client';
 import { uploadFile, getUrls, removeFiles } from './core';
 
-type UploadType = { type: 'banner' };
+type UploadType = { type: 'avatar' | 'banner' };
 
 export const parties = {
   path(partyId: string, target: UploadType) {
     switch (target.type) {
+      case 'avatar':
+        return `parties/${partyId}/avatar`;
       case 'banner':
         return `parties/${partyId}/banner`;
     }

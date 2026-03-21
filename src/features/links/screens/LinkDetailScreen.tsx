@@ -250,16 +250,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         <StatusBar style="light" />
 
         <HeroBanner
-          banner={
-            link.bannerUrl
-              ? {
-                  uri: link.bannerUrl,
-                  cropX: link.banner_crop_x,
-                  cropY: link.banner_crop_y,
-                }
-              : null
-          }
-          gradientColors={['#dbeafe', '#60a5fa']}
+          variant="default"
+          bannerUri={link.bannerUrl ?? null}
+          emptyHint="Add a photo to set a banner"
           onBack={() => navigation.goBack()}
           onMenuPress={handleMenuPress}
         >

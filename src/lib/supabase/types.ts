@@ -257,6 +257,7 @@ export type Database = {
       };
       parties: {
         Row: {
+          avatar_path: string | null;
           banner_crop_x: number;
           banner_crop_y: number;
           banner_path: string | null;
@@ -267,6 +268,7 @@ export type Database = {
           updated_at: string | null;
         };
         Insert: {
+          avatar_path?: string | null;
           banner_crop_x?: number;
           banner_crop_y?: number;
           banner_path?: string | null;
@@ -277,6 +279,7 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: {
+          avatar_path?: string | null;
           banner_crop_x?: number;
           banner_crop_y?: number;
           banner_path?: string | null;
@@ -407,6 +410,7 @@ export type Database = {
       create_party_with_owner: {
         Args: { party_name: string; party_owner_id: string };
         Returns: {
+          avatar_path: string | null;
           banner_crop_x: number;
           banner_crop_y: number;
           banner_path: string | null;

@@ -1,56 +1,48 @@
 import { ReactNode } from 'react';
-import { View, Pressable, GestureResponderEvent } from 'react-native';
+import { View, Text, Pressable, GestureResponderEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
-interface BannerSource {
-  uri: string;
-  cropX?: number;
-  cropY?: number;
-}
-
-interface HeroBannerProps {
-  banner: BannerSource | null;
-  gradientColors?: [string, string];
+interface Props {
+  variant: 'default' | 'avatar-only';
+  avatarUri?: string | null;
+  bannerUri: string | null;
+  emptyHint?: string;
   onBack: () => void;
   onMenuPress?: (event: GestureResponderEvent) => void;
   children?: ReactNode;
 }
 
 export default function HeroBanner({
-  banner,
-  gradientColors = ['#bfdbfe', '#3b82f6'],
+  variant,
+  avatarUri,
+  bannerUri,
+  emptyHint,
   onBack,
   onMenuPress,
   children,
-}: HeroBannerProps) {
+}: Props) {
   const insets = useSafeAreaInsets();
+  const theme = UnistylesRuntime.getTheme();
 
   const renderImage = (style: object, blurRadius?: number) => {
-    if (!banner) {
+    if (!bannerUri) {
       return (
-        <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0, y: 1 }}
-          end={{ x: 1, y: 0 }}
-          style={style}
-        />
+        <View style={[style, styles.emptyBanner]}>
+          <Feather name="image" size={24} color={theme.colors.gray} />
+          {emptyHint && <Text style={styles.emptyBannerText}>{emptyHint}</Text>}
+        </View>
       );
     }
 
     return (
       <Image
-        source={{ uri: banner.uri }}
+        source={{ uri: bannerUri }}
         cachePolicy="memory-disk"
         contentFit="cover"
-        contentPosition={
-          banner.cropX != null && banner.cropY != null
-            ? { left: `${banner.cropX}%`, top: `${banner.cropY}%` }
-            : undefined
-        }
         blurRadius={blurRadius}
         style={[{ width: '100%', height: '100%' }, style]}
       />
@@ -61,58 +53,89 @@ export default function HeroBanner({
     <>
       {/* Status bar fill */}
       <View style={{ height: insets.top, overflow: 'hidden' }}>
-        {banner ? (
+        {bannerUri ? (
           <>
             {renderImage({ width: '100%', height: insets.top + 40 }, 100)}
             <View style={styles.statusBarOverlay} pointerEvents="none" />
           </>
         ) : (
-          <LinearGradient
-            colors={gradientColors}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 0 }}
-            style={{ width: '100%', height: insets.top + 40 }}
+          <View
+            style={{
+              width: '100%',
+              height: insets.top + 40,
+              backgroundColor: theme.colors.accentSurface,
+            }}
           />
         )}
       </View>
 
       {/* Hero image */}
-      <View style={styles.heroContainer}>
-        {renderImage({ width: '100%', height: '100%' })}
+      <View style={styles.heroWrapper}>
+        <View style={styles.heroContainer}>
+          {renderImage({ width: '100%', height: '100%' })}
 
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.6)']}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 112,
-          }}
-        />
-
-        {/* Overlay content (title, subtitle, badges) */}
-        <View style={styles.overlayContent}>{children}</View>
-        {/* Floating nav bar */}
-        <View style={styles.navBar} pointerEvents="box-none">
-          <View style={styles.navRow} pointerEvents="box-none">
-            <Pressable onPress={onBack}>
-              <View style={styles.navButton}>
-                <Feather name="arrow-left" size={20} color="#fff" />
+          {/* Overlay content */}
+          {variant !== 'avatar-only' && (
+            <>
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.5)']}
+                locations={[0, 0.65, 1]}
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 120,
+                }}
+              />
+              <View style={styles.overlayContent}>
+                <View style={styles.overlayText}>{children}</View>
               </View>
-            </Pressable>
+            </>
+          )}
 
-            {onMenuPress ? (
-              <Pressable onPress={onMenuPress}>
+          {/* Floating nav bar */}
+          <View style={styles.navBar} pointerEvents="box-none">
+            <View style={styles.navRow} pointerEvents="box-none">
+              <Pressable onPress={onBack}>
                 <View style={styles.navButton}>
-                  <Feather name="more-vertical" size={20} color="#fff" />
+                  <Feather name="arrow-left" size={20} color="#fff" />
                 </View>
               </Pressable>
-            ) : (
-              <View style={styles.navSpacer} />
-            )}
+
+              {onMenuPress ? (
+                <Pressable onPress={onMenuPress}>
+                  <View style={styles.navButton}>
+                    <Feather name="more-vertical" size={20} color="#fff" />
+                  </View>
+                </Pressable>
+              ) : (
+                <View style={styles.navSpacer} />
+              )}
+            </View>
           </View>
         </View>
+
+        {variant === 'avatar-only' && (
+          <View style={styles.avatarOverlap} pointerEvents="box-none">
+            {avatarUri ? (
+              <Image
+                source={{ uri: avatarUri }}
+                cachePolicy="memory-disk"
+                contentFit="cover"
+                style={styles.avatarOverlapImage}
+              />
+            ) : (
+              <View style={styles.avatarOverlapImage}>
+                <MaterialIcons
+                  name="group"
+                  size={24}
+                  color={theme.colors.gray}
+                />
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </>
   );
@@ -127,18 +150,63 @@ const styles = StyleSheet.create((theme) => ({
     bottom: 0,
     backgroundColor: theme.colors.overlayLight,
   },
+  heroWrapper: {
+    position: 'relative',
+    zIndex: 1,
+  },
   heroContainer: {
     width: '100%',
     aspectRatio: 2.5,
+  },
+  emptyBanner: {
+    backgroundColor: theme.colors.accentSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+  },
+  emptyBannerText: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.iconSecondary,
   },
   overlayContent: {
     position: 'absolute',
     bottom: 0,
     left: 0,
-    paddingHorizontal: theme.spacing.xl,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
+    gap: theme.spacing.md,
+  },
+  overlayText: {
+    flex: 1,
     gap: theme.spacing.xs,
   },
+  heroAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: theme.radii.full,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+  },
+
+  avatarOverlap: {
+    position: 'absolute',
+    bottom: -40,
+    left: theme.spacing.lg,
+  },
+  avatarOverlapImage: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.radii.full,
+    borderWidth: 3,
+    borderColor: theme.colors.background,
+    backgroundColor: theme.colors.lightGray,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   navBar: {
     position: 'absolute',
     top: 0,
