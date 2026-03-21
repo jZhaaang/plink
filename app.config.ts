@@ -16,12 +16,10 @@ export default {
   },
   android: {
     package: 'com.anonymous.plink',
-    versionCode: 3,
     googleServicesFile: './google-services.json',
   },
   ios: {
     bundleIdentifier: 'com.jimmy.plink',
-    buildNumber: '3',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
