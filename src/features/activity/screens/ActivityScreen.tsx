@@ -41,7 +41,11 @@ export default function ActivityScreen({ navigation }: Props) {
     try {
       await deleteAllActivityEvents(userId);
       invalidate.activity();
-      Burnt.toast({ title: 'Activity cleared', preset: 'done', haptic: 'success' });
+      Burnt.toast({
+        title: 'Activity cleared',
+        preset: 'done',
+        haptic: 'success',
+      });
     } catch (err) {
       logger.error('Error deleting activity', { err });
       await dialog.error('Failed to Delete Activity', getErrorMessage(err));
@@ -52,7 +56,7 @@ export default function ActivityScreen({ navigation }: Props) {
   if (activityError) return <DataFallbackScreen onAction={refetchActivity} />;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
