@@ -1,4 +1,5 @@
 import { Session } from '@supabase/supabase-js';
+import { AppState } from 'react-native';
 import {
   createContext,
   ReactNode,
@@ -54,6 +55,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    });
+
+    return () => {
+      subscription.remove();
     };
   }, []);
 
