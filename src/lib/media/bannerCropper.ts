@@ -64,7 +64,8 @@ export async function cropLinkBannerFromUrl(
     });
 
     return toCroppedAsset(image);
-  } catch {
-    return null;
+  } catch (err) {
+    if (err?.code === 'E_PICKER_CANCELLED') return null;
+    throw new Error('Error cropping image.');
   }
 }
