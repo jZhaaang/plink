@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { LinkPostMedia } from '../../../lib/models';
 import { cropLinkBannerFromUrl } from '../../../lib/media/bannerCropper';
-import { Button, Modal } from '../../../components';
+import { Button, Modal, ModalHeader } from '../../../components';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -65,27 +65,7 @@ export default function EditLinkBannerModal({
       disableBackdropDismiss={isBusy}
       scrollEnabled={false}
     >
-      <LinearGradient
-        colors={['#e2f1ff', '#ffffff']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.headerGradient}
-      >
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>Edit Link Banner</Text>
-            <Text style={styles.subtitle}>
-              Pick a photo, then crop to banner ratio
-            </Text>
-          </View>
-
-          <Pressable onPress={onClose} disabled={isBusy}>
-            <View style={styles.closeCircle}>
-              <Feather name="x" size={18} color="#334155" />
-            </View>
-          </Pressable>
-        </View>
-      </LinearGradient>
+      <ModalHeader title="Pick a Link Banner" onClose={onClose} />
 
       <View style={styles.body}>
         {selectedImage ? (
@@ -100,7 +80,13 @@ export default function EditLinkBannerModal({
               />
               <LinearGradient
                 colors={['rgba(2,6,23,0.05)', 'rgba(2,6,23,0.45)']}
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
               />
               <View style={styles.previewFooter}>
                 <Text style={styles.previewHint}>Final crop opens on Save</Text>
@@ -186,38 +172,7 @@ const styles = StyleSheet.create((theme) => ({
   modalContent: {
     width: '94%',
     borderRadius: 24,
-    padding: 0,
     overflow: 'hidden',
-  },
-  headerGradient: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textTertiary,
-    marginTop: 2,
-  },
-  closeCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: theme.radii.full,
-    backgroundColor: theme.colors.surfacePressed,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   body: {
     paddingHorizontal: theme.spacing.xl,

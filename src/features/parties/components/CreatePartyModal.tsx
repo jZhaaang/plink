@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Modal, TextField } from '../../../components';
+import { Button, Modal, ModalHeader, TextField } from '../../../components';
 import { Pressable, Text, View, ImageBackground } from 'react-native';
 import { Party } from '../../../lib/models';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
@@ -70,16 +70,10 @@ export default function CreatePartyModal({
 
   return (
     <Modal visible={visible} onClose={handleClose} animationType="fade">
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          {isEditMode ? 'Edit Party' : 'Create Party'}
-        </Text>
-        <Pressable onPress={handleClose}>
-          <View style={styles.closeButton}>
-            <Text style={styles.closeText}>Close</Text>
-          </View>
-        </Pressable>
-      </View>
+      <ModalHeader
+        title={isEditMode ? 'Edit Party' : 'Create Party'}
+        onClose={handleClose}
+      />
 
       {/* Banner picker */}
       <Pressable
@@ -158,23 +152,6 @@ export default function CreatePartyModal({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.lg,
-  },
-  title: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  closeButton: {
-    padding: theme.spacing.sm,
-  },
-  closeText: {
-    color: theme.colors.textTertiary,
-  },
   bannerWrap: {
     borderRadius: theme.radii.lg,
     overflow: 'hidden',

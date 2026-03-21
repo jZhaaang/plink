@@ -15,3 +15,4 @@ export { default as MediaTile } from './MediaTile';
 export { default as MediaGrid } from './MediaTile';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as DataFallbackScreen } from './DataFallbackScreen';
+export { default as ModalHeader } from './ModalHeader';

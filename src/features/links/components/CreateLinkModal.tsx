@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { Button, Modal, TextField } from '../../../components';
+import { View } from 'react-native';
+import { Button, Modal, ModalHeader, TextField } from '../../../components';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface Props {
@@ -55,16 +55,10 @@ export default function CreateLinkModal({
 
   return (
     <Modal visible={visible} onClose={handleClose} animationType="slide">
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          {isEditMode ? 'Edit Link Name' : 'Start a Link'}
-        </Text>
-        <Pressable onPress={handleClose}>
-          <View style={styles.closeButton}>
-            <Text style={styles.closeText}>Close</Text>
-          </View>
-        </Pressable>
-      </View>
+      <ModalHeader
+        title={isEditMode ? 'Edit Link Name' : 'Start a Link'}
+        onClose={handleClose}
+      />
 
       <TextField
         header="Link Name"
@@ -90,23 +84,6 @@ export default function CreateLinkModal({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.lg,
-  },
-  title: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  closeButton: {
-    padding: theme.spacing.sm,
-  },
-  closeText: {
-    color: theme.colors.textTertiary,
-  },
   submitWrap: {
     marginTop: theme.spacing['2xl'],
   },

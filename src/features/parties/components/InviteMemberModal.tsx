@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import * as Burnt from 'burnt';
-import { Button, Modal, Spinner, TextField } from '../../../components';
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  Spinner,
+  TextField,
+} from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
 import { resolveProfile } from '../../../lib/resolvers/profile';
 import { StyleSheet } from 'react-native-unistyles';
@@ -64,7 +70,11 @@ export default function InviteMemberModal({
   const handleInvite = async () => {
     if (state.status === 'found') {
       await inviteUser(state.user.id);
-      Burnt.toast({ title: `@${state.user.username} invited`, preset: 'done', haptic: 'success' });
+      Burnt.toast({
+        title: `@${state.user.username} invited`,
+        preset: 'done',
+        haptic: 'success',
+      });
       onSuccess();
       onClose();
     }
@@ -78,20 +88,14 @@ export default function InviteMemberModal({
     switch (state.status) {
       case 'not_found':
         return (
-          <Text style={styles.errorText}>
-            No user found with that username
-          </Text>
+          <Text style={styles.errorText}>No user found with that username</Text>
         );
       case 'already_member':
         return (
-          <Text style={styles.warningText}>
-            This user is already a member
-          </Text>
+          <Text style={styles.warningText}>This user is already a member</Text>
         );
       case 'error':
-        return (
-          <Text style={styles.errorText}>{state.message}</Text>
-        );
+        return <Text style={styles.errorText}>{state.message}</Text>;
       default:
         return null;
     }
@@ -99,15 +103,7 @@ export default function InviteMemberModal({
 
   return (
     <Modal visible={visible} onClose={handleClose} animationType="slide">
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Invite Member</Text>
-        <Pressable onPress={handleClose}>
-          <View style={styles.closeButton}>
-            <Text style={styles.closeText}>Close</Text>
-          </View>
-        </Pressable>
-      </View>
+      <ModalHeader title="Invite Member" onClose={handleClose} />
 
       {/* Search Input */}
       <TextField
@@ -140,12 +136,8 @@ export default function InviteMemberModal({
             style={{ width: 44, height: 44, borderRadius: 22 }}
           />
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>
-              {state.user.name || 'Unknown'}
-            </Text>
-            <Text style={styles.userHandle}>
-              @{state.user.username}
-            </Text>
+            <Text style={styles.userName}>{state.user.name || 'Unknown'}</Text>
+            <Text style={styles.userHandle}>@{state.user.username}</Text>
           </View>
           <Feather name="check-circle" size={20} color="#22c55e" />
         </View>
@@ -175,23 +167,6 @@ export default function InviteMemberModal({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.lg,
-  },
-  title: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  closeButton: {
-    padding: theme.spacing.sm,
-  },
-  closeText: {
-    color: theme.colors.textTertiary,
-  },
   atSymbol: {
     color: theme.colors.textPlaceholder,
   },
