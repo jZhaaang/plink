@@ -78,6 +78,7 @@ export default function HomeScreen({ navigation }: Props) {
         <FlatList
           data={feedLinks}
           keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={
             <View style={styles.header}>
