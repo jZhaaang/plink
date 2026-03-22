@@ -50,6 +50,7 @@ import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import MemberAvatar from '../../../components/MemberAvatar';
+import { deletePartyMember } from '../../../lib/supabase/queries/partyMembers';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -217,6 +218,30 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     }
   };
 
+  const handleLeaveParty = async () => {
+    setMenuVisible(false);
+    const confirmed = await dialog.confirmDanger(
+      'Leave Party?',
+      'You will not be able to rejoin without an invite.',
+    );
+    if (!confirmed) return;
+    if (!userId) return;
+
+    try {
+      await deletePartyMember(partyId, userId);
+      trackEvent('party_left', { partyId: partyId });
+      invalidate.parties();
+      invalidate.partyDetail(partyId);
+      invalidate.activity();
+      invalidate.activeLink();
+      Burnt.toast({ title: 'Left Party', preset: 'done', haptic: 'success' });
+      navigation.navigate('PartyList');
+    } catch (err) {
+      logger.error('Error leaving party', { err });
+      await dialog.error('Failed to Leave Party', getErrorMessage(err));
+    }
+  };
+
   const handleMenuPress = (event: GestureResponderEvent) => {
     event.currentTarget.measureInWindow(
       (x: number, y: number, width: number, height: number) => {
@@ -256,6 +281,13 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       action: handleDeleteParty,
       variant: 'danger',
     });
+  } else {
+    menuItems.push({
+      icon: 'log-out',
+      label: 'Leave Party',
+      action: handleLeaveParty,
+      variant: 'danger',
+    });
   }
 
   return (
@@ -267,7 +299,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         avatarUri={party.avatarUrl ?? null}
         bannerUri={party.bannerUrl ?? null}
         onBack={() => navigation.goBack()}
-        onMenuPress={isOwner ? handleMenuPress : undefined}
+        onMenuPress={handleMenuPress}
       />
 
       <View style={styles.contentArea}>
@@ -400,23 +432,21 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         />
 
         {/* Dropdown Menu */}
-        {isOwner && (
-          <DropdownMenu
-            visible={menuVisible}
-            onClose={() => setMenuVisible(false)}
-            anchor={menuAnchor}
-          >
-            {menuItems.map((item, index) => (
-              <DropdownMenuItem
-                key={index}
-                icon={item.icon}
-                label={item.label}
-                onPress={item.action}
-                variant={item.variant}
-              />
-            ))}
-          </DropdownMenu>
-        )}
+        <DropdownMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          anchor={menuAnchor}
+        >
+          {menuItems.map((item, index) => (
+            <DropdownMenuItem
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              onPress={item.action}
+              variant={item.variant}
+            />
+          ))}
+        </DropdownMenu>
 
         {/* Edit Party Modal */}
         {isOwner && (
