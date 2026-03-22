@@ -37,7 +37,6 @@ import {
   Divider,
   LoadingScreen,
   DataFallbackScreen,
-  AvatarStack,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { StatusBar } from 'expo-status-bar';
@@ -50,6 +49,7 @@ import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet } from 'react-native-unistyles';
+import MemberAvatar from '../../../components/MemberAvatar';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -80,9 +80,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const activeLink = party?.links.find((l) => !l.end_time);
   const pastLinks = party?.links.filter((l) => l.end_time);
   const existingMemberIds = party?.members.map((m) => m.id);
-  const memberAvatars = party?.members
-    .map((m) => m.avatarUrl)
-    .filter((url): url is string => !!url);
 
   if (partyLoading) return <LoadingScreen label="Loading..." />;
   if (partyError || !party)
@@ -283,17 +280,32 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
           }
         >
           {/* Members */}
-          <View style={styles.membersRow}>
-            <AvatarStack avatarUris={memberAvatars} size={40} />
-            {isOwner && (
-              <Pressable onPress={() => setInviteModalVisible(true)}>
-                <View style={styles.invitePill}>
-                  <Feather name="user-plus" size={14} color="#2563eb" />
-                  <Text style={styles.inviteText}>Invite</Text>
-                </View>
-              </Pressable>
-            )}
+          <View style={styles.section}>
+            <SectionHeader
+              title="Members"
+              count={party.members.length}
+              action={
+                isOwner ? (
+                  <Pressable onPress={() => setInviteModalVisible(true)}>
+                    <View style={styles.invitePill}>
+                      <Feather name="user-plus" size={14} color="#2563eb" />
+                      <Text style={styles.inviteText}>Invite</Text>
+                    </View>
+                  </Pressable>
+                ) : undefined
+              }
+            />
           </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.membersList}
+          >
+            {party.members.map((member) => (
+              <MemberAvatar key={member.id} member={member} />
+            ))}
+          </ScrollView>
 
           <Divider style={{ marginVertical: 24 }} />
 
@@ -423,12 +435,9 @@ const styles = StyleSheet.create((theme) => ({
   scrollView: {
     flex: 1,
   },
-  membersRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  membersList: {
     paddingHorizontal: theme.spacing.xl,
-    marginTop: theme.spacing.xl,
+    gap: theme.spacing.md,
   },
   invitePill: {
     flexDirection: 'row',
