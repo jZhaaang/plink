@@ -103,7 +103,7 @@ export async function getLinkDetailById(linkId: string) {
   const { data, error } = await supabase
     .from('links')
     .select(
-      `*, link_members(user_id, profiles (*)), link_posts(*, link_post_media (*))`,
+      `*, link_members(user_id, profiles (*)), link_posts (*, link_post_media (*))`,
     )
     .eq('id', linkId)
     .order('created_at', { referencedTable: 'link_posts', ascending: false })
@@ -111,5 +111,59 @@ export async function getLinkDetailById(linkId: string) {
 
   if (error) throw error;
 
+  return data;
+}
+
+export async function getRecentLinksByUserId(
+  userId: string,
+  page: number,
+  pageSize: number = 3,
+) {
+  const offset = page * pageSize;
+
+  const { data: memberData, error: memberError } = await supabase
+    .from('link_members')
+    .select('link_id')
+    .eq('user_id', userId);
+
+  if (memberError) throw memberError;
+
+  const linkIds = memberData.map((m) => m.link_id);
+  if (linkIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('links')
+    .select(
+      `*, parties!inner (*), link_members (user_id, profiles (*)), link_posts (link_post_media (*))`,
+    )
+    .in('id', linkIds)
+    .not('end_time', 'is', null)
+    .order('end_time', { ascending: false })
+    .range(offset, offset + pageSize - 1);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getActiveLinksByUserId(userId: string) {
+  const { data: partyData, error: partyError } = await supabase
+    .from('party_members')
+    .select('party_id')
+    .eq('user_id', userId);
+
+  if (partyError) throw partyError;
+
+  const partyIds = partyData.map((pm) => pm.party_id);
+  if (partyIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('links')
+    .select(
+      `*, parties!inner (*), link_members (user_id, profiles(*)), link_posts (count)`,
+    )
+    .in('party_id', partyIds)
+    .is('end_time', null);
+
+  if (error) throw error;
   return data;
 }

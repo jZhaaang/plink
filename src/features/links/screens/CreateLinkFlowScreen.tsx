@@ -49,6 +49,7 @@ export default function CreateLinkFlowScreen() {
 
       if (link) {
         handleClose();
+        invalidate.homeActiveLinks();
         invalidate.activeLink();
         invalidate.partyDetail(selectedParty.id);
         invalidate.parties();

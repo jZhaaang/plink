@@ -1,4 +1,5 @@
 import { Tables, TablesInsert, TablesUpdate } from '../supabase/types';
+import { Party } from './party';
 import { Profile } from './profile';
 
 export type LinkRow = Tables<'links'>;
@@ -37,5 +38,17 @@ export type LinkPostWithMedia = LinkPost & {
 export type LinkDetail = LinkWithMembers & {
   posts: LinkPostWithMedia[];
   postCount: number;
+  mediaCount: number;
+};
+
+export type HomeFeedLink = Link & {
+  party: Party;
+  members: Profile[];
+  media: LinkPostMedia[];
+};
+
+export type ActiveFeedLink = Link & {
+  party: Party;
+  members: Profile[];
   mediaCount: number;
 };

@@ -53,6 +53,7 @@ export function useLinkDetailActions({
       await endLink(linkId);
       trackEvent('link_ended', { link_id: linkId });
       invalidate.linkDetail(linkId);
+      invalidate.homeActiveLinks();
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       invalidate.activity();
@@ -69,6 +70,7 @@ export function useLinkDetailActions({
         await updateLinkById(linkId, { name: newName });
         trackEvent('link_updated', { link_id: linkId });
         invalidate.linkDetail(linkId);
+        invalidate.homeActiveLinks();
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
         invalidate.activity();
@@ -139,6 +141,7 @@ export function useLinkDetailActions({
       trackEvent('media_deleted', {
         link_id: linkId,
       });
+      invalidate.homeActiveLinks();
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       invalidate.activity();
@@ -161,6 +164,7 @@ export function useLinkDetailActions({
       await createLinkMember({ link_id: linkId, user_id: userId });
       trackEvent('link_joined', { link_id: linkId });
       invalidate.linkDetail(linkId);
+      invalidate.homeActiveLinks();
       invalidate.activeLink();
       Burnt.toast({ title: 'Joined link', preset: 'done', haptic: 'success' });
     } catch (err) {
@@ -181,6 +185,7 @@ export function useLinkDetailActions({
       await deleteLinkMember(linkId, userId);
       trackEvent('link_left', { linkId: linkId });
       invalidate.linkDetail(linkId);
+      invalidate.homeActiveLinks();
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
       Burnt.toast({ title: 'Left link', preset: 'done', haptic: 'success' });

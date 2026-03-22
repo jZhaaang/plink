@@ -7,6 +7,20 @@ export function useInvalidate() {
   const { userId } = useAuth();
 
   return {
+    homeFeed: () => {
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.home.feed(userId),
+        });
+      }
+    },
+    homeActiveLinks: () => {
+      if (userId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.home.activeLinks(userId),
+        });
+      }
+    },
     parties: () => {
       if (userId) {
         queryClient.invalidateQueries({

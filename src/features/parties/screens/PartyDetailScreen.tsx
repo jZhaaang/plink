@@ -102,6 +102,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         setCreateModalVisible(false);
         trackEvent('link_created', { party_id: partyId, link_id: link.id });
         invalidate.partyDetail(partyId);
+        invalidate.homeActiveLinks();
         invalidate.activeLink();
         invalidate.parties();
         invalidate.activity();
@@ -204,6 +205,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       await deleteParty(partyId);
       trackEvent('party_deleted', { party_id: partyId });
       invalidate.parties();
+      invalidate.homeFeed();
+      invalidate.homeActiveLinks();
       invalidate.activeLink();
       invalidate.activity();
       Burnt.toast({
@@ -233,6 +236,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       invalidate.parties();
       invalidate.partyDetail(partyId);
       invalidate.activity();
+      invalidate.homeActiveLinks();
       invalidate.activeLink();
       Burnt.toast({ title: 'Left Party', preset: 'done', haptic: 'success' });
       navigation.navigate('PartyList');

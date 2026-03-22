@@ -17,6 +17,10 @@ export type LinkFlowParamList = {
   AllMedia: { linkId: string };
 };
 
+export type HomeStackParamList = {
+  HomeFeed: undefined;
+} & LinkFlowParamList;
+
 export type PartyStackParamList = {
   PartyList: undefined;
   PartyDetail: { partyId: string };
@@ -25,7 +29,7 @@ export type PartyStackParamList = {
 export type LinkStackParamList = LinkFlowParamList;
 
 export type TabsParamList = {
-  Home: undefined;
+  Home: NavigatorScreenParams<HomeStackParamList>;
   Party: NavigatorScreenParams<PartyStackParamList>;
   Link: NavigatorScreenParams<LinkStackParamList>;
   Activity: undefined;

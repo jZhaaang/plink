@@ -1,13 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import type { TabsParamList } from './types';
-import HomeScreen from '../features/home/HomeScreen';
 import PartyStack from './PartyStack';
 import ProfileScreen from '../features/profile/screens/ProfileScreen';
 import CustomTabBar from './CustomTabBar';
 import CreateLinkFlowScreen from '../features/links/screens/CreateLinkFlowScreen';
 import LinkStack from './LinkStack';
 import ActivityScreen from '../features/activity/screens/ActivityScreen';
+import HomeStack from './HomeStack';
 
 const Tab = createBottomTabNavigator<TabsParamList>();
 
@@ -29,7 +29,7 @@ export default function Tabs() {
       >
         <Tab.Screen
           name="Home"
-          component={HomeScreen}
+          component={HomeStack}
           options={{
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
