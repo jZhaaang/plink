@@ -140,7 +140,7 @@ export default function PartyListScreen({ navigation }: Props) {
           style={[
             styles.fab,
             {
-              bottom: insets.bottom,
+              bottom: insets.bottom + 80,
             },
           ]}
         >
@@ -179,7 +179,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.full,
     width: 48,
     height: 48,
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
