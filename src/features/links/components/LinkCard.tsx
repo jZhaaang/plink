@@ -2,8 +2,8 @@ import { Pressable, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { Link } from '../../../lib/models';
-import { useState } from 'react';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { Feather } from '@expo/vector-icons';
 
 interface Props {
   link: Link;
@@ -18,15 +18,15 @@ function formatDate(dateString: string | null): string {
 
 export default function LinkCard({ link, onPress }: Props) {
   const isActive = !link.end_time;
-  const [pressed, setPressed] = useState(false);
 
-  cardStyles.useVariants({ isActive, pressed });
+  const theme = UnistylesRuntime.getTheme();
 
   return (
     <Pressable
       onPress={() => onPress?.(link.id)}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
+      style={({ pressed }) => ({
+        opacity: pressed ? theme.opacity.pressed : 1,
+      })}
     >
       <View style={cardStyles.card}>
         <View style={cardStyles.bannerWrap}>
@@ -35,40 +35,42 @@ export default function LinkCard({ link, onPress }: Props) {
               source={{ uri: link.bannerUrl }}
               cachePolicy="memory-disk"
               contentFit="cover"
-              contentPosition={{
-                left: `${link.banner_crop_x}%`,
-                top: `${link.banner_crop_y}%`,
-              }}
               style={{ width: '100%', height: '100%' }}
               transition={180}
             />
           ) : (
-            <LinearGradient
-              colors={['#dbeafe', '#60a5fa']}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 0 }}
-              style={{ width: '100%', height: '100%' }}
-            />
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: theme.colors.accentSurface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Feather name="camera" size={24} color={theme.colors.gray} />
+            </View>
           )}
 
           <LinearGradient
-            colors={['transparent', 'rgba(15,23,42,0.72)']}
+            colors={['transparent', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.5)']}
+            locations={[0, 0.65, 1]}
             style={{
               position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
-              height: 96,
+              height: 120,
             }}
           />
 
-          <View style={cardStyles.badgeWrap}>
-            <View style={cardStyles.badge}>
-              <Text style={cardStyles.badgeText}>
-                {isActive ? 'Active' : 'Ended'}
-              </Text>
+          {isActive && (
+            <View style={cardStyles.badgeWrap}>
+              <View style={cardStyles.badge}>
+                <Text style={cardStyles.badgeText}>Active</Text>
+              </View>
             </View>
-          </View>
+          )}
 
           <View style={cardStyles.bottomOverlay}>
             <Text style={cardStyles.linkName} numberOfLines={1}>
@@ -94,12 +96,6 @@ const cardStyles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
     marginBottom: theme.spacing.md,
-    variants: {
-      pressed: {
-        true: { opacity: theme.opacity.pressed },
-        false: {},
-      },
-    },
   },
   bannerWrap: {
     width: '100%',
@@ -112,15 +108,10 @@ const cardStyles = StyleSheet.create((theme) => ({
     right: theme.spacing.md,
   },
   badge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.radii.full,
-    variants: {
-      isActive: {
-        true: { backgroundColor: theme.colors.badgeActive },
-        false: { backgroundColor: theme.colors.badgeInactive },
-      },
-    },
+    backgroundColor: theme.colors.badgeActive,
   },
   badgeText: {
     fontSize: theme.fontSizes.xs,
@@ -142,7 +133,8 @@ const cardStyles = StyleSheet.create((theme) => ({
   },
   dateText: {
     fontSize: theme.fontSizes.xs,
-    color: 'rgba(255,255,255,0.8)',
+    color: theme.colors.white,
+    opacity: theme.opacity.pressed,
     marginTop: 2,
   },
 }));
