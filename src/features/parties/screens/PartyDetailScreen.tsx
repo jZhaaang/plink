@@ -189,9 +189,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
   const handleDeleteParty = async () => {
     setMenuVisible(false);
-    const confirmed = await dialog.confirmDanger(
+    const confirmed = await dialog.confirmTypedDanger(
       'Delete Party?',
       'This will permanently delete the party and all its links. This cannot be undone.',
+      party.name,
     );
 
     if (!confirmed) return;

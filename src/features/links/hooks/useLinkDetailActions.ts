@@ -124,9 +124,10 @@ export function useLinkDetailActions({
   const deleteLinkAction = useCallback(async () => {
     if (!link) return;
 
-    const confirmed = await dialog.confirmDanger(
+    const confirmed = await dialog.confirmTypedDanger(
       'Delete Link?',
       'This will permanently delete the link and all its media. This cannot be undone.',
+      link.name,
     );
     if (!confirmed) return;
 
