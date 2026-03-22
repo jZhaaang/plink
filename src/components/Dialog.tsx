@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet } from 'react-native-unistyles';
 import Button from './Button';
 import Modal from './Modal';
+import TextField from './TextField';
 
 export type DialogVariant = 'error' | 'success' | 'info';
 
@@ -13,6 +14,8 @@ export interface DialogProps {
   title?: string;
   message?: string;
   variant?: DialogVariant;
+  confirmText?: string;
+  confirmPlaceholder?: string;
   primaryLabel?: string;
   onPrimary?: () => void;
   secondaryLabel?: string;
@@ -37,11 +40,22 @@ export default function Dialog({
   title,
   message,
   variant,
+  confirmText,
+  confirmPlaceholder,
   primaryLabel = 'OK',
   onPrimary,
   secondaryLabel,
   onSecondary,
 }: DialogProps) {
+  const [typedValue, setTypedValue] = useState('');
+
+  useEffect(() => {
+    if (visible) setTypedValue('');
+  }, [visible]);
+
+  const requiresTyping = !!confirmText;
+  const isConfirmed = !requiresTyping || typedValue === confirmText;
+
   return (
     <Modal visible={visible} onClose={onClose}>
       <View style={styles.body}>
@@ -52,6 +66,22 @@ export default function Dialog({
         />
         {title ? <Text style={styles.title}>{title}</Text> : null}
         {message ? <Text style={styles.message}>{message}</Text> : null}
+
+        {requiresTyping && (
+          <View style={styles.confirmInput}>
+            <Text style={styles.confirmHint}>
+              Type <Text style={styles.confirmBold}>{confirmText}</Text> to
+              confirm
+            </Text>
+            <TextField
+              value={typedValue}
+              onChangeText={setTypedValue}
+              placeholder={confirmPlaceholder ?? confirmText}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+        )}
       </View>
 
       <View style={styles.actions}>
@@ -66,7 +96,8 @@ export default function Dialog({
         <Button
           title={primaryLabel}
           onPress={onPrimary ?? onClose}
-          style={{ flex: 1 }}
+          disabled={!isConfirmed}
+          style={{ flex: 1, opacity: isConfirmed ? 1 : 0.5 }}
         />
       </View>
     </Modal>
@@ -92,5 +123,18 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: theme.spacing.xl,
     flexDirection: 'row',
     gap: theme.spacing.md,
+  },
+  confirmInput: {
+    width: '100%',
+    gap: theme.spacing.sm,
+  },
+  confirmHint: {
+    textAlign: 'center',
+    color: theme.colors.iconSecondary,
+    fontSize: theme.fontSizes.sm,
+  },
+  confirmBold: {
+    fontWeight: theme.fontWeights.semibold,
+    color: theme.colors.textPrimary,
   },
 }));

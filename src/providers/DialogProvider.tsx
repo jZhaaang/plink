@@ -12,6 +12,8 @@ type DialogProps = {
   title?: string;
   message?: string;
   variant?: DialogVariant;
+  confirmText?: string;
+  confirmPlaceholder?: string;
   okText?: string;
   cancelText?: string;
 };
@@ -61,10 +63,20 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
       title,
       message,
       variant = 'info',
+      confirmText,
+      confirmPlaceholder,
       okText = 'Confirm',
       cancelText = 'Cancel',
     }) => {
-      const res = await open({ title, message, variant, okText, cancelText });
+      const res = await open({
+        title,
+        message,
+        variant,
+        confirmText,
+        confirmPlaceholder,
+        okText,
+        cancelText,
+      });
       return res === 'primary';
     },
     [open],
@@ -88,6 +100,8 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
         title={opts.title}
         message={opts.message}
         variant={opts.variant ?? 'info'}
+        confirmText={opts.confirmText}
+        confirmPlaceholder={opts.confirmPlaceholder}
         primaryLabel={opts.okText ?? (opts.cancelText ? 'Confirm' : 'OK')}
         onPrimary={() => {
           resolverRef.current?.('primary');
@@ -124,6 +138,19 @@ function confirmVariants(confirm: DialogAPI['confirm']) {
       confirm({ title, message, variant: 'info' }),
     danger: (title: string, message?: string) =>
       confirm({ title, message, variant: 'error' }),
+    typedDanger: (
+      title: string,
+      message: string,
+      confirmText: string,
+      confirmPlaceholder?: string,
+    ) =>
+      confirm({
+        title,
+        message,
+        variant: 'error',
+        confirmText,
+        confirmPlaceholder,
+      }),
   };
 }
 
@@ -142,5 +169,6 @@ export function useDialog() {
     ...alertV,
     confirmAsk: confirmV.ask,
     confirmDanger: confirmV.danger,
+    confirmTypedDanger: confirmV.typedDanger,
   };
 }
