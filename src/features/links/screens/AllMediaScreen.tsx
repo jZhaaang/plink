@@ -3,7 +3,6 @@ import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaGrid from '../../../components/MediaGrid';
@@ -21,12 +20,6 @@ export default function AllMediaScreen({ route, navigation }: Props) {
     if (!link) return [];
     return link.posts.flatMap((post) => post.media);
   }, [link]);
-
-  const photoCount = useMemo(
-    () => allMedia.filter((m) => m.type === 'image').length,
-    [allMedia],
-  );
-  const videoCount = allMedia.length - photoCount;
 
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
@@ -50,29 +43,13 @@ export default function AllMediaScreen({ route, navigation }: Props) {
 
           <View style={styles.titleWrap}>
             <Text style={styles.screenTitle} numberOfLines={1}>
-              All Media
+              All Items
             </Text>
             <Text style={styles.screenSubtitle} numberOfLines={1}>
               {link?.name ?? 'Link'} • {allMedia.length} items
             </Text>
           </View>
         </View>
-
-        <LinearGradient
-          colors={['#dbeafe', '#eff6ff']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.statsGradient}
-        >
-          <View style={styles.statsRow}>
-            <View style={styles.statPill}>
-              <Text style={styles.statText}>Photos {photoCount}</Text>
-            </View>
-            <View style={styles.statPill}>
-              <Text style={styles.statText}>Videos {videoCount}</Text>
-            </View>
-          </View>
-        </LinearGradient>
       </View>
 
       {allMedia.length === 0 ? (
@@ -144,31 +121,6 @@ const styles = StyleSheet.create((theme) => ({
   screenSubtitle: {
     fontSize: theme.fontSizes.sm,
     color: theme.colors.textTertiary,
-  },
-  statsGradient: {
-    borderRadius: theme.radii.xl,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.accentSurfaceLight,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
-  statPill: {
-    paddingHorizontal: 10,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radii.full,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderWidth: 1,
-    borderColor: theme.colors.accentSurfaceLight,
-  },
-  statText: {
-    fontSize: theme.fontSizes.xs,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.accentText,
   },
   emptyWrap: {
     flex: 1,
