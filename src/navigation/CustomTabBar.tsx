@@ -6,10 +6,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinkRow } from '../lib/models';
 import { NavigationState, PartialState, Route } from '@react-navigation/native';
 import Animated, {
+  Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ExpandableFAB, { FABAction } from './ExpandableFAB';
@@ -41,6 +43,7 @@ export default function CustomTabBar({
   const insets = useSafeAreaInsets();
   const { activeLink, openCreateLink, requestUpload } = useActiveLinkContext();
   const isExpanded = useSharedValue(0);
+  const tabBarTranslateY = useSharedValue(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const activeTabRoute = state.routes[state.index] as NestedRoute;
@@ -52,12 +55,21 @@ export default function CustomTabBar({
     activeLink !== null &&
     currentParams?.linkId === activeLink.id;
   const centerIcon = isViewingActiveLink ? 'plus' : 'party-popper';
+  const shouldHideTabBar =
+    currentScreen === 'MediaViewer' || currentScreen === 'AllMedia';
 
   useEffect(() => {
     if (!isOnLinkDetail && menuOpen) {
       closeMenu();
     }
   }, [isOnLinkDetail]);
+
+  useEffect(() => {
+    tabBarTranslateY.value = withTiming(shouldHideTabBar ? 1 : 0, {
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [shouldHideTabBar]);
 
   const toggleMenu = useCallback(() => {
     const next = !menuOpen;
@@ -97,6 +109,17 @@ export default function CustomTabBar({
     ],
   }));
 
+  const tabBarAnimatedStyle = useAnimatedStyle(() => {
+    const height = 55 + insets.bottom + 30;
+    return {
+      transform: [
+        {
+          translateY: interpolate(tabBarTranslateY.value, [0, 1], [0, height]),
+        },
+      ],
+    };
+  });
+
   const fabActions: FABAction[] = useMemo(
     () => [
       {
@@ -124,10 +147,6 @@ export default function CustomTabBar({
     [closeMenu, requestUpload],
   );
 
-  const shouldHideTabBar =
-    currentScreen === 'MediaViewer' || currentScreen === 'AllMedia';
-  if (shouldHideTabBar) return null;
-
   return (
     <>
       {/* Backdrop to dismiss menu */}
@@ -143,14 +162,16 @@ export default function CustomTabBar({
           onPress={closeMenu}
         />
       )}
-      <View
+      <Animated.View
         style={[
           styles.tabBar,
           {
             paddingBottom: 10 + insets.bottom,
-            height: 50 + insets.bottom,
+            height: 55 + insets.bottom,
           },
+          tabBarAnimatedStyle,
         ]}
+        pointerEvents={shouldHideTabBar ? 'none' : 'auto'}
       >
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -228,7 +249,7 @@ export default function CustomTabBar({
             </Pressable>
           );
         })}
-      </View>
+      </Animated.View>
     </>
   );
 }
@@ -240,6 +261,10 @@ const styles = StyleSheet.create((theme) => ({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     alignItems: 'flex-end',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   centerTab: {
     flex: 1,
