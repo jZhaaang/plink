@@ -19,12 +19,18 @@ type NestedRoute = Route<string> & {
   state?: NavigationState | PartialState<NavigationState>;
 };
 
-function getDeepFocusedRouteName(route: NestedRoute): string {
+function getDeepFocusedNameAndParams(route: NestedRoute): {
+  name: string;
+  params: Record<string, unknown> | undefined;
+} {
   let current: NestedRoute = route;
   while (current?.state && current.state.index != null) {
     current = current.state.routes[current.state.index] as NestedRoute;
   }
-  return current?.name ?? route.name;
+  return {
+    name: current?.name ?? route.name,
+    params: current?.params as Record<string, unknown> | undefined,
+  };
 }
 
 export default function CustomTabBar({
@@ -38,10 +44,14 @@ export default function CustomTabBar({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const activeTabRoute = state.routes[state.index] as NestedRoute;
-  const currentScreen = getDeepFocusedRouteName(activeTabRoute);
+  const { name: currentScreen, params: currentParams } =
+    getDeepFocusedNameAndParams(activeTabRoute);
   const isOnLinkDetail = currentScreen === 'LinkDetail';
-  const showFAB = isOnLinkDetail && activeLink !== null;
-  const centerIcon = showFAB ? 'plus' : 'party-popper';
+  const isViewingActiveLink =
+    isOnLinkDetail &&
+    activeLink !== null &&
+    currentParams?.linkId === activeLink.id;
+  const centerIcon = isViewingActiveLink ? 'plus' : 'party-popper';
 
   useEffect(() => {
     if (!isOnLinkDetail && menuOpen) {
@@ -123,7 +133,13 @@ export default function CustomTabBar({
       {/* Backdrop to dismiss menu */}
       {menuOpen && (
         <Pressable
-          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: -2000 }}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: -2000,
+          }}
           onPress={closeMenu}
         />
       )}
@@ -144,7 +160,7 @@ export default function CustomTabBar({
             return (
               <View key={route.key} style={styles.centerTab}>
                 {/* Expandable action items */}
-                {showFAB && (
+                {isViewingActiveLink && (
                   <ExpandableFAB
                     actions={fabActions}
                     isExpanded={isExpanded}
@@ -155,7 +171,7 @@ export default function CustomTabBar({
                 {/* Main center button */}
                 <Pressable
                   onPress={() => {
-                    if (showFAB) {
+                    if (isViewingActiveLink) {
                       toggleMenu();
                     } else {
                       handleCenterPress(navigation, activeLink);
@@ -163,7 +179,7 @@ export default function CustomTabBar({
                   }}
                 >
                   <View style={styles.centerButton}>
-                    {showFAB ? (
+                    {isViewingActiveLink ? (
                       <View style={styles.centerButtonInner}>
                         <Animated.View
                           style={[styles.centerIconWrap, centerRotationStyle]}
@@ -201,11 +217,7 @@ export default function CustomTabBar({
           };
 
           return (
-            <Pressable
-              key={route.key}
-              onPress={onPress}
-              style={{ flex: 1 }}
-            >
+            <Pressable key={route.key} onPress={onPress} style={{ flex: 1 }}>
               <View style={styles.tab}>
                 {options.tabBarIcon?.({
                   focused: isFocused,
