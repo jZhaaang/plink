@@ -48,7 +48,7 @@ import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
 import HeroBanner from '../../../components/HeroBanner';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import MemberAvatar from '../../../components/MemberAvatar';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
@@ -59,6 +59,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const dialog = useDialog();
   const invalidate = useInvalidate();
   const insets = useSafeAreaInsets();
+  const theme = UnistylesRuntime.getTheme();
 
   const {
     party,
@@ -279,6 +280,38 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             />
           }
         >
+          <View style={styles.titleSection}>
+            <Text style={styles.partyName}>{party.name}</Text>
+            <View style={styles.partyMetaRow}>
+              <View style={styles.partyMetaItem}>
+                <Feather
+                  name="calendar"
+                  size={13}
+                  color={theme.colors.textTertiary}
+                />
+                <Text style={styles.partyMeta}>
+                  Created{' '}
+                  {new Date(party.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </Text>
+              </View>
+              <Text style={styles.partyMeta}>·</Text>
+              <View style={styles.partyMetaItem}>
+                <Feather
+                  name="link"
+                  size={13}
+                  color={theme.colors.textTertiary}
+                />
+                <Text style={styles.partyMeta}>
+                  {party.links.length}{' '}
+                  {party.links.length === 1 ? 'link' : 'links'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
           {/* Members */}
           <View style={styles.section}>
             <SectionHeader
@@ -419,14 +452,30 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  heroTitle: {
-    fontSize: theme.fontSizes.xl,
-    fontWeight: theme.fontWeights.bold,
-    color: theme.colors.textInverse,
+  titleSection: {
+    paddingTop: 48,
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.md,
   },
-  heroSubtitle: {
+  partyName: {
+    fontSize: theme.fontSizes['2xl'],
+    fontWeight: theme.fontWeights.extrabold,
+    color: theme.colors.textPrimary,
+  },
+  partyMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: theme.spacing.sm,
+  },
+  partyMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  partyMeta: {
     fontSize: theme.fontSizes.sm,
-    color: theme.colors.textInverseMuted,
+    color: theme.colors.textTertiary,
   },
   contentArea: {
     flex: 1,
