@@ -26,7 +26,7 @@ export async function upload(req: AuthenticatedRequest, res: Response) {
       return;
     }
 
-    if (key.includes('..') || !key.match(/^(parties|links)\//)) {
+    if (key.includes('..') || !key.match(/^(profiles|parties|links)\//)) {
       res.status(400).json({ error: 'Invalid key format' });
       return;
     }
