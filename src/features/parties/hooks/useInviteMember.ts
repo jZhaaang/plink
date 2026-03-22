@@ -10,16 +10,18 @@ type InviteState =
   | { status: 'found'; user: Profile }
   | { status: 'not_found' }
   | { status: 'already_member' }
-  | { status: 'inviting' }
-  | { status: 'success' }
   | { status: 'error'; message: string };
+
+type InviteAction = 'idle' | 'inviting' | 'invited';
 
 export function useInviteMember(partyId: string, existingMemberIds: string[]) {
   const [state, setState] = useState<InviteState>({ status: 'idle' });
+  const [inviteAction, setInviteAction] = useState<InviteAction>('idle');
 
   const searchUser = useCallback(
     async (username: string) => {
       setState({ status: 'searching' });
+      setInviteAction('idle');
 
       try {
         const user = await searchUserByUsername(username);
@@ -47,13 +49,14 @@ export function useInviteMember(partyId: string, existingMemberIds: string[]) {
 
   const inviteUser = useCallback(
     async (userId: string) => {
-      setState({ status: 'inviting' });
+      setInviteAction('inviting');
 
       try {
         await createPartyMember({ party_id: partyId, user_id: userId });
         trackEvent('party_joined', { party_id: partyId, user_id: userId });
-        setState({ status: 'success' });
+        setInviteAction('invited');
       } catch (err) {
+        setInviteAction('idle');
         setState({ status: 'error', message: `Failed to invite user, ${err}` });
       }
     },
@@ -62,7 +65,8 @@ export function useInviteMember(partyId: string, existingMemberIds: string[]) {
 
   const reset = useCallback(() => {
     setState({ status: 'idle' });
+    setInviteAction('idle');
   }, []);
 
-  return { state, searchUser, inviteUser, reset };
+  return { state, inviteAction, searchUser, inviteUser, reset };
 }

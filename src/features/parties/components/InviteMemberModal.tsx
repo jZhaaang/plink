@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import * as Burnt from 'burnt';
@@ -12,7 +12,7 @@ import {
 } from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
 import { resolveProfile } from '../../../lib/resolvers/profile';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
 interface Props {
   visible: boolean;
@@ -33,10 +33,9 @@ export default function InviteMemberModal({
   const [foundUserAvatarUrl, setFoundUserAvatarUrl] = useState<string | null>(
     null,
   );
-  const { state, searchUser, inviteUser, reset } = useInviteMember(
-    partyId,
-    existingMemberIds,
-  );
+  const { state, inviteAction, searchUser, inviteUser, reset } =
+    useInviteMember(partyId, existingMemberIds);
+  const theme = UnistylesRuntime.getTheme();
 
   useEffect(() => {
     if (!visible) {
@@ -68,7 +67,7 @@ export default function InviteMemberModal({
   };
 
   const handleInvite = async () => {
-    if (state.status === 'found') {
+    if (state.status === 'found' && inviteAction === 'idle') {
       await inviteUser(state.user.id);
       Burnt.toast({
         title: `@${state.user.username} invited`,
@@ -76,7 +75,6 @@ export default function InviteMemberModal({
         haptic: 'success',
       });
       onSuccess();
-      onClose();
     }
   };
 
@@ -139,28 +137,36 @@ export default function InviteMemberModal({
             <Text style={styles.userName}>{state.user.name || 'Unknown'}</Text>
             <Text style={styles.userHandle}>@{state.user.username}</Text>
           </View>
-          <Feather name="check-circle" size={20} color="#22c55e" />
+
+          {inviteAction === 'inviting' ? (
+            <Spinner size="small" />
+          ) : inviteAction === 'invited' ? (
+            <Feather
+              name="check-circle"
+              size={20}
+              color={theme.colors.badgeActive}
+            />
+          ) : (
+            <Pressable onPress={handleInvite} hitSlop={8}>
+              <Feather
+                name="user-plus"
+                size={20}
+                color={theme.colors.textSecondary}
+              />
+            </Pressable>
+          )}
         </View>
       )}
 
       {/* Action Buttons */}
       <View style={styles.actions}>
-        {state.status === 'found' || state.status === 'inviting' ? (
-          <Button
-            title="Invite"
-            size="lg"
-            onPress={handleInvite}
-            loading={state.status === 'inviting'}
-          />
-        ) : (
-          <Button
-            title="Search"
-            size="lg"
-            onPress={handleSearch}
-            loading={state.status === 'searching'}
-            disabled={!username.trim()}
-          />
-        )}
+        <Button
+          title="Search"
+          size="lg"
+          onPress={handleSearch}
+          loading={state.status === 'searching'}
+          disabled={!username.trim()}
+        />
       </View>
     </Modal>
   );
@@ -189,7 +195,8 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: theme.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.surfacePressed,
     borderRadius: theme.radii.lg,
   },
