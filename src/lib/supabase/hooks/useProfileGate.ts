@@ -18,13 +18,25 @@ export function useProfileGate(session: Session | null, ready: boolean) {
     setGate('loading');
 
     (async () => {
-      try {
-        const profile = await getUserProfile(session.user.id);
-        if (!cancelled)
-          setGate(profile.name && profile.username ? 'app' : 'needsProfile');
-      } catch {
-        if (!cancelled) setGate('auth');
+      const MAX_ATTEMPTS = 3;
+
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        try {
+          const profile = await getUserProfile(session.user.id);
+          if (!cancelled)
+            setGate(profile.name && profile.username ? 'app' : 'needsProfile');
+          return;
+        } catch {
+          if (cancelled) return;
+          if (attempt < MAX_ATTEMPTS - 1) {
+            await new Promise((r) =>
+              setTimeout(r, 500 * Math.pow(2, attempt - 1)),
+            );
+          }
+        }
       }
+
+      if (!cancelled) setGate('auth');
     })();
 
     return () => {
