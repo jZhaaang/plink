@@ -10,7 +10,7 @@ interface SectionHeaderProps extends Omit<ViewProps, 'style'> {
 
 export default function SectionHeader({
   title,
-  count,
+  count = null,
   action,
   style,
   ...rest
@@ -21,7 +21,7 @@ export default function SectionHeader({
         <Text style={styles.title} numberOfLines={1}>
           {title}
         </Text>
-        {count !== undefined && (
+        {count != null && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{count}</Text>
           </View>
