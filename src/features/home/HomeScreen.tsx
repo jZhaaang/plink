@@ -87,9 +87,7 @@ export default function HomeScreen({ navigation }: Props) {
                   <View style={styles.activeSection}>
                     <SectionHeader
                       title="Active Now"
-                      count={
-                        activeLinks.length > 1 ? activeLinks.length : undefined
-                      }
+                      count={activeLinks.length > 1 ? activeLinks.length : null}
                     />
                     {activeLinks.length === 1 ? (
                       <ActiveLinkCard
