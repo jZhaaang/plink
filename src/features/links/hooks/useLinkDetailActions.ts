@@ -56,6 +56,7 @@ export function useLinkDetailActions({
       invalidate.homeActiveLinks();
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
+      invalidate.pastLinks(partyId);
       invalidate.activity();
       Burnt.toast({ title: 'Link ended', preset: 'done', haptic: 'success' });
     } catch (err) {
@@ -73,6 +74,7 @@ export function useLinkDetailActions({
         invalidate.homeActiveLinks();
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
+        invalidate.pastLinks(partyId);
         invalidate.activity();
         Burnt.toast({
           title: 'Link renamed',
@@ -106,6 +108,7 @@ export function useLinkDetailActions({
         invalidate.linkDetail(linkId);
         invalidate.activeLink();
         invalidate.partyDetail(partyId);
+        invalidate.pastLinks(partyId);
         Burnt.toast({
           title: 'Banner updated',
           preset: 'done',
@@ -145,6 +148,7 @@ export function useLinkDetailActions({
       invalidate.homeActiveLinks();
       invalidate.activeLink();
       invalidate.partyDetail(partyId);
+      invalidate.pastLinks(partyId);
       invalidate.activity();
       Burnt.toast({ title: 'Link deleted', preset: 'done', haptic: 'success' });
       onDelete?.();
