@@ -9,7 +9,7 @@ import {
   EmptyState,
   LoadingScreen,
 } from '../../../components';
-import ActivityListItem from '../components/ActivityListItem';
+import ActivityCard from '../components/ActivityCard';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
@@ -89,7 +89,7 @@ export default function ActivityScreen({ navigation }: Props) {
           <Text style={styles.sectionHeader}>{section.title}</Text>
         )}
         renderItem={({ item }) => (
-          <ActivityListItem
+          <ActivityCard
             item={item}
             onPress={
               item.link_id && item.party_id

@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { ActivityFeedItem } from '../../../lib/models';
-import { Pressable, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { activityLine } from '../hooks/useActivityFeed';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
+import { Card, CardSection } from '../../../components';
 
 interface Props {
   item: ActivityFeedItem;
@@ -32,19 +32,10 @@ function iconForType(
   }
 }
 
-export default function ActivityListItem({ item, onPress }: Props) {
-  const [pressed, setPressed] = useState(false);
-
-  styles.useVariants({ pressed });
-
+export default function ActivityCard({ item, onPress }: Props) {
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={!onPress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <View style={styles.card}>
+    <Card onPress={onPress} style={styles.card}>
+      <CardSection style={styles.cardSection}>
         <View style={styles.row}>
           <View style={styles.iconCircle}>
             <Feather name={iconForType(item.type)} size={16} color="#2563eb" />
@@ -59,26 +50,18 @@ export default function ActivityListItem({ item, onPress }: Props) {
 
           {!item.read_at ? <View style={styles.unreadDot} /> : null}
         </View>
-      </View>
-    </Pressable>
+      </CardSection>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    borderRadius: theme.radii.xl,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
     marginBottom: theme.spacing.sm,
-    variants: {
-      pressed: {
-        true: { opacity: theme.opacity.pressed },
-        false: {},
-      },
-    },
+  },
+  cardSection: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
   },
   row: {
     flexDirection: 'row',

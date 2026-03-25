@@ -12,7 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
-import PostFeedItem from '../components/PostFeedItem';
+import PostCard from '../components/PostCard';
 import CreateLinkModal from '../components/CreateLinkModal';
 import {
   EmptyState,
@@ -395,7 +395,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               ) : (
                 link.posts.map((post, index) => (
                   <AnimatedListItem key={post.id} index={index}>
-                    <PostFeedItem
+                    <PostCard
                       key={post.id}
                       post={post}
                       onMediaPress={handleMediaPress}

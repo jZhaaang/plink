@@ -3,7 +3,13 @@ import { Image } from 'expo-image';
 import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
 import { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
-import { DropdownMenu, DropdownMenuItem, MediaGrid } from '../../../components';
+import {
+  Card,
+  CardSection,
+  DropdownMenu,
+  DropdownMenuItem,
+  MediaGrid,
+} from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 
@@ -16,7 +22,7 @@ interface Props {
 
 const AVATAR_SIZE = 40;
 
-export default function PostFeedItem({
+export default function PostCard({
   post,
   onMediaPress,
   currentUserId,
@@ -46,85 +52,82 @@ export default function PostFeedItem({
   };
 
   return (
-    <View style={styles.card}>
-      {/* Post Header */}
-      <View style={styles.headerRow}>
-        {post.owner.avatarUrl ? (
-          <Image
-            source={{ uri: post.owner.avatarUrl }}
-            cachePolicy="memory-disk"
-            style={styles.avatar}
-            contentFit="cover"
-          />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}>
-            <Text style={styles.avatarFallbackText}>
-              {post.owner.name?.charAt(0).toUpperCase() ?? '?'}
+    <Card style={styles.card}>
+      <CardSection>
+        {/* Post Header */}
+        <View style={styles.headerRow}>
+          {post.owner.avatarUrl ? (
+            <Image
+              source={{ uri: post.owner.avatarUrl }}
+              cachePolicy="memory-disk"
+              style={styles.avatar}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.avatar, styles.avatarFallback]}>
+              <Text style={styles.avatarFallbackText}>
+                {post.owner.name?.charAt(0).toUpperCase() ?? '?'}
+              </Text>
+            </View>
+          )}
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.ownerName}>{post.owner.name ?? 'Unknown'}</Text>
+            <Text style={styles.timeText}>
+              {formatRelativeTime(post.created_at)}
             </Text>
           </View>
-        )}
-        <View style={styles.headerTextWrap}>
-          <Text style={styles.ownerName}>{post.owner.name ?? 'Unknown'}</Text>
-          <Text style={styles.timeText}>
-            {formatRelativeTime(post.created_at)}
-          </Text>
+
+          {isPostOwner && onDeletePost && (
+            <Pressable
+              onPress={handleMenuPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <View style={styles.menuButton}>
+                <Feather
+                  name="more-horizontal"
+                  size={20}
+                  color={theme.colors.gray}
+                />
+              </View>
+            </Pressable>
+          )}
         </View>
 
-        {isPostOwner && onDeletePost && (
-          <Pressable
-            onPress={handleMenuPress}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <View style={styles.menuButton}>
-              <Feather
-                name="more-horizontal"
-                size={20}
-                color={theme.colors.gray}
-              />
-            </View>
-          </Pressable>
+        {/* Media Grid */}
+        {mediaCount > 0 && (
+          <>
+            <MediaGrid
+              media={post.media}
+              columns={3}
+              scrollEnabled={false}
+              onMediaPress={onMediaPress}
+            />
+            <Text style={styles.mediaCount}>
+              {mediaCount} item{mediaCount > 1 ? 's' : ''}
+            </Text>
+          </>
         )}
-      </View>
 
-      {/* Media Grid */}
-      {mediaCount > 0 && (
-        <>
-          <MediaGrid
-            media={post.media}
-            columns={3}
-            scrollEnabled={false}
-            onMediaPress={onMediaPress}
+        <DropdownMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+          anchor={menuAnchor}
+        >
+          <DropdownMenuItem
+            icon="trash-2"
+            label="Delete Post"
+            onPress={handleDelete}
+            variant="danger"
           />
-          <Text style={styles.mediaCount}>
-            {mediaCount} item{mediaCount > 1 ? 's' : ''}
-          </Text>
-        </>
-      )}
-
-      <DropdownMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        anchor={menuAnchor}
-      >
-        <DropdownMenuItem
-          icon="trash-2"
-          label="Delete Post"
-          onPress={handleDelete}
-          variant="danger"
-        />
-      </DropdownMenu>
-    </View>
+        </DropdownMenu>
+      </CardSection>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   card: {
     marginBottom: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.xl,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    padding: theme.spacing.lg,
   },
   headerRow: {
     flexDirection: 'row',
