@@ -3,10 +3,9 @@ import { Image } from 'expo-image';
 import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
 import { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
-import { DropdownMenu, DropdownMenuItem } from '../../../components';
+import { DropdownMenu, DropdownMenuItem, MediaGrid } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
-import MediaGrid from '../../../components/MediaGrid';
 
 interface Props {
   post: LinkPostWithMedia;

@@ -5,9 +5,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
-import MediaGrid from '../../../components/MediaGrid';
 import { LinkPostMedia } from '../../../lib/models';
-import { LoadingScreen } from '../../../components';
+import { LoadingScreen, MediaGrid } from '../../../components';
 import { StyleSheet } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;

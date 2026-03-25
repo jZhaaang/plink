@@ -12,7 +12,6 @@ import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
-import MediaGrid from '../../../components/MediaGrid';
 import PostFeedItem from '../components/PostFeedItem';
 import CreateLinkModal from '../components/CreateLinkModal';
 import {
@@ -22,24 +21,25 @@ import {
   DropdownMenu,
   DropdownMenuItem,
   Card,
+  CardSection,
   LoadingScreen,
   DataFallbackScreen,
   AvatarStack,
   AnimatedListItem,
+  MediaGrid,
+  HeroBanner,
+  UploadProgressModal,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
-import UploadProgressModal from '../../../components/UploadProgressModal';
 import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
-import { CardSection } from '../../../components/Card';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { useAuth } from '../../../providers/AuthProvider';
-import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';

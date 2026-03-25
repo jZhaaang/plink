@@ -40,6 +40,8 @@ import {
   LoadingScreen,
   DataFallbackScreen,
   AnimatedListItem,
+  HeroBanner,
+  MemberAvatar,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { StatusBar } from 'expo-status-bar';
@@ -50,9 +52,7 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
-import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
-import MemberAvatar from '../../../components/MemberAvatar';
 import { deletePartyMember } from '../../../lib/supabase/queries/partyMembers';
 import { usePastLinks } from '../hooks/usePastLinks';
 
