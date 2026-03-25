@@ -17,3 +17,4 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as DataFallbackScreen } from './DataFallbackScreen';
 export { default as ModalHeader } from './ModalHeader';
 export { default as AnimatedListItem } from './AnimatedListItem';
+export { default as HeroBanner } from './HeroBanner';
