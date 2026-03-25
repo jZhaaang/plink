@@ -14,6 +14,7 @@ export function useInvalidate() {
         });
       }
     },
+
     homeActiveLinks: () => {
       if (userId) {
         queryClient.invalidateQueries({
@@ -21,6 +22,7 @@ export function useInvalidate() {
         });
       }
     },
+
     parties: () => {
       if (userId) {
         queryClient.invalidateQueries({
@@ -32,6 +34,12 @@ export function useInvalidate() {
     partyDetail: (partyId: string) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.parties.detail(partyId),
+      });
+    },
+
+    pastLinks: (partyId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.parties.pastLinks(partyId),
       });
     },
 

@@ -7,6 +7,8 @@ import {
   Pressable,
   RefreshControl,
   GestureResponderEvent,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -37,6 +39,7 @@ import {
   Divider,
   LoadingScreen,
   DataFallbackScreen,
+  AnimatedListItem,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { StatusBar } from 'expo-status-bar';
@@ -51,6 +54,7 @@ import HeroBanner from '../../../components/HeroBanner';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import MemberAvatar from '../../../components/MemberAvatar';
 import { deletePartyMember } from '../../../lib/supabase/queries/partyMembers';
+import { usePastLinks } from '../hooks/usePastLinks';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -63,11 +67,20 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const theme = UnistylesRuntime.getTheme();
 
   const {
-    party,
+    party: partyDetail,
     loading: partyLoading,
     error: partyError,
     refetch: refetchParty,
   } = usePartyDetail(partyId);
+  const {
+    pastLinks,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loading: pastLinksLoading,
+    error: pastLinksError,
+    refetch: refetchPastLinks,
+  } = usePastLinks(partyId);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -78,13 +91,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
-  const isOwner = party?.owner_id === userId;
-  const activeLink = party?.links.find((l) => !l.end_time);
-  const pastLinks = party?.links.filter((l) => l.end_time);
-  const existingMemberIds = party?.members.map((m) => m.id);
+  const isOwner = partyDetail?.owner_id === userId;
+  const existingMemberIds = partyDetail?.members.map((m) => m.id);
 
   if (partyLoading) return <LoadingScreen label="Loading..." />;
-  if (partyError || !party)
+  if (partyError || !partyDetail)
     return <DataFallbackScreen onAction={refetchParty} />;
 
   const handleCreateLink = async (name: string) => {
@@ -136,11 +147,11 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     try {
       const updates: PartyUpdate = {};
 
-      if (name !== party?.name) {
+      if (name !== partyDetail?.name) {
         updates.name = name;
       }
 
-      if (avatarUri && avatarUri !== party?.avatarUrl) {
+      if (avatarUri && avatarUri !== partyDetail?.avatarUrl) {
         const compressed = await compressImage(avatarUri);
         avatarPath = await partiesStorage.upload(
           partyId,
@@ -150,7 +161,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
         updates.avatar_path = avatarPath;
       }
 
-      if (bannerUri && bannerUri !== party?.bannerUrl) {
+      if (bannerUri && bannerUri !== partyDetail?.bannerUrl) {
         const compressed = await compressImage(bannerUri);
         bannerPath = await partiesStorage.upload(
           partyId,
@@ -192,7 +203,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     const confirmed = await dialog.confirmTypedDanger(
       'Delete Party?',
       'This will permanently delete the party and all its links. This cannot be undone.',
-      party.name,
+      partyDetail.name,
     );
 
     if (!confirmed) return;
@@ -296,189 +307,219 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View style={styles.root}>
-      <StatusBar style="light" />
+    <>
+      <View style={styles.root}>
+        <StatusBar style="light" />
 
-      <HeroBanner
-        variant="avatar-only"
-        avatarUri={party.avatarUrl ?? null}
-        bannerUri={party.bannerUrl ?? null}
-        onBack={() => navigation.goBack()}
-        onMenuPress={handleMenuPress}
-      />
-
-      <View style={styles.contentArea}>
-        <ScrollView
-          style={styles.scrollView}
-          refreshControl={
-            <RefreshControl
-              refreshing={partyLoading}
-              onRefresh={refetchParty}
-            />
-          }
-        >
-          <View style={styles.titleSection}>
-            <Text style={styles.partyName}>{party.name}</Text>
-            <View style={styles.partyMetaRow}>
-              <View style={styles.partyMetaItem}>
-                <Feather
-                  name="calendar"
-                  size={13}
-                  color={theme.colors.textTertiary}
-                />
-                <Text style={styles.partyMeta}>
-                  Created{' '}
-                  {new Date(party.created_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </Text>
-              </View>
-              <Text style={styles.partyMeta}>·</Text>
-              <View style={styles.partyMetaItem}>
-                <Feather
-                  name="link"
-                  size={13}
-                  color={theme.colors.textTertiary}
-                />
-                <Text style={styles.partyMeta}>
-                  {party.links.length}{' '}
-                  {party.links.length === 1 ? 'link' : 'links'}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Members */}
-          <View style={styles.section}>
-            <SectionHeader
-              title="Members"
-              count={party.members.length}
-              action={
-                isOwner ? (
-                  <Pressable onPress={() => setInviteModalVisible(true)}>
-                    <View style={styles.invitePill}>
-                      <Feather name="user-plus" size={14} color="#2563eb" />
-                      <Text style={styles.inviteText}>Invite</Text>
-                    </View>
-                  </Pressable>
-                ) : undefined
-              }
-            />
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.membersList}
-          >
-            {party.members.map((member) => (
-              <MemberAvatar key={member.id} member={member} />
-            ))}
-          </ScrollView>
-
-          <Divider style={{ marginVertical: 24 }} />
-
-          {/* Active Link */}
-          <View style={styles.section}>
-            {activeLink ? (
-              <>
-                <SectionHeader title="Active Link" />
-                <LinkCard link={activeLink} onPress={handleLinkPress} />
-              </>
-            ) : (
-              <EmptyState
-                icon="link"
-                title="No active link"
-                message="Start a link to capture memories together"
-                action={
-                  <Button
-                    title="Start Link"
-                    size="sm"
-                    onPress={() => setCreateModalVisible(true)}
-                  />
-                }
-              />
-            )}
-          </View>
-
-          {/* Past Links */}
-          <View
-            style={[
-              styles.section,
-              {
-                marginTop: 24,
-                paddingBottom: Math.max(insets.bottom, 32),
-              },
-            ]}
-          >
-            <SectionHeader title="Past Links" count={pastLinks.length} />
-
-            {pastLinks.length === 0 ? (
-              <EmptyState
-                icon="archive"
-                title="No past links"
-                message="Your completed links will appear here"
-              />
-            ) : (
-              pastLinks.map((link) => (
-                <LinkCard key={link.id} link={link} onPress={handleLinkPress} />
-              ))
-            )}
-          </View>
-        </ScrollView>
-
-        {/* Create Link Modal */}
-        <CreateLinkModal
-          visible={createModalVisible}
-          loading={createLoading}
-          onClose={() => setCreateModalVisible(false)}
-          onSubmit={handleCreateLink}
+        <HeroBanner
+          variant="avatar-only"
+          avatarUri={partyDetail.avatarUrl ?? null}
+          bannerUri={partyDetail.bannerUrl ?? null}
+          onBack={() => navigation.goBack()}
+          onMenuPress={handleMenuPress}
         />
 
-        {/* Dropdown Menu */}
-        <DropdownMenu
-          visible={menuVisible}
-          onClose={() => setMenuVisible(false)}
-          anchor={menuAnchor}
-        >
-          {menuItems.map((item, index) => (
-            <DropdownMenuItem
-              key={index}
-              icon={item.icon}
-              label={item.label}
-              onPress={item.action}
-              variant={item.variant}
-            />
-          ))}
-        </DropdownMenu>
-
-        {/* Edit Party Modal */}
-        {isOwner && (
-          <CreatePartyModal
-            visible={editModalVisible}
-            initialParty={party}
-            loading={editLoading}
-            onClose={() => setEditModalVisible(false)}
-            onSubmit={handleEditParty}
-          />
-        )}
-
-        {/* Invite Member Modal */}
-        {isOwner && (
-          <InviteMemberModal
-            visible={inviteModalVisible}
-            onClose={() => setInviteModalVisible(false)}
-            partyId={partyId}
-            existingMemberIds={existingMemberIds}
-            onSuccess={() => {
-              invalidate.partyDetail(partyId);
-              invalidate.activity();
+        <View style={styles.contentArea}>
+          <FlatList
+            data={pastLinks}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: Math.max(insets.bottom, 100),
             }}
+            refreshControl={
+              <RefreshControl
+                refreshing={partyLoading}
+                onRefresh={() => {
+                  refetchParty();
+                  refetchPastLinks();
+                }}
+              />
+            }
+            ListHeaderComponent={
+              <>
+                <View
+                  style={[styles.section, { paddingTop: 48, paddingBottom: 0 }]}
+                >
+                  <Text style={styles.partyName}>{partyDetail.name}</Text>
+                  <View style={styles.partyMetaRow}>
+                    <Feather
+                      name="calendar"
+                      size={13}
+                      color={theme.colors.textTertiary}
+                    />
+                    <Text style={styles.partyMetaText}>
+                      Created{' '}
+                      {new Date(partyDetail.created_at).toLocaleDateString(
+                        'en-US',
+                        {
+                          month: 'short',
+                          year: 'numeric',
+                        },
+                      )}
+                    </Text>
+                    <Text style={styles.partyMetaText}> · </Text>
+                    <Feather
+                      name="link"
+                      size={13}
+                      color={theme.colors.textTertiary}
+                    />
+                    <Text style={styles.partyMetaText}>
+                      {partyDetail.linkCount}{' '}
+                      {partyDetail.linkCount === 1 ? 'link' : 'links'}
+                    </Text>
+                  </View>
+
+                  <SectionHeader
+                    title="Members"
+                    count={partyDetail.members.length}
+                    action={
+                      isOwner ? (
+                        <Pressable onPress={() => setInviteModalVisible(true)}>
+                          <View style={styles.invitePill}>
+                            <Feather
+                              name="user-plus"
+                              size={14}
+                              color="#2563eb"
+                            />
+                            <Text style={styles.inviteText}>Invite</Text>
+                          </View>
+                        </Pressable>
+                      ) : undefined
+                    }
+                  />
+                </View>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.membersList}
+                >
+                  {partyDetail.members.map((member) => (
+                    <MemberAvatar key={member.id} member={member} />
+                  ))}
+                </ScrollView>
+
+                <Divider />
+
+                {/* Active Link */}
+                <View style={styles.section}>
+                  {partyDetail.activeLink ? (
+                    <>
+                      <SectionHeader title="Active Link" />
+                      <LinkCard
+                        link={partyDetail.activeLink}
+                        onPress={handleLinkPress}
+                      />
+                    </>
+                  ) : (
+                    <EmptyState
+                      icon="link"
+                      title="No active link"
+                      message="Start a link to capture memories together"
+                      action={
+                        <Button
+                          title="Start Link"
+                          size="sm"
+                          onPress={() => setCreateModalVisible(true)}
+                        />
+                      }
+                    />
+                  )}
+                </View>
+
+                <View style={styles.section}>
+                  <SectionHeader title="Past Links" />
+                </View>
+              </>
+            }
+            renderItem={({ item, index }) => (
+              <View style={styles.section}>
+                <AnimatedListItem index={index % 10}>
+                  <LinkCard link={item} onPress={handleLinkPress} />
+                </AnimatedListItem>
+              </View>
+            )}
+            ListEmptyComponent={
+              pastLinksError ? (
+                <DataFallbackScreen onAction={refetchPastLinks} />
+              ) : pastLinksLoading ? (
+                <ActivityIndicator
+                  style={{ paddingVertical: theme.spacing.xl }}
+                />
+              ) : (
+                <EmptyState
+                  icon="archive"
+                  title="No past links"
+                  message="Your completed links will appear here"
+                />
+              )
+            }
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator
+                  style={{ paddingVertical: theme.spacing.xl }}
+                />
+              ) : null
+            }
           />
-        )}
+
+          {/* Create Link Modal */}
+          <CreateLinkModal
+            visible={createModalVisible}
+            loading={createLoading}
+            onClose={() => setCreateModalVisible(false)}
+            onSubmit={handleCreateLink}
+          />
+
+          {/* Dropdown Menu */}
+          <DropdownMenu
+            visible={menuVisible}
+            onClose={() => setMenuVisible(false)}
+            anchor={menuAnchor}
+          >
+            {menuItems.map((item, index) => (
+              <DropdownMenuItem
+                key={index}
+                icon={item.icon}
+                label={item.label}
+                onPress={item.action}
+                variant={item.variant}
+              />
+            ))}
+          </DropdownMenu>
+
+          {/* Edit Party Modal */}
+          {isOwner && (
+            <CreatePartyModal
+              visible={editModalVisible}
+              initialParty={partyDetail}
+              loading={editLoading}
+              onClose={() => setEditModalVisible(false)}
+              onSubmit={handleEditParty}
+            />
+          )}
+
+          {/* Invite Member Modal */}
+          {isOwner && (
+            <InviteMemberModal
+              visible={inviteModalVisible}
+              onClose={() => setInviteModalVisible(false)}
+              partyId={partyId}
+              existingMemberIds={existingMemberIds}
+              onSuccess={() => {
+                invalidate.partyDetail(partyId);
+                invalidate.activity();
+              }}
+            />
+          )}
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -487,10 +528,12 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  titleSection: {
-    paddingTop: 48,
+  contentArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  section: {
     paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.md,
   },
   partyName: {
     fontSize: theme.fontSizes['2xl'],
@@ -500,27 +543,17 @@ const styles = StyleSheet.create((theme) => ({
   partyMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-    gap: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.xs,
   },
-  partyMetaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  partyMeta: {
+  partyMetaText: {
     fontSize: theme.fontSizes.sm,
     color: theme.colors.textTertiary,
   },
-  contentArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
   membersList: {
     paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
     gap: theme.spacing.md,
   },
   invitePill: {
@@ -536,8 +569,5 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.xs,
     fontWeight: theme.fontWeights.semibold,
     marginLeft: 6,
-  },
-  section: {
-    paddingHorizontal: theme.spacing.xl,
   },
 }));

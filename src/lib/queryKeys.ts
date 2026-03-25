@@ -6,6 +6,7 @@ export const queryKeys = {
   parties: {
     list: (userId: string) => ['parties', 'list', userId] as const,
     detail: (partyId: string) => ['parties', 'detail', partyId] as const,
+    pastLinks: (partyId: string) => ['parties', 'pastLinks', partyId] as const,
   },
   links: {
     detail: (linkId: string) => ['links', 'detail', linkId] as const,

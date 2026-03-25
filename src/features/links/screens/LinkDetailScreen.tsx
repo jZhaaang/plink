@@ -25,6 +25,7 @@ import {
   LoadingScreen,
   DataFallbackScreen,
   AvatarStack,
+  AnimatedListItem,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -392,14 +393,16 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   }
                 />
               ) : (
-                link.posts.map((post) => (
-                  <PostFeedItem
-                    key={post.id}
-                    post={post}
-                    onMediaPress={handleMediaPress}
-                    currentUserId={userId}
-                    onDeletePost={linkActions.deletePost}
-                  />
+                link.posts.map((post, index) => (
+                  <AnimatedListItem key={post.id} index={index}>
+                    <PostFeedItem
+                      key={post.id}
+                      post={post}
+                      onMediaPress={handleMediaPress}
+                      currentUserId={userId}
+                      onDeletePost={linkActions.deletePost}
+                    />
+                  </AnimatedListItem>
                 ))
               )}
             </View>

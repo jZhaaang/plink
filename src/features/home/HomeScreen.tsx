@@ -13,6 +13,7 @@ import { trackEvent } from '../../lib/telemetry/analytics';
 import { logger } from '../../lib/telemetry/logger';
 import { getErrorMessage } from '../../lib/utils/errorExtraction';
 import {
+  AnimatedListItem,
   DataFallbackScreen,
   Divider,
   EmptyState,
@@ -135,14 +136,16 @@ export default function HomeScreen({ navigation }: Props) {
               <SectionHeader title="Recent Links" />
             </View>
           }
-          renderItem={({ item }) => (
-            <HomeLinkCard
-              link={item}
-              onPress={() => navigateToLink(item.id, item.party_id)}
-              onMediaPress={() =>
-                navigation.navigate('AllMedia', { linkId: item.id })
-              }
-            />
+          renderItem={({ item, index }) => (
+            <AnimatedListItem index={index}>
+              <HomeLinkCard
+                link={item}
+                onPress={() => navigateToLink(item.id, item.party_id)}
+                onMediaPress={() =>
+                  navigation.navigate('AllMedia', { linkId: item.id })
+                }
+              />
+            </AnimatedListItem>
           )}
           ListEmptyComponent={
             <EmptyState

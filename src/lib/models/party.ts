@@ -16,7 +16,8 @@ export type Party = PartyRow & {
 };
 export type PartyDetail = Party & {
   members: Profile[];
-  links: Link[];
+  activeLink: Link | null;
+  linkCount: number;
 };
 export type PartyListItem = Party & {
   members: Profile[];

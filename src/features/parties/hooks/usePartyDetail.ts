@@ -14,19 +14,19 @@ export function usePartyDetail(partyId: string) {
       if (!partyId) return null;
 
       const rawParty = await getPartyDetailById(partyId);
+      const activeRaw = rawParty.active_link?.[0] ?? null;
 
-      const [resolvedParty, members, resolvedLinks] = await Promise.all([
+      const [resolvedParty, members, activeLink] = await Promise.all([
         resolveParty(rawParty),
         Promise.all(
           rawParty.party_members.map((pm) => resolveProfile(pm.profiles)),
         ),
-        Promise.all((rawParty.links ?? []).map((link) => resolveLink(link))),
+        activeRaw ? resolveLink(activeRaw) : Promise.resolve(null),
       ]);
 
       const avatarUrls = members.map((m) => m.avatarUrl);
-      const bannerUrls = resolvedLinks.map((l) => l.bannerUrl);
 
-      const prefetchUrls = [...bannerUrls, ...avatarUrls].filter(
+      const prefetchUrls = avatarUrls.filter(
         (url): url is string => typeof url === 'string' && url.length > 0,
       );
       prefetchUrls.map((url) => Image.prefetch(url));
@@ -34,7 +34,8 @@ export function usePartyDetail(partyId: string) {
       return {
         ...resolvedParty,
         members,
-        links: resolvedLinks,
+        activeLink: activeLink,
+        linkCount: rawParty.link_count[0].count,
       } as PartyDetail;
     },
     enabled: !!partyId,

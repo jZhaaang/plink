@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlatList, View, Text, Pressable } from 'react-native';
 import PartyCard from '../components/PartyCard';
 import {
+  AnimatedListItem,
   Button,
   DataFallbackScreen,
   Divider,
@@ -105,16 +106,18 @@ export default function PartyListScreen({ navigation }: Props) {
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           refreshing={partiesLoading}
           onRefresh={refetchParties}
-          renderItem={({ item }) => (
-            <PartyCard
-              name={item.name}
-              avatarUri={item.avatarUrl}
-              bannerUri={item.bannerUrl}
-              members={item.members}
-              onPress={() =>
-                navigation.navigate('PartyDetail', { partyId: item.id })
-              }
-            />
+          renderItem={({ item, index }) => (
+            <AnimatedListItem index={index}>
+              <PartyCard
+                name={item.name}
+                avatarUri={item.avatarUrl}
+                bannerUri={item.bannerUrl}
+                members={item.members}
+                onPress={() =>
+                  navigation.navigate('PartyDetail', { partyId: item.id })
+                }
+              />
+            </AnimatedListItem>
           )}
           ListEmptyComponent={
             <EmptyState

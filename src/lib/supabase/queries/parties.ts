@@ -86,9 +86,11 @@ export async function getPartiesWithMembersAndLinksByUserId(userId: string) {
 export async function getPartyDetailById(partyId: string) {
   const { data, error } = await supabase
     .from('parties')
-    .select(`*,party_members (user_id,profiles (*)),links (*)`)
+    .select(
+      `*,party_members (user_id,profiles (*)), link_count: links (count), active_link:links (*)`,
+    )
     .eq('id', partyId)
-    .order('created_at', { referencedTable: 'links', ascending: false })
+    .is('active_link.end_time', null)
     .single();
 
   if (error) throw error;

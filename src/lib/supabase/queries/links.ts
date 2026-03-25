@@ -35,6 +35,27 @@ export async function getLinksByPartyId(partyId: string): Promise<LinkRow[]> {
   return data;
 }
 
+export async function getPastLinksByPartyId(
+  partyId: string,
+  page: number,
+  pageSize: number = 10,
+) {
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error } = await supabase
+    .from('links')
+    .select('*')
+    .eq('party_id', partyId)
+    .not('end_time', 'is', null)
+    .order('end_time', { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+
+  return data;
+}
+
 export async function getActiveLinkByUserId(
   userId: string,
 ): Promise<LinkRow | null> {
