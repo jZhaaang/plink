@@ -288,31 +288,33 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             }
           >
             <Card style={{ marginHorizontal: 16, marginTop: 16 }}>
-              {/* Time info */}
-              <View style={styles.infoRow}>
-                <Feather name="calendar" size={14} color="#64748b" />
-                <Text style={styles.infoText}>
-                  {isActive
-                    ? `Started ${startFormatted.date} at ${startFormatted.time}`
-                    : `${startFormatted.date} — ${endFormatted.date}`}
-                </Text>
-              </View>
-              <View style={[styles.infoRow, { marginBottom: 12 }]}>
-                <Feather name="clock" size={14} color="#64748b" />
-                <Text style={styles.infoText}>
-                  {isActive
-                    ? `Active for ${formatDuration(link.created_at, null)}`
-                    : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
-                </Text>
-              </View>
-
-              {/* Members row */}
-              <View style={[styles.membersRow]}>
-                <AvatarStack avatarUris={memberAvatars} size={32} />
-                <Text style={styles.infoText}>Created by {owner?.name}</Text>
-              </View>
-
               <CardSection>
+                {/* Time info */}
+                <View style={styles.infoRow}>
+                  <Feather name="calendar" size={14} color="#64748b" />
+                  <Text style={styles.infoText}>
+                    {isActive
+                      ? `Started ${startFormatted.date} at ${startFormatted.time}`
+                      : `${startFormatted.date} — ${endFormatted.date}`}
+                  </Text>
+                </View>
+                <View style={[styles.infoRow, { marginBottom: 12 }]}>
+                  <Feather name="clock" size={14} color="#64748b" />
+                  <Text style={styles.infoText}>
+                    {isActive
+                      ? `Active for ${formatDuration(link.created_at, null)}`
+                      : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
+                  </Text>
+                </View>
+
+                {/* Members row */}
+                <View style={[styles.membersRow]}>
+                  <AvatarStack avatarUris={memberAvatars} size={32} />
+                  <Text style={styles.infoText}>Created by {owner?.name}</Text>
+                </View>
+
+                <Divider style={{ marginVertical: 8 }} />
+
                 {/* Stats row */}
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
