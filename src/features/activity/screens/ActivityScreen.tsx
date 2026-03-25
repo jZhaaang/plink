@@ -2,9 +2,10 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { TabsParamList } from '../../../navigation/types';
 import { useActivityFeed } from '../hooks/useActivityFeed';
 import { Text, SectionList, View, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   DataFallbackScreen,
+  Divider,
   EmptyState,
   LoadingScreen,
 } from '../../../components';
@@ -30,6 +31,7 @@ export default function ActivityScreen({ navigation }: Props) {
   } = useActivityFeed(userId);
   const dialog = useDialog();
   const invalidate = useInvalidate();
+  const insets = useSafeAreaInsets();
 
   const clearAll = async () => {
     const confirmed = await dialog.confirmDanger(
@@ -56,28 +58,26 @@ export default function ActivityScreen({ navigation }: Props) {
   if (activityError) return <DataFallbackScreen onAction={refetchActivity} />;
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text style={styles.screenTitle}>Activity</Text>
+          {sections.length > 0 && (
+            <Pressable onPress={clearAll}>
+              <Text style={styles.clearText}>Clear All</Text>
+            </Pressable>
+          )}
+        </View>
+        <Divider />
+      </View>
+
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 8,
-          paddingBottom: 120,
-        }}
         stickySectionHeadersEnabled={false}
+        contentContainerStyle={styles.container}
         refreshing={activityLoading}
         onRefresh={refetchActivity}
-        ListHeaderComponent={
-          <View style={styles.listHeader}>
-            <Text style={styles.screenTitle}>Activity</Text>
-            {sections.length > 0 && (
-              <Pressable onPress={clearAll}>
-                <Text style={styles.clearText}>Clear All</Text>
-              </Pressable>
-            )}
-          </View>
-        }
         ListEmptyComponent={
           <EmptyState
             icon="bell"
@@ -96,7 +96,10 @@ export default function ActivityScreen({ navigation }: Props) {
                 ? () =>
                     navigation.navigate('Link', {
                       screen: 'LinkDetail',
-                      params: { linkId: item.link_id, partyId: item.party_id },
+                      params: {
+                        linkId: item.link_id,
+                        partyId: item.party_id,
+                      },
                     })
                 : item.party_id
                   ? () =>
@@ -109,25 +112,33 @@ export default function ActivityScreen({ navigation }: Props) {
           />
         )}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  safeArea: {
+  root: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  listHeader: {
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  header: {
+    paddingHorizontal: theme.spacing.lg,
+  },
+  headerText: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.md,
+    alignItems: 'center',
   },
   screenTitle: {
-    fontSize: theme.fontSizes['2xl'],
+    fontSize: theme.fontSizes.xl,
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.lg,
   },
   clearText: {
     fontSize: theme.fontSizes.sm,
