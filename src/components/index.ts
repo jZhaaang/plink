@@ -1,6 +1,6 @@
 export { default as Button } from './Button';
 export { default as TextField } from './TextField';
-export { default as Card } from './Card';
+export { Card, CardSection } from './Card';
 export { default as Divider } from './Divider';
 export { default as Spacer } from './Spacer';
 export { default as Modal } from './Modal';
@@ -12,7 +12,7 @@ export { default as DropdownMenu, DropdownMenuItem } from './DropdownMenu';
 export { Spinner, LoadingScreen } from './Loading';
 export { default as AvatarStack } from './AvatarStack';
 export { default as MediaTile } from './MediaTile';
-export { default as MediaGrid } from './MediaTile';
+export { default as MediaGrid } from './MediaGrid';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as DataFallbackScreen } from './DataFallbackScreen';
 export { default as ModalHeader } from './ModalHeader';
