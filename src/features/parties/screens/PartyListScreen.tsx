@@ -2,7 +2,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
 import { parties as partiesStorage } from '../../../lib/media-service/parties';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FlatList, View, Text, Pressable } from 'react-native';
+import {
+  FlatList,
+  View,
+  Text,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import PartyCard from '../components/PartyCard';
 import {
   AnimatedListItem,
@@ -10,7 +16,6 @@ import {
   DataFallbackScreen,
   Divider,
   EmptyState,
-  LoadingScreen,
 } from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useState } from 'react';
@@ -46,9 +51,6 @@ export default function PartyListScreen({ navigation }: Props) {
   } = usePartyListItems(userId);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  if (partiesLoading) return <LoadingScreen label="Loading..." />;
-  if (partiesError) return <DataFallbackScreen onAction={refetchParties} />;
 
   const handleSubmit = async (name: string, bannerUri: string | null) => {
     if (!name.trim()) {
@@ -120,19 +122,25 @@ export default function PartyListScreen({ navigation }: Props) {
             </AnimatedListItem>
           )}
           ListEmptyComponent={
-            <EmptyState
-              icon="users"
-              title="No parties yet"
-              message="Create your first party to start linking with friends."
-              action={
-                <Button
-                  title="Create a Party"
-                  variant="primary"
-                  size="md"
-                  onPress={() => setModalVisible(true)}
-                />
-              }
-            />
+            partiesError ? (
+              <DataFallbackScreen onAction={refetchParties} />
+            ) : partiesLoading ? (
+              <ActivityIndicator style={{ paddingVertical: 16 }} />
+            ) : (
+              <EmptyState
+                icon="users"
+                title="No parties yet"
+                message="Create your first party to start linking with friends."
+                action={
+                  <Button
+                    title="Create a Party"
+                    variant="primary"
+                    size="md"
+                    onPress={() => setModalVisible(true)}
+                  />
+                }
+              />
+            )
           }
         />
       </View>
