@@ -17,7 +17,6 @@ import {
   DataFallbackScreen,
   Divider,
   EmptyState,
-  LoadingScreen,
   SectionHeader,
 } from '../../components';
 import HomeLinkCard from './components/HomeLinkCard';
@@ -37,7 +36,7 @@ export default function HomeScreen({ navigation }: Props) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    loading,
+    feedLoading,
     error,
     refetch,
   } = useHomeFeed(userId);
@@ -66,10 +65,6 @@ export default function HomeScreen({ navigation }: Props) {
       await dialog.error('Failed to Join Link', getErrorMessage(err));
     }
   };
-
-  if (loading) return <LoadingScreen label="Loading..." />;
-  if (error || !feedLinks || !activeLinks)
-    return <DataFallbackScreen onAction={refetch} />;
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -148,11 +143,17 @@ export default function HomeScreen({ navigation }: Props) {
             </AnimatedListItem>
           )}
           ListEmptyComponent={
-            <EmptyState
-              icon="link"
-              title="No links yet"
-              message="Join a party and start sharing links!"
-            />
+            error ? (
+              <DataFallbackScreen onAction={refetch} />
+            ) : feedLoading ? (
+              <ActivityIndicator style={{ paddingVertical: 16 }} />
+            ) : (
+              <EmptyState
+                icon="link"
+                title="No links yet"
+                message="Join a party and start sharing links!"
+              />
+            )
           }
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) fetchNextPage();
@@ -163,7 +164,7 @@ export default function HomeScreen({ navigation }: Props) {
               <ActivityIndicator style={{ paddingVertical: 20 }} />
             ) : null
           }
-          refreshing={loading}
+          refreshing={feedLoading}
           onRefresh={refetch}
         />
       </View>

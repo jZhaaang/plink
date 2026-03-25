@@ -124,7 +124,8 @@ export function useHomeFeed(userId: string) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    loading: feedLoading || activeLoading,
+    feedLoading,
+    activeLoading,
     error: feedError,
     refetch: () => {
       refetchFeed();
