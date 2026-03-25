@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
-import { AvatarStack, Card, CardSection } from '../../../components';
+import { AvatarStack, Card } from '../../../components';
 
 interface Props {
   name: string;
@@ -44,48 +44,46 @@ export default function PartyCard({
 
   return (
     <Card onPress={onPress} style={styles.card}>
-      <CardSection>
-        <View style={styles.bannerWrap}>
-          {bannerUri ? (
-            <Image
-              source={{ uri: bannerUri }}
-              cachePolicy="memory-disk"
-              contentFit="cover"
-              style={{ width: '100%', height: '100%' }}
-            />
-          ) : (
-            <BannerFallback showIcon={false} />
-          )}
-        </View>
+      <View style={styles.bannerWrap}>
+        {bannerUri ? (
+          <Image
+            source={{ uri: bannerUri }}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            style={{ width: '100%', height: '100%' }}
+          />
+        ) : (
+          <BannerFallback showIcon={false} />
+        )}
+      </View>
 
-        <View style={styles.infoRow}>
-          {avatarUri ? (
-            <Image
-              source={{ uri: avatarUri }}
-              cachePolicy="memory-disk"
-              contentFit="cover"
-              style={styles.partyAvatar}
-            />
-          ) : (
-            <View style={styles.partyAvatar}>
-              <MaterialIcons name="group" size={18} color={theme.colors.gray} />
-            </View>
-          )}
-
-          <View style={styles.infoPill}>
-            <Text style={styles.partyName} numberOfLines={1}>
-              {name}
-            </Text>
-            {memberCount > 0 && (
-              <AvatarStack
-                avatarUris={memberAvatarUris}
-                maxVisible={3}
-                size={22}
-              />
-            )}
+      <View style={styles.infoRow}>
+        {avatarUri ? (
+          <Image
+            source={{ uri: avatarUri }}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            style={styles.partyAvatar}
+          />
+        ) : (
+          <View style={styles.partyAvatar}>
+            <MaterialIcons name="group" size={18} color={theme.colors.gray} />
           </View>
+        )}
+
+        <View style={styles.infoPill}>
+          <Text style={styles.partyName} numberOfLines={1}>
+            {name}
+          </Text>
+          {memberCount > 0 && (
+            <AvatarStack
+              avatarUris={memberAvatarUris}
+              maxVisible={3}
+              size={22}
+            />
+          )}
         </View>
-      </CardSection>
+      </View>
     </Card>
   );
 }
@@ -93,11 +91,11 @@ export default function PartyCard({
 const styles = StyleSheet.create((theme) => ({
   card: {
     marginBottom: theme.spacing.md,
+    overflow: 'hidden',
     ...theme.shadows.md,
   },
   bannerWrap: {
-    borderRadius: theme.radii.lg,
-    overflow: 'hidden',
+    width: '100%',
     aspectRatio: 2.5,
   },
   infoRow: {
