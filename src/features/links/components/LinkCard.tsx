@@ -1,9 +1,10 @@
-import { Pressable, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { Link } from '../../../lib/models';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
+import { Card } from '../../../components';
 
 interface Props {
   link: Link;
@@ -22,79 +23,68 @@ export default function LinkCard({ link, onPress }: Props) {
   const theme = UnistylesRuntime.getTheme();
 
   return (
-    <Pressable
-      onPress={() => onPress?.(link.id)}
-      style={({ pressed }) => ({
-        opacity: pressed ? theme.opacity.pressed : 1,
-      })}
-    >
-      <View style={cardStyles.card}>
-        <View style={cardStyles.bannerWrap}>
-          {link.bannerUrl ? (
-            <Image
-              source={{ uri: link.bannerUrl }}
-              cachePolicy="memory-disk"
-              contentFit="cover"
-              style={{ width: '100%', height: '100%' }}
-              transition={180}
-            />
-          ) : (
-            <View
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: theme.colors.accentSurface,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Feather name="camera" size={24} color={theme.colors.gray} />
-            </View>
-          )}
-
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.5)']}
-            locations={[0, 0.65, 1]}
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 120,
-            }}
+    <Card onPress={() => onPress?.(link.id)} style={styles.card}>
+      <View style={styles.bannerWrap}>
+        {link.bannerUrl ? (
+          <Image
+            source={{ uri: link.bannerUrl }}
+            cachePolicy="memory-disk"
+            contentFit="cover"
+            style={{ width: '100%', height: '100%' }}
+            transition={180}
           />
-
-          {isActive && (
-            <View style={cardStyles.badgeWrap}>
-              <View style={cardStyles.badge}>
-                <Text style={cardStyles.badgeText}>Active</Text>
-              </View>
-            </View>
-          )}
-
-          <View style={cardStyles.bottomOverlay}>
-            <Text style={cardStyles.linkName} numberOfLines={1}>
-              {link.name}
-            </Text>
-            <Text style={cardStyles.dateText} numberOfLines={1}>
-              {isActive
-                ? `Started ${formatDate(link.created_at)}`
-                : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
-            </Text>
+        ) : (
+          <View
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: theme.colors.accentSurface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Feather name="camera" size={24} color={theme.colors.gray} />
           </View>
+        )}
+
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.5)']}
+          locations={[0, 0.65, 1]}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 120,
+          }}
+        />
+
+        {isActive && (
+          <View style={styles.badgeWrap}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>Active</Text>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.footer}>
+          <Text style={styles.linkName} numberOfLines={1}>
+            {link.name}
+          </Text>
+          <Text style={styles.dateText} numberOfLines={1}>
+            {isActive
+              ? `Started ${formatDate(link.created_at)}`
+              : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
+          </Text>
         </View>
       </View>
-    </Pressable>
+    </Card>
   );
 }
 
-const cardStyles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme) => ({
   card: {
-    borderRadius: theme.radii.xl,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
     marginBottom: theme.spacing.md,
   },
   bannerWrap: {
@@ -118,7 +108,7 @@ const cardStyles = StyleSheet.create((theme) => ({
     fontWeight: theme.fontWeights.semibold,
     color: theme.colors.textInverse,
   },
-  bottomOverlay: {
+  footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,

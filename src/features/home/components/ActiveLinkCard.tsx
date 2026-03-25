@@ -1,10 +1,10 @@
-import { Pressable, View, Text, Dimensions } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
-import Button from '../../../components/Button';
 import { ActiveFeedLink } from '../../../lib/models';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
+import { Button, Card, CardSection } from '../../../components';
 
 interface Props {
   peek?: boolean;
@@ -28,18 +28,14 @@ export default function ActiveLinkCard({
   const HORIZONTAL_PADDING = theme.spacing.md * 2;
 
   return (
-    <Pressable
+    <Card
       onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? theme.opacity.pressed : 1,
-      })}
+      style={[
+        styles.card,
+        peek && { width: SCREEN_WIDTH - HORIZONTAL_PADDING - 80 },
+      ]}
     >
-      <View
-        style={[
-          styles.card,
-          peek && { width: SCREEN_WIDTH - HORIZONTAL_PADDING - 80 },
-        ]}
-      >
+      <CardSection>
         {/* Top row */}
         <View style={styles.topRow}>
           {link.party.avatarUrl ? (
@@ -107,16 +103,13 @@ export default function ActiveLinkCard({
             disabled={isMember}
           />
         </View>
-      </View>
-    </Pressable>
+      </CardSection>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    padding: theme.spacing.md,
-    borderRadius: theme.radii.lg,
-    backgroundColor: theme.colors.surface,
     borderWidth: 2,
     borderColor: theme.colors.badgeActive,
     gap: theme.spacing.xs,
@@ -161,7 +154,7 @@ const styles = StyleSheet.create((theme) => ({
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: theme.spacing.xs,
   },
   metaText: {
     fontSize: theme.fontSizes.xs,

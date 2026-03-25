@@ -1,9 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
-import { AvatarStack } from '../../../components';
+import { AvatarStack, Card, CardSection } from '../../../components';
 
 interface Props {
   name: string;
@@ -43,13 +43,8 @@ export default function PartyCard({
   const memberCount = members?.length ?? 0;
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? theme.opacity.pressed : 1,
-      })}
-    >
-      <View style={styles.card}>
+    <Card onPress={onPress} style={styles.card}>
+      <CardSection>
         <View style={styles.bannerWrap}>
           {bannerUri ? (
             <Image
@@ -90,17 +85,13 @@ export default function PartyCard({
             )}
           </View>
         </View>
-      </View>
-    </Pressable>
+      </CardSection>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    borderRadius: theme.radii.lg,
-    backgroundColor: theme.colors.background,
-    padding: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
     marginBottom: theme.spacing.md,
     ...theme.shadows.md,
   },

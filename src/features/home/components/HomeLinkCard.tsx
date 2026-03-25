@@ -1,10 +1,9 @@
-import { Pressable, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
-import MediaGrid from '../../../components/MediaGrid';
 import type { HomeFeedLink } from '../../../lib/models';
-import { AvatarStack } from '../../../components';
+import { AvatarStack, Card, CardSection, MediaGrid } from '../../../components';
 
 interface Props {
   link: HomeFeedLink;
@@ -30,13 +29,8 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
       .filter((url): url is string => !!url) ?? [];
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        opacity: pressed ? theme.opacity.pressed : 1,
-      })}
-    >
-      <View style={styles.card}>
+    <Card onPress={onPress} style={styles.card}>
+      <CardSection>
         {/* Header */}
         <View style={styles.header}>
           {link.party.avatarUrl ? (
@@ -66,15 +60,13 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
 
         {/* Media grid */}
         {link.media.length > 0 && (
-          <View style={styles.mediaSection}>
-            <MediaGrid
-              media={link.media}
-              columns={3}
-              maxItems={6}
-              scrollEnabled={false}
-              onMediaPress={onMediaPress}
-            />
-          </View>
+          <MediaGrid
+            media={link.media}
+            columns={3}
+            maxItems={6}
+            scrollEnabled={false}
+            onMediaPress={onMediaPress}
+          />
         )}
 
         {/* Footer metadata */}
@@ -85,19 +77,14 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
             </Text>
           </View>
         </View>
-      </View>
-    </Pressable>
+      </CardSection>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   card: {
     marginBottom: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radii.xl,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    padding: theme.spacing.lg,
   },
   header: {
     flexDirection: 'row',
@@ -130,7 +117,6 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.xs,
     color: theme.colors.textTertiary,
   },
-  mediaSection: {},
   footer: {
     flexDirection: 'row',
     marginTop: theme.spacing.sm,
