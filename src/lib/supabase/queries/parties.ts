@@ -60,23 +60,14 @@ export async function deleteParty(partyId: string): Promise<void> {
   return;
 }
 
-export async function getPartiesWithMembersByUserId(userId: string) {
+export async function getPartyDetailsByUserId(userId: string) {
   const { data, error } = await supabase
     .from('party_members')
-    .select('parties (*, party_members (user_id, profiles(*)))')
-    .eq('user_id', userId);
-
-  if (error) throw error;
-
-  return data.map((d) => d.parties);
-}
-
-export async function getPartiesWithMembersAndLinksByUserId(userId: string) {
-  const { data, error } = await supabase
-    .from('party_members')
-    .select(`parties (*, party_members (user_id, profiles (*)), links (*))`)
-
-    .eq('user_id', userId);
+    .select(
+      `parties (*, party_members (user_id, profiles (*)), link_count: links (count), active_link: links (*))`,
+    )
+    .eq('user_id', userId)
+    .is('parties.active_link.end_time', null);
 
   if (error) throw error;
 
@@ -87,7 +78,7 @@ export async function getPartyDetailById(partyId: string) {
   const { data, error } = await supabase
     .from('parties')
     .select(
-      `*,party_members (user_id,profiles (*)), link_count: links (count), active_link:links (*)`,
+      `*, party_members (user_id,profiles (*)), link_count: links (count), active_link:links (*)`,
     )
     .eq('id', partyId)
     .is('active_link.end_time', null)

@@ -24,7 +24,7 @@ import {
   createParty,
   updatePartyById,
 } from '../../../lib/supabase/queries/parties';
-import { usePartyListItems } from '../hooks/usePartyListItems';
+import { usePartyDetailList } from '../hooks/usePartyDetailList';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
@@ -44,11 +44,11 @@ export default function PartyListScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
 
   const {
-    parties,
+    partyDetails,
     loading: partiesLoading,
     error: partiesError,
     refetch: refetchParties,
-  } = usePartyListItems(userId);
+  } = usePartyDetailList(userId);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -103,7 +103,7 @@ export default function PartyListScreen({ navigation }: Props) {
         <Text style={styles.screenTitle}>Your Parties</Text>
         <Divider />
         <FlatList
-          data={parties}
+          data={partyDetails}
           keyExtractor={(p) => p.id}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           refreshing={partiesLoading}
@@ -145,7 +145,7 @@ export default function PartyListScreen({ navigation }: Props) {
         />
       </View>
 
-      {parties.length ? (
+      {partyDetails.length ? (
         <Pressable
           onPress={() => setModalVisible(true)}
           style={[

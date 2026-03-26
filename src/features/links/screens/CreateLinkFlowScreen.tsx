@@ -4,11 +4,11 @@ import { Feather } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Modal, Spinner } from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
-import { usePartyListItems } from '../../parties/hooks/usePartyListItems';
+import { usePartyDetailList } from '../../parties/hooks/usePartyDetailList';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { createLink } from '../../../lib/supabase/queries/links';
 import CreateLinkModal from '../components/CreateLinkModal';
-import type { PartyListItem } from '../../../lib/models';
+import { PartyDetail } from '../../../lib/models';
 import { SignedInParamList } from '../../../navigation/types';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
@@ -22,13 +22,11 @@ export default function CreateLinkFlowScreen() {
   const invalidate = useInvalidate();
   const navigation = useNavigation<NavigationProp<SignedInParamList>>();
   const { createLinkVisible, closeCreateLink } = useActiveLinkContext();
-  const { parties, loading: partiesLoading } = usePartyListItems(
+  const { partyDetails, loading: partiesLoading } = usePartyDetailList(
     userId ?? null,
   );
 
-  const [selectedParty, setSelectedParty] = useState<PartyListItem | null>(
-    null,
-  );
+  const [selectedParty, setSelectedParty] = useState<PartyDetail | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
 
   const handleClose = () => {
@@ -106,11 +104,11 @@ export default function CreateLinkFlowScreen() {
 
       {partiesLoading ? (
         <Spinner />
-      ) : parties.length === 0 ? (
+      ) : partyDetails.length === 0 ? (
         <Text style={styles.emptyText}>You are not in any parties yet.</Text>
       ) : (
         <FlatList
-          data={parties}
+          data={partyDetails}
           keyExtractor={(item) => item.id}
           scrollEnabled={false}
           renderItem={({ item }) => (

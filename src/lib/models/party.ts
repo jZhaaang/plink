@@ -19,6 +19,3 @@ export type PartyDetail = Party & {
   activeLink: Link | null;
   linkCount: number;
 };
-export type PartyListItem = Party & {
-  members: Profile[];
-};
