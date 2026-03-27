@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Text, View, Pressable, FlatList } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Modal, Spinner } from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
@@ -14,12 +14,14 @@ import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import * as Burnt from 'burnt';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { Image } from 'expo-image';
 
 export default function CreateLinkFlowScreen() {
   const { userId } = useAuth();
   const dialog = useDialog();
   const invalidate = useInvalidate();
+  const theme = UnistylesRuntime.getTheme();
   const navigation = useNavigation<NavigationProp<SignedInParamList>>();
   const { createLinkVisible, closeCreateLink } = useActiveLinkContext();
   const { partyDetails, loading: partiesLoading } = usePartyDetailList(
@@ -114,9 +116,22 @@ export default function CreateLinkFlowScreen() {
           renderItem={({ item }) => (
             <Pressable onPress={() => setSelectedParty(item)}>
               <View style={styles.partyRow}>
-                <View style={styles.partyIcon}>
-                  <Feather name="users" size={18} color="#3b82f6" />
-                </View>
+                {item.avatarUrl ? (
+                  <Image
+                    source={{ uri: item.avatarUrl }}
+                    style={styles.partyAvatar}
+                    cachePolicy="memory-disk"
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View style={styles.partyAvatar}>
+                    <MaterialIcons
+                      name="group"
+                      size={16}
+                      color={theme.colors.gray}
+                    />
+                  </View>
+                )}
                 <View style={styles.partyInfo}>
                   <Text style={styles.partyName}>{item.name}</Text>
                   <Text style={styles.partyMeta}>
@@ -169,7 +184,7 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.radii.lg,
   },
-  partyIcon: {
+  partyAvatar: {
     width: 40,
     height: 40,
     borderRadius: theme.radii.full,
