@@ -1,7 +1,7 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVisionCamera } from '../hooks/useVisionCamera';
 import { Pressable, View, Text } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Camera } from 'react-native-vision-camera';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
@@ -12,6 +12,8 @@ interface Props {
 
 export function CameraView({ camera, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const { theme } = useUnistyles();
+
   const controlsBottom = insets.bottom + 24;
 
   return (
@@ -39,7 +41,11 @@ export function CameraView({ camera, onClose }: Props) {
         style={{ position: 'absolute', top: insets.top + 12, left: 16 }}
       >
         <View style={styles.circleButton}>
-          <Feather name="x" size={24} color="white" />
+          <Feather
+            name="x"
+            size={theme.iconSizes.lg}
+            color={theme.colors.white}
+          />
         </View>
       </Pressable>
 
@@ -49,7 +55,11 @@ export function CameraView({ camera, onClose }: Props) {
         style={{ position: 'absolute', top: insets.top + 12, right: 16 }}
       >
         <View style={styles.circleButton}>
-          <Ionicons name="camera-reverse" size={22} color="white" />
+          <Ionicons
+            name="camera-reverse"
+            size={theme.iconSizes.lg}
+            color={theme.colors.white}
+          />
         </View>
       </Pressable>
 

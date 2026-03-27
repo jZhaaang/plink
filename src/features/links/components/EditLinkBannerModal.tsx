@@ -109,7 +109,7 @@ export default function EditLinkBannerModal({
           <View style={styles.emptyIcon}>
             <Feather
               name={images.length > 0 ? 'crop' : 'image'}
-              size={20}
+              size={theme.iconSizes.md}
               color={theme.colors.gray}
             />
           </View>

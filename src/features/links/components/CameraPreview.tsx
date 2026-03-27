@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { CapturedAsset } from '../hooks/useVisionCamera';
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 
 export function CameraPreview({ asset, onDiscard, onConfirm }: Props) {
   const insets = useSafeAreaInsets();
-  const controlsBottom = insets.bottom + 24;
+  const { theme } = useUnistyles();
 
   const player = useVideoPlayer(
     asset.type === 'video' ? { uri: asset.uri } : null,
@@ -23,6 +23,8 @@ export function CameraPreview({ asset, onDiscard, onConfirm }: Props) {
       p.play();
     },
   );
+
+  const controlsBottom = insets.bottom + 24;
 
   return (
     <View style={styles.container}>
@@ -49,7 +51,11 @@ export function CameraPreview({ asset, onDiscard, onConfirm }: Props) {
         style={{ position: 'absolute', left: 16, top: insets.top + 12 }}
       >
         <View style={styles.circleButton}>
-          <Feather name="x" size={24} color="white" />
+          <Feather
+            name="x"
+            size={theme.iconSizes.lg}
+            color={theme.colors.white}
+          />
         </View>
       </Pressable>
 
@@ -57,7 +63,11 @@ export function CameraPreview({ asset, onDiscard, onConfirm }: Props) {
       <View style={[styles.confirmRow, { bottom: controlsBottom + 80 }]}>
         <Pressable onPress={onConfirm}>
           <View style={styles.confirmButton}>
-            <Feather name="send" size={28} color="white" />
+            <Feather
+              name="send"
+              size={theme.iconSizes.lg}
+              color={theme.colors.white}
+            />
           </View>
         </Pressable>
       </View>

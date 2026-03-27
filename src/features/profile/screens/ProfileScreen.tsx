@@ -27,19 +27,21 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as Burnt from 'burnt';
 import { deletePushToken } from '../../../lib/supabase/queries/pushTokens';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 export default function ProfileScreen() {
   const { userId } = useAuth();
   const dialog = useDialog();
-  const invalidate = useInvalidate();
+  const { theme } = useUnistyles();
 
+  const invalidate = useInvalidate();
   const {
     profile,
     loading: profileLoading,
     error: profileError,
     refetch: refetchProfile,
   } = useProfile(userId);
+
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -213,13 +215,17 @@ export default function ProfileScreen() {
                     {editModeAvatarUri ? (
                       <Image
                         source={{ uri: editModeAvatarUri }}
-                        style={{ width: 112, height: 112 }}
+                        style={styles.avatar}
                         cachePolicy="memory-disk"
                         contentFit="cover"
                       />
                     ) : null}
                     <View style={styles.avatarOverlay}>
-                      <Ionicons name="camera-outline" size={32} color="white" />
+                      <Ionicons
+                        name="camera-outline"
+                        size={theme.iconSizes.xl}
+                        color="white"
+                      />
                     </View>
                   </View>
                 </Pressable>
@@ -231,7 +237,11 @@ export default function ProfileScreen() {
                 <TextField
                   header="Name"
                   left={
-                    <Ionicons name="person-outline" size={18} color="#64748b" />
+                    <Ionicons
+                      name="person-outline"
+                      size={theme.iconSizes.md}
+                      color={theme.colors.gray}
+                    />
                   }
                   placeholder="Your name"
                   value={name}
@@ -288,7 +298,7 @@ export default function ProfileScreen() {
                   {profile.avatarUrl ? (
                     <Image
                       source={{ uri: profile.avatarUrl }}
-                      style={{ width: 96, height: 96, borderRadius: 48 }}
+                      style={styles.avatar}
                       cachePolicy="memory-disk"
                       contentFit="cover"
                     />
@@ -354,9 +364,14 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     gap: theme.spacing.sm,
   },
+  avatar: {
+    width: theme.avatarSizes.xl,
+    height: theme.avatarSizes.xl,
+    borderRadius: theme.radii.full,
+  },
   avatarEditWrap: {
-    height: 112,
-    width: 112,
+    idth: theme.avatarSizes.xl,
+    height: theme.avatarSizes.xl,
     overflow: 'hidden',
     borderRadius: theme.radii.full,
   },

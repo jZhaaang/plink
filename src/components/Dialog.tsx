@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import Button from './Button';
 import Modal from './Modal';
 import TextField from './TextField';
@@ -47,6 +47,7 @@ export default function Dialog({
   secondaryLabel,
   onSecondary,
 }: DialogProps) {
+  const { theme } = useUnistyles();
   const [typedValue, setTypedValue] = useState('');
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function Dialog({
       <View style={styles.body}>
         <Ionicons
           name={variantIcon[variant]}
-          size={32}
+          size={theme.iconSizes.xl}
           color={variantColour[variant]}
         />
         {title ? <Text style={styles.title}>{title}</Text> : null}

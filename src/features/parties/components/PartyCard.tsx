@@ -14,6 +14,8 @@ interface Props {
 }
 
 function BannerFallback({ showIcon }: { showIcon?: boolean }) {
+  const { theme } = useUnistyles();
+
   return (
     <LinearGradient
       colors={['#bfdbfe', '#3b82f6']}
@@ -22,7 +24,11 @@ function BannerFallback({ showIcon }: { showIcon?: boolean }) {
       style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
     >
       {showIcon && (
-        <MaterialIcons name="add-photo-alternate" size={36} color="#ffffff99" />
+        <MaterialIcons
+          name="add-photo-alternate"
+          size={theme.iconSizes.xl}
+          color={theme.colors.white}
+        />
       )}
     </LinearGradient>
   );
@@ -79,7 +85,7 @@ export default function PartyCard({
             <AvatarStack
               avatarUris={memberAvatarUris}
               maxVisible={3}
-              size={22}
+              size={theme.avatarSizes.xs}
             />
           )}
         </View>

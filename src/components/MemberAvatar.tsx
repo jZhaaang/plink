@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Profile } from '../lib/models';
 
 interface Props {
@@ -8,13 +8,16 @@ interface Props {
   size?: number;
 }
 
-export default function MemberAvatar({ member, size = 48 }: Props) {
+export default function MemberAvatar({ member, size }: Props) {
+  const { theme } = useUnistyles();
+  const avatarSize = size ?? theme.avatarSizes.md;
+
   return (
     <View style={styles.container}>
       <Image
         source={{ uri: member.avatarUrl }}
         cachePolicy="memory-disk"
-        style={styles.avatar(size)}
+        style={styles.avatar(avatarSize)}
       />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>

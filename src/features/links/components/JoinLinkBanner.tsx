@@ -18,13 +18,21 @@ export default function JoinLinkBanner({
       <View style={styles.textColumn}>
         <Text style={styles.title}>Join this link</Text>
         <Text style={styles.subtitle}>
-          <Feather name="users" size={12} color={theme.colors.textTertiary} />{' '}
+          <Feather
+            name="users"
+            size={theme.iconSizes.xs}
+            color={theme.colors.textTertiary}
+          />{' '}
           {memberCount} {memberCount === 1 ? 'member' : 'members'}
         </Text>
       </View>
       <Pressable onPress={onJoin}>
         <View style={styles.joinButton}>
-          <Feather name="log-in" size={20} color="white" />
+          <Feather
+            name="log-in"
+            size={theme.iconSizes.md}
+            color={theme.colors.white}
+          />
         </View>
       </Pressable>
     </View>

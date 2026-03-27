@@ -49,7 +49,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
             <View style={styles.backButton}>
               <Feather
                 name="arrow-left"
-                size={20}
+                size={theme.iconSizes.md}
                 color={theme.colors.darkGray}
               />
             </View>

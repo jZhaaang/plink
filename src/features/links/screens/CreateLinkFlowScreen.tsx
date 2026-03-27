@@ -128,7 +128,7 @@ export default function CreateLinkFlowScreen() {
                   <View style={styles.partyAvatar}>
                     <MaterialIcons
                       name="group"
-                      size={16}
+                      size={theme.iconSizes.sm}
                       color={theme.colors.gray}
                     />
                   </View>
@@ -140,7 +140,11 @@ export default function CreateLinkFlowScreen() {
                     {item.members.length === 1 ? 'member' : 'members'}
                   </Text>
                 </View>
-                <Feather name="chevron-right" size={18} color="#94a3b8" />
+                <Feather
+                  name="chevron-right"
+                  size={theme.iconSizes.sm}
+                  color={theme.colors.gray}
+                />
               </View>
             </Pressable>
           )}

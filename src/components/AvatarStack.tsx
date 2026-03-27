@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface AvatarStackProps {
   avatarUris: string[];
@@ -11,8 +11,11 @@ interface AvatarStackProps {
 export default function AvatarStack({
   avatarUris,
   maxVisible = 5,
-  size = 40,
+  size,
 }: AvatarStackProps) {
+  const { theme } = useUnistyles();
+
+  const avatarSize = size ?? theme.avatarSizes.md;
   const total = avatarUris.length;
   const visible = Math.min(maxVisible, total);
   const overflow = total - visible;
@@ -30,7 +33,7 @@ export default function AvatarStack({
       ))}
 
       {overflow > 0 && (
-        <View style={styles.overflowBadge(size)}>
+        <View style={styles.overflowBadge(avatarSize)}>
           <Text style={styles.overflowText}>+{overflow}</Text>
         </View>
       )}

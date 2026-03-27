@@ -145,14 +145,14 @@ export default function InviteMemberModal({
           ) : inviteAction === 'invited' ? (
             <Feather
               name="check-circle"
-              size={20}
+              size={theme.iconSizes.md}
               color={theme.colors.badgeActive}
             />
           ) : (
             <Pressable onPress={handleInvite} hitSlop={8}>
               <Feather
                 name="user-plus"
-                size={20}
+                size={theme.iconSizes.md}
                 color={theme.colors.textSecondary}
               />
             </Pressable>

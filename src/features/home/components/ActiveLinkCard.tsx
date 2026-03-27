@@ -14,8 +14,6 @@ interface Props {
   onJoin: () => void;
 }
 
-const AVATAR_SIZE = 40;
-
 export default function ActiveLinkCard({
   peek = false,
   link,
@@ -48,7 +46,11 @@ export default function ActiveLinkCard({
             />
           ) : (
             <View style={[styles.avatar, styles.avatarFallback]}>
-              <MaterialIcons name="group" size={16} color={theme.colors.gray} />
+              <MaterialIcons
+                name="group"
+                size={theme.iconSizes.sm}
+                color={theme.colors.gray}
+              />
             </View>
           )}
 
@@ -68,7 +70,7 @@ export default function ActiveLinkCard({
             <View style={styles.metaItem}>
               <MaterialIcons
                 name="access-time"
-                size={12}
+                size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
               <Text style={styles.metaText}>
@@ -78,7 +80,7 @@ export default function ActiveLinkCard({
             <View style={styles.metaItem}>
               <MaterialIcons
                 name="people-outline"
-                size={12}
+                size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
               <Text style={styles.metaText}>{link.members.length}</Text>
@@ -86,7 +88,7 @@ export default function ActiveLinkCard({
             <View style={styles.metaItem}>
               <MaterialIcons
                 name="image"
-                size={12}
+                size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
               <Text style={styles.metaText}>{link.mediaCount}</Text>
@@ -120,8 +122,8 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
   },
   avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
+    width: theme.avatarSizes.md,
+    height: theme.avatarSizes.md,
     borderRadius: theme.radii.full,
   },
   avatarFallback: {

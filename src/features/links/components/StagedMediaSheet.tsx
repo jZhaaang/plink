@@ -10,7 +10,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   assets: StagedAsset[];
@@ -34,10 +34,12 @@ export default function StagedMediaSheet({
   uploading,
 }: Props) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const [index, setIndex] = useState(1);
-  const [contentHeight, setContentHeight] = useState(0);
+  const { theme } = useUnistyles();
+
   const sheetRef = useRef<BottomSheet>(null);
   const animatedIndex = useSharedValue(1);
+  const [index, setIndex] = useState(1);
+  const [contentHeight, setContentHeight] = useState(0);
 
   const COLLAPSED = 88;
   const fitSnap = Math.min(contentHeight + 50, screenHeight * 0.6);
@@ -170,8 +172,8 @@ export default function StagedMediaSheet({
                         <View style={styles.tileOverlayIcon}>
                           <Ionicons
                             name="time-outline"
-                            size={14}
-                            color="white"
+                            size={theme.iconSizes.xs}
+                            color={theme.colors.white}
                           />
                         </View>
                       </View>
@@ -179,7 +181,11 @@ export default function StagedMediaSheet({
                     {item.asset.type === 'video' && (
                       <View style={styles.tileOverlay}>
                         <View style={styles.tileOverlayIcon}>
-                          <Feather name="play" size={14} color="white" />
+                          <Feather
+                            name="play"
+                            size={theme.iconSizes.xs}
+                            color={theme.colors.white}
+                          />
                         </View>
                       </View>
                     )}
@@ -188,7 +194,11 @@ export default function StagedMediaSheet({
                       hitSlop={8}
                       style={styles.removeButton}
                     >
-                      <Feather name="x" size={12} color="white" />
+                      <Feather
+                        name="x"
+                        size={theme.iconSizes.xs}
+                        color={theme.colors.white}
+                      />
                     </Pressable>
                   </View>
                 ))}
@@ -200,7 +210,11 @@ export default function StagedMediaSheet({
                       { width: tileSize, height: tileSize },
                     ]}
                   >
-                    <Feather name="plus" size={24} color="#94a3b8" />
+                    <Feather
+                      name="plus"
+                      size={theme.iconSizes.lg}
+                      color={theme.colors.gray}
+                    />
                     <Text style={styles.addTileText}>Add</Text>
                   </View>
                 </Pressable>
@@ -268,7 +282,11 @@ export default function StagedMediaSheet({
                     uploading && { opacity: 0.5 },
                   ]}
                 >
-                  <Ionicons name="arrow-up" size={16} color="white" />
+                  <Ionicons
+                    name="arrow-up"
+                    size={theme.iconSizes.sm}
+                    color="white"
+                  />
                 </View>
               </Pressable>
             </View>

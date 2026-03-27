@@ -15,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ExpandableFAB, { FABAction } from './ExpandableFAB';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 type NestedRoute = Route<string> & {
   state?: NavigationState | PartialState<NavigationState>;
@@ -52,6 +52,8 @@ export default function CustomTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { theme } = useUnistyles();
+
   const { activeLink, openCreateLink, requestUpload } = useActiveLinkContext();
   const isExpanded = useSharedValue(0);
   const tabBarTranslateY = useSharedValue(0);
@@ -218,16 +220,16 @@ export default function CustomTabBar({
                         >
                           <MaterialCommunityIcons
                             name="plus"
-                            size={28}
-                            color="#ffffff"
+                            size={theme.iconSizes.xl}
+                            color={theme.colors.white}
                           />
                         </Animated.View>
                       </View>
                     ) : (
                       <MaterialCommunityIcons
                         name={centerIcon}
-                        size={28}
-                        color="#ffffff"
+                        size={theme.iconSizes.xl}
+                        color={theme.colors.white}
                       />
                     )}
                   </View>
@@ -257,7 +259,9 @@ export default function CustomTabBar({
               <View style={styles.tab}>
                 {options.tabBarIcon?.({
                   focused: isFocused,
-                  color: isFocused ? '#3b82f6' : '#94a3b8',
+                  color: isFocused
+                    ? theme.colors.primary
+                    : theme.colors.lightGray,
                   size: 24,
                 })}
               </View>

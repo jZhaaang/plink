@@ -17,18 +17,18 @@ import { isValidUsername, normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import * as Burnt from 'burnt';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignedIn'>;
 
 export default function CompleteProfileScreen({ navigation }: Props) {
   const { userId, ready } = useAuth();
   const dialog = useDialog();
+  const { theme } = useUnistyles();
 
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-
   const [loading, setLoading] = useState(false);
 
   const handleChoosePhoto = async () => {
@@ -156,7 +156,11 @@ export default function CompleteProfileScreen({ navigation }: Props) {
                   style={{ width: 112, height: 112 }}
                 />
               ) : (
-                <Ionicons name="camera-outline" size={26} color="#64748b" />
+                <Ionicons
+                  name="camera-outline"
+                  size={theme.iconSizes.lg}
+                  color={theme.colors.gray}
+                />
               )}
             </View>
           </Pressable>
@@ -186,7 +190,13 @@ export default function CompleteProfileScreen({ navigation }: Props) {
         <View style={styles.fieldGroup}>
           <TextField
             header="Name"
-            left={<Ionicons name="person-outline" size={18} color="#64748b" />}
+            left={
+              <Ionicons
+                name="person-outline"
+                size={theme.iconSizes.md}
+                color={theme.colors.gray}
+              />
+            }
             placeholder="Your name"
             value={name}
             onChangeText={setName}

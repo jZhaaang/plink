@@ -6,7 +6,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 export type FABAction = {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -33,10 +33,7 @@ export default function ExpandableFAB({
   const startX = -(totalWidth / 2) + ITEM_SIZE / 2;
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={styles.container}
-    >
+    <View pointerEvents="box-none" style={styles.container}>
       {actions.map((action, index) => {
         const targetX = startX + index * (ITEM_SIZE + ITEM_GAP);
         return (
@@ -64,6 +61,8 @@ function FABItem({
   isExpanded: SharedValue<number>;
   menuOpen: boolean;
 }) {
+  const { theme } = useUnistyles();
+
   const animatedStyle = useAnimatedStyle(() => {
     const translateX = interpolate(isExpanded.value, [0, 1], [0, targetX]);
     const translateY = interpolate(
@@ -85,11 +84,12 @@ function FABItem({
       pointerEvents={menuOpen ? 'auto' : 'none'}
       style={[styles.fabItem, animatedStyle]}
     >
-      <Pressable
-        style={styles.fabItemPressable}
-        onPress={action.onPress}
-      >
-        <MaterialCommunityIcons name={action.icon} size={22} color="#ffffff" />
+      <Pressable style={styles.fabItemPressable} onPress={action.onPress}>
+        <MaterialCommunityIcons
+          name={action.icon}
+          size={theme.iconSizes.md}
+          color={theme.colors.white}
+        />
       </Pressable>
     </Animated.View>
   );

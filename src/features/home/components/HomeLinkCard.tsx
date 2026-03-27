@@ -11,8 +11,6 @@ interface Props {
   onMediaPress: () => void;
 }
 
-const AVATAR_SIZE = 40;
-
 function formatDate(dateString: string | null): string {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -43,7 +41,11 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
             />
           ) : (
             <View style={styles.partyAvatar}>
-              <MaterialIcons name="group" size={16} color={theme.colors.gray} />
+              <MaterialIcons
+                name="group"
+                size={theme.iconSizes.sm}
+                color={theme.colors.gray}
+              />
             </View>
           )}
 
@@ -56,7 +58,11 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
             </Text>
           </View>
 
-          <AvatarStack avatarUris={memberAvatarUris} maxVisible={3} size={24} />
+          <AvatarStack
+            avatarUris={memberAvatarUris}
+            maxVisible={3}
+            size={theme.avatarSizes.xs}
+          />
         </View>
 
         {/* Media grid */}
@@ -94,8 +100,8 @@ const styles = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing.md,
   },
   partyAvatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
+    width: theme.avatarSizes.md,
+    height: theme.avatarSizes.md,
     borderRadius: theme.radii.full,
     backgroundColor: theme.colors.lightGray,
     alignItems: 'center',

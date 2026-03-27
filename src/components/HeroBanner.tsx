@@ -32,7 +32,11 @@ export default function HeroBanner({
     if (!bannerUri) {
       return (
         <View style={[style, styles.emptyBanner]}>
-          <Feather name="image" size={24} color={theme.colors.gray} />
+          <Feather
+            name="image"
+            size={theme.iconSizes.lg}
+            color={theme.colors.gray}
+          />
           {emptyHint && <Text style={styles.emptyBannerText}>{emptyHint}</Text>}
         </View>
       );
@@ -99,14 +103,22 @@ export default function HeroBanner({
             <View style={styles.navRow} pointerEvents="box-none">
               <Pressable onPress={onBack}>
                 <View style={styles.navButton}>
-                  <Feather name="arrow-left" size={20} color="#fff" />
+                  <Feather
+                    name="arrow-left"
+                    size={theme.iconSizes.md}
+                    color={theme.colors.white}
+                  />
                 </View>
               </Pressable>
 
               {onMenuPress ? (
                 <Pressable onPress={onMenuPress}>
                   <View style={styles.navButton}>
-                    <Feather name="more-vertical" size={20} color="#fff" />
+                    <Feather
+                      name="more-vertical"
+                      size={theme.iconSizes.md}
+                      color={theme.colors.white}
+                    />
                   </View>
                 </Pressable>
               ) : (
@@ -129,7 +141,7 @@ export default function HeroBanner({
               <View style={styles.avatarOverlapImage}>
                 <MaterialIcons
                   name="group"
-                  size={24}
+                  size={theme.iconSizes.lg}
                   color={theme.colors.gray}
                 />
               </View>

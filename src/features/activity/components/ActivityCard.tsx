@@ -3,7 +3,7 @@ import { ActivityFeedItem } from '../../../lib/models';
 import { View, Text } from 'react-native';
 import { activityLine } from '../hooks/useActivityFeed';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Card, CardSection } from '../../../components';
 
 interface Props {
@@ -33,12 +33,18 @@ function iconForType(
 }
 
 export default function ActivityCard({ item, onPress }: Props) {
+  const { theme } = useUnistyles();
+
   return (
     <Card onPress={onPress} style={styles.card}>
       <CardSection style={styles.cardSection}>
         <View style={styles.row}>
           <View style={styles.iconCircle}>
-            <Feather name={iconForType(item.type)} size={16} color="#2563eb" />
+            <Feather
+              name={iconForType(item.type)}
+              size={theme.iconSizes.sm}
+              color={theme.colors.primary}
+            />
           </View>
 
           <View style={styles.textWrap}>

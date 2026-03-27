@@ -20,8 +20,6 @@ interface Props {
   onDeletePost?: (postId: string) => void;
 }
 
-const AVATAR_SIZE = 40;
-
 export default function PostCard({
   post,
   onMediaPress,
@@ -86,7 +84,7 @@ export default function PostCard({
               <View style={styles.menuButton}>
                 <Feather
                   name="more-horizontal"
-                  size={20}
+                  size={theme.iconSizes.md}
                   color={theme.colors.gray}
                 />
               </View>
@@ -136,8 +134,8 @@ const styles = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing.md,
   },
   avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
+    width: theme.avatarSizes.md,
+    height: theme.avatarSizes.md,
     borderRadius: theme.radii.full,
   },
   avatarFallback: {

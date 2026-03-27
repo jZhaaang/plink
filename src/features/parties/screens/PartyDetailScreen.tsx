@@ -346,7 +346,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                   <View style={styles.partyMetaRow}>
                     <Feather
                       name="calendar"
-                      size={13}
+                      size={theme.iconSizes.xs}
                       color={theme.colors.textTertiary}
                     />
                     <Text style={styles.partyMetaText}>
@@ -380,8 +380,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                           <View style={styles.invitePill}>
                             <Feather
                               name="user-plus"
-                              size={14}
-                              color="#2563eb"
+                              size={theme.iconSizes.xs}
+                              color={theme.colors.primary}
                             />
                             <Text style={styles.inviteText}>Invite</Text>
                           </View>

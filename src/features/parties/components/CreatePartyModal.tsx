@@ -117,7 +117,7 @@ export default function CreatePartyModal({
               <View style={styles.emptyPickerIcon}>
                 <MaterialIcons
                   name="add-photo-alternate"
-                  size={32}
+                  size={theme.iconSizes.xl}
                   color={theme.colors.gray}
                 />
               </View>
@@ -144,7 +144,7 @@ export default function CreatePartyModal({
             <View style={styles.emptyPicker}>
               <MaterialIcons
                 name="add-a-photo"
-                size={24}
+                size={theme.iconSizes.lg}
                 color={theme.colors.gray}
               />
             </View>

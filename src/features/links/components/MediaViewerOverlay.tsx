@@ -2,7 +2,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   currentIndex: number;
@@ -16,6 +16,7 @@ export default function MediaViewerOverlay({
   onClose,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { theme } = useUnistyles();
 
   return (
     <View
@@ -34,7 +35,11 @@ export default function MediaViewerOverlay({
         <View style={styles.row}>
           <Pressable onPress={onClose}>
             <View style={styles.closeButton}>
-              <Feather name="x" size={24} color="white" />
+              <Feather
+                name="x"
+                size={theme.iconSizes.lg}
+                color={theme.colors.white}
+              />
             </View>
           </Pressable>
           <Text style={styles.counter}>

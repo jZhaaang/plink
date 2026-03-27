@@ -32,7 +32,7 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Ionicons } from '@expo/vector-icons';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
@@ -40,9 +40,10 @@ type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 export default function PartyListScreen({ navigation }: Props) {
   const { userId } = useAuth();
   const dialog = useDialog();
-  const invalidate = useInvalidate();
   const insets = useSafeAreaInsets();
+  const { theme } = useUnistyles();
 
+  const invalidate = useInvalidate();
   const {
     partyDetails,
     loading: partiesLoading,
@@ -155,7 +156,11 @@ export default function PartyListScreen({ navigation }: Props) {
             },
           ]}
         >
-          <Ionicons name="add" size={24} color="white" />
+          <Ionicons
+            name="add"
+            size={theme.iconSizes.lg}
+            color={theme.colors.white}
+          />
         </Pressable>
       ) : null}
 

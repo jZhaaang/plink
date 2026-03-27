@@ -150,6 +150,22 @@ export const lightTheme = {
       elevation: 5,
     },
   },
+
+  iconSizes: {
+    xs: 12,
+    sm: 16,
+    md: 20,
+    lg: 24,
+    xl: 32,
+  },
+
+  avatarSizes: {
+    xs: 24,
+    sm: 32,
+    md: 40,
+    lg: 56,
+    xl: 96,
+  },
 } as const;
 
 export const darkTheme = {

@@ -309,7 +309,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   <CardSection>
                     {/* Time info */}
                     <View style={styles.infoRow}>
-                      <Feather name="calendar" size={14} color="#64748b" />
+                      <Feather
+                        name="calendar"
+                        size={theme.iconSizes.sm}
+                        color={theme.colors.gray}
+                      />
                       <Text style={styles.infoText}>
                         {isActive
                           ? `Started ${startFormatted.date} at ${startFormatted.time}`
@@ -317,7 +321,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                       </Text>
                     </View>
                     <View style={[styles.infoRow, { marginBottom: 12 }]}>
-                      <Feather name="clock" size={14} color="#64748b" />
+                      <Feather
+                        name="clock"
+                        size={theme.iconSizes.sm}
+                        color={theme.colors.gray}
+                      />
                       <Text style={styles.infoText}>
                         {isActive
                           ? `Active for ${formatDuration(linkDetail.created_at, null)}`
@@ -327,7 +335,10 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
                     {/* Members row */}
                     <View style={[styles.membersRow]}>
-                      <AvatarStack avatarUris={memberAvatars} size={32} />
+                      <AvatarStack
+                        avatarUris={memberAvatars}
+                        size={theme.avatarSizes.sm}
+                      />
                       <Text style={styles.infoText}>
                         Created by {owner?.name}
                       </Text>
@@ -371,7 +382,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           <Text style={styles.seeAllText}>See all</Text>
                           <Feather
                             name="chevron-right"
-                            size={16}
+                            size={theme.iconSizes.sm}
                             color={theme.colors.primary}
                           />
                         </View>

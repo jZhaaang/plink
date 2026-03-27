@@ -24,7 +24,11 @@ export default function EmptyState({
     <View {...rest} style={[styles.container, style]}>
       {icon && (
         <View style={styles.iconWrapper}>
-          <Feather name={icon} size={24} color={theme.colors.gray} />
+          <Feather
+            name={icon}
+            size={theme.iconSizes.lg}
+            color={theme.colors.gray}
+          />
         </View>
       )}
       <Text style={styles.title}>{title}</Text>
