@@ -21,25 +21,30 @@ export function usePartyDetailList(userId: string | null) {
         rawParties.map(async (party) => {
           const activeRaw = party.active_link?.[0] ?? null;
 
-          const [resolvedParty, members, activeLink] = await Promise.all([
-            resolveParty(party),
-            Promise.all(
-              party.party_members.map((pm) => resolveProfile(pm.profiles)),
-            ),
-            activeRaw ? resolveLink(activeRaw) : Promise.resolve(null),
-          ]);
+          const [resolvedParty, resolvedMembers, resolvedActiveLink] =
+            await Promise.all([
+              resolveParty(party),
+              Promise.all(
+                party.party_members.map((pm) => resolveProfile(pm.profiles)),
+              ),
+              activeRaw ? resolveLink(activeRaw) : Promise.resolve(null),
+            ]);
 
-          const avatarUrls = members.map((m) => m.avatarUrl);
+          const avatarUrls = resolvedMembers.map((m) => m.avatarUrl);
 
-          const prefetchUrls = avatarUrls.filter(
+          const prefetchUrls = [
+            resolvedParty.bannerUrl,
+            resolvedParty.avatarUrl,
+            ...avatarUrls,
+          ].filter(
             (url): url is string => typeof url === 'string' && url.length > 0,
           );
           prefetchUrls.map((url) => Image.prefetch(url));
 
           const partyDetail: PartyDetail = {
             ...resolvedParty,
-            members,
-            activeLink: activeLink,
+            members: resolvedMembers,
+            activeLink: resolvedActiveLink,
             linkCount: party.link_count[0].count,
           } as PartyDetail;
 
