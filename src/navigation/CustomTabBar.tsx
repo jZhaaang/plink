@@ -35,6 +35,17 @@ function getDeepFocusedNameAndParams(route: NestedRoute): {
   };
 }
 
+function getInitialRouteName(tabName: string): string {
+  switch (tabName) {
+    case 'Home':
+      return 'HomeFeed';
+    case 'Party':
+      return 'PartyList';
+    default:
+      return tabName;
+  }
+}
+
 export default function CustomTabBar({
   state,
   descriptors,
@@ -234,6 +245,10 @@ export default function CustomTabBar({
 
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
+            } else {
+              navigation.navigate(route.name, {
+                screen: getInitialRouteName(route.name),
+              });
             }
           };
 
