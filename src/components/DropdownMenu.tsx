@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { ComponentProps, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface DropdownMenuProps {
   visible: boolean;
@@ -23,9 +23,10 @@ export function DropdownMenuItem({
   onPress,
   variant = 'default',
 }: DropdownMenuItemProps) {
+  const { theme } = useUnistyles();
+
   const [pressed, setPressed] = useState(false);
   const isDanger = variant === 'danger';
-  const theme = UnistylesRuntime.getTheme();
 
   menuItemStyles.useVariants({ pressed, isDanger });
 

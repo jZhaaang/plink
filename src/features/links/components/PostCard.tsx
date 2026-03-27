@@ -11,7 +11,7 @@ import {
   MediaGrid,
 } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   post: LinkPostWithMedia;
@@ -28,7 +28,8 @@ export default function PostCard({
   currentUserId,
   onDeletePost,
 }: Props) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
     null,

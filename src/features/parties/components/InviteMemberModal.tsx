@@ -12,7 +12,7 @@ import {
 } from '../../../components';
 import { useInviteMember } from '../hooks/useInviteMember';
 import { resolveProfile } from '../../../lib/resolvers/profile';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   visible: boolean;
@@ -29,13 +29,15 @@ export default function InviteMemberModal({
   existingMemberIds,
   onSuccess,
 }: Props) {
+  const { theme } = useUnistyles();
+
+  const { state, inviteAction, searchUser, inviteUser, reset } =
+    useInviteMember(partyId, existingMemberIds);
+
   const [username, setUsername] = useState('');
   const [foundUserAvatarUrl, setFoundUserAvatarUrl] = useState<string | null>(
     null,
   );
-  const { state, inviteAction, searchUser, inviteUser, reset } =
-    useInviteMember(partyId, existingMemberIds);
-  const theme = UnistylesRuntime.getTheme();
 
   useEffect(() => {
     if (!visible) {

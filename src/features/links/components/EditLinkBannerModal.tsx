@@ -5,7 +5,7 @@ import { Button, Modal, ModalHeader, Spinner } from '../../../components';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   visible: boolean;
@@ -24,10 +24,13 @@ export default function EditLinkBannerModal({
   saving = false,
   onSave,
 }: Props) {
+  const { theme } = useUnistyles();
+
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [croppedUri, setCroppedUri] = useState<string | null>(null);
   const [cropping, setCropping] = useState(false);
-  const theme = UnistylesRuntime.getTheme();
+
+  const isBusy = saving || cropping;
 
   useEffect(() => {
     if (!visible) return;
@@ -38,8 +41,6 @@ export default function EditLinkBannerModal({
     setCroppedUri(null);
     setCropping(false);
   }, [visible, images, initialPath]);
-
-  const isBusy = saving || cropping;
 
   const handleSelectImage = async (image: LinkPostMedia) => {
     if (cropping) return;

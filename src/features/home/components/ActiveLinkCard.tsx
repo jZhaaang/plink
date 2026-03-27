@@ -1,7 +1,7 @@
 import { View, Text, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { ActiveFeedLink } from '../../../lib/models';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import { Button, Card, CardSection } from '../../../components';
@@ -23,7 +23,8 @@ export default function ActiveLinkCard({
   onPress,
   onJoin,
 }: Props) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
+
   const SCREEN_WIDTH = Dimensions.get('window').width;
   const HORIZONTAL_PADDING = theme.spacing.md * 2;
 

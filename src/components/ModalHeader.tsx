@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { View, Text, Pressable } from 'react-native';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   title: string;
@@ -15,7 +15,7 @@ export default function ModalHeader({
   onClose,
   disabled = false,
 }: Props) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   return (
     <View style={styles.header}>

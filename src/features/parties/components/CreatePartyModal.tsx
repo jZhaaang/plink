@@ -9,7 +9,7 @@ import {
   pickPartyAvatarFromLibrary,
   pickPartyBannerFromLibrary,
 } from '../../../lib/media/cropper';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   visible: boolean;
@@ -30,8 +30,8 @@ export default function CreatePartyModal({
   onClose,
   onSubmit,
 }: Props) {
-  const isEditMode = !!initialParty;
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
+
   const [name, setName] = useState(initialParty?.name ?? '');
   const [avatarUri, setAvatarUri] = useState<string | null>(
     initialParty?.avatarUrl ?? null,
@@ -40,6 +40,8 @@ export default function CreatePartyModal({
     initialParty?.bannerUrl ?? null,
   );
   const [localLoading, setLocalLoading] = useState(false);
+
+  const isEditMode = !!initialParty;
 
   useEffect(() => {
     if (visible) {

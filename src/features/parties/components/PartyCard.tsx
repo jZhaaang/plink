@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { AvatarStack, Card } from '../../../components';
 
 interface Props {
@@ -35,7 +35,7 @@ export default function PartyCard({
   members,
   onPress,
 }: Props) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   const memberAvatarUris =
     members?.map((m) => m.avatarUrl).filter((url): url is string => !!url) ??

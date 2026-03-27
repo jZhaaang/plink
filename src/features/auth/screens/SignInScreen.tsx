@@ -10,20 +10,19 @@ import { useDialog } from '../../../providers/DialogProvider';
 import { normalize } from '../../../lib/utils/validation';
 import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 
 export default function SignInScreen({ navigation }: Props) {
   const dialog = useDialog();
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secure, setSecure] = useState(true);
-  const [fieldError, setFieldError] = useState('');
-
   const [loading, setLoading] = useState(false);
+  const [fieldError, setFieldError] = useState('');
 
   const handleSignIn = async () => {
     if (loading) return;

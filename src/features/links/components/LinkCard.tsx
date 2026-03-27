@@ -2,7 +2,7 @@ import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { Link } from '../../../lib/models';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
 import { Card } from '../../../components';
 
@@ -18,9 +18,9 @@ function formatDate(dateString: string | null): string {
 }
 
 export default function LinkCard({ link, onPress }: Props) {
-  const isActive = !link.end_time;
+  const { theme } = useUnistyles();
 
-  const theme = UnistylesRuntime.getTheme();
+  const isActive = !link.end_time;
 
   return (
     <Card onPress={() => onPress?.(link.id)} style={styles.card}>

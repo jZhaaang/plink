@@ -5,7 +5,7 @@ import {
   Text,
   ViewStyle,
 } from 'react-native';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 type Tone = 'brand' | 'inverse' | 'muted';
 
@@ -15,7 +15,8 @@ interface SpinnerProps {
 }
 
 export function Spinner({ size = 'small', tone = 'brand' }: SpinnerProps) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
+
   const colors: Record<Tone, string> = {
     brand: theme.colors.spinnerBrand,
     inverse: theme.colors.spinnerInverse,

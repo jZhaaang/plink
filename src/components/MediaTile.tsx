@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { ReactNode, useState } from 'react';
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Spinner } from './Loading';
 
 interface MediaTileProps {
@@ -23,10 +23,10 @@ export default function MediaTile({
   containerStyle,
   renderOverlay,
 }: MediaTileProps) {
+  const { theme } = useUnistyles();
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [pressed, setPressed] = useState(false);
-
-  const theme = UnistylesRuntime.getTheme();
 
   return (
     <Pressable

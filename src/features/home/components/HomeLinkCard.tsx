@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import type { HomeFeedLink } from '../../../lib/models';
 import { AvatarStack, Card, CardSection, MediaGrid } from '../../../components';
 
@@ -22,7 +22,8 @@ function formatDate(dateString: string | null): string {
 }
 
 export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
+
   const memberAvatarUris =
     link.members
       ?.map((m) => m.avatarUrl)

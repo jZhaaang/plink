@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface JoinLinkBannerProps {
   onJoin: () => void;
@@ -11,7 +11,7 @@ export default function JoinLinkBanner({
   onJoin,
   memberCount,
 }: JoinLinkBannerProps) {
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   return (
     <View style={styles.container}>

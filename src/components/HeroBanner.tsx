@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
   variant: 'default' | 'avatar-only';
@@ -26,7 +26,7 @@ export default function HeroBanner({
   children,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   const renderImage = (style: object, blurRadius?: number) => {
     if (!bannerUri) {

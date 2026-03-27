@@ -41,7 +41,7 @@ import CameraModal from '../components/CameraModal';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { useAuth } from '../../../providers/AuthProvider';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
 import { useLinkPosts } from '../hooks/useLinkPosts';
@@ -51,7 +51,7 @@ type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
   const {
     linkDetail,

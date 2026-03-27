@@ -14,15 +14,16 @@ import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useAuth } from '../../../providers/AuthProvider';
 import * as Burnt from 'burnt';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Image } from 'expo-image';
 
 export default function CreateLinkFlowScreen() {
   const { userId } = useAuth();
   const dialog = useDialog();
-  const invalidate = useInvalidate();
-  const theme = UnistylesRuntime.getTheme();
   const navigation = useNavigation<NavigationProp<SignedInParamList>>();
+  const { theme } = useUnistyles();
+
+  const invalidate = useInvalidate();
   const { createLinkVisible, closeCreateLink } = useActiveLinkContext();
   const { partyDetails, loading: partiesLoading } = usePartyDetailList(
     userId ?? null,

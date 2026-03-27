@@ -11,13 +11,15 @@ import {
   LoadingScreen,
   MediaGrid,
 } from '../../../components';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useLinkPosts } from '../hooks/useLinkPosts';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
 export default function AllMediaScreen({ route, navigation }: Props) {
   const { linkId } = route.params;
+  const { theme } = useUnistyles();
+
   const { linkDetail } = useLinkDetail(linkId);
   const {
     allMedia,
@@ -28,7 +30,6 @@ export default function AllMediaScreen({ route, navigation }: Props) {
     error,
     refetch,
   } = useLinkPosts(linkId);
-  const theme = UnistylesRuntime.getTheme();
 
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);

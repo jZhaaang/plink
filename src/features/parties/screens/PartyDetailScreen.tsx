@@ -52,7 +52,7 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { compressImage } from '../../../lib/media/compress';
 import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
-import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { deletePartyMember } from '../../../lib/supabase/queries/partyMembers';
 import { usePastLinks } from '../hooks/usePastLinks';
 
@@ -62,10 +62,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const { partyId } = route.params;
   const { userId } = useAuth();
   const dialog = useDialog();
-  const invalidate = useInvalidate();
   const insets = useSafeAreaInsets();
-  const theme = UnistylesRuntime.getTheme();
+  const { theme } = useUnistyles();
 
+  const invalidate = useInvalidate();
   const {
     party: partyDetail,
     loading: partyLoading,
@@ -81,6 +81,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     error: pastLinksError,
     refetch: refetchPastLinks,
   } = usePastLinks(partyId);
+
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
