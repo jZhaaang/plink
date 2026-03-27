@@ -1,24 +1,34 @@
-import { useMemo } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { LinkPostMedia } from '../../../lib/models';
-import { LoadingScreen, MediaGrid } from '../../../components';
-import { StyleSheet } from 'react-native-unistyles';
+import {
+  DataFallbackScreen,
+  EmptyState,
+  LoadingScreen,
+  MediaGrid,
+} from '../../../components';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { useLinkPosts } from '../hooks/useLinkPosts';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
 
 export default function AllMediaScreen({ route, navigation }: Props) {
   const { linkId } = route.params;
-  const { link, loading } = useLinkDetail(linkId);
-
-  const allMedia = useMemo(() => {
-    if (!link) return [];
-    return link.posts.flatMap((post) => post.media);
-  }, [link]);
+  const { linkDetail } = useLinkDetail(linkId);
+  const {
+    allMedia,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loading,
+    error,
+    refetch,
+  } = useLinkPosts(linkId);
+  const theme = UnistylesRuntime.getTheme();
 
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
@@ -36,7 +46,11 @@ export default function AllMediaScreen({ route, navigation }: Props) {
         <View style={styles.navRow}>
           <Pressable onPress={() => navigation.goBack()}>
             <View style={styles.backButton}>
-              <Feather name="arrow-left" size={20} color="#334155" />
+              <Feather
+                name="arrow-left"
+                size={20}
+                color={theme.colors.darkGray}
+              />
             </View>
           </Pressable>
 
@@ -45,40 +59,50 @@ export default function AllMediaScreen({ route, navigation }: Props) {
               All Items
             </Text>
             <Text style={styles.screenSubtitle} numberOfLines={1}>
-              {link?.name ?? 'Link'} • {allMedia.length} items
+              {linkDetail?.name ?? 'Link'} • {allMedia.length} items
             </Text>
           </View>
         </View>
       </View>
 
-      {allMedia.length === 0 ? (
-        <View style={styles.emptyWrap}>
-          <View style={styles.emptyCard}>
-            <View style={styles.emptyIcon}>
-              <Feather name="image" size={20} color="#64748b" />
+      <View style={styles.gridWrap}>
+        <MediaGrid
+          media={allMedia}
+          onMediaPress={handleMediaPress}
+          columns={3}
+          scrollEnabled
+          contentContainerStyle={styles.container}
+          ListHeaderComponent={() => (
+            <View style={styles.gridHeader}>
+              <Text style={styles.gridHeaderText}>Latest uploads</Text>
             </View>
-            <Text style={styles.emptyTitle}>No media yet</Text>
-            <Text style={styles.emptyMessage}>
-              Photos and videos shared in this link will appear here.
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.gridWrap}>
-          <MediaGrid
-            media={allMedia}
-            onMediaPress={handleMediaPress}
-            columns={3}
-            scrollEnabled
-            ListHeaderComponent={() => (
-              <View style={styles.gridHeader}>
-                <Text style={styles.gridHeaderText}>Latest uploads</Text>
-              </View>
-            )}
-            ListFooterComponent={() => <View style={{ height: 40 }} />}
-          />
-        </View>
-      )}
+          )}
+          ListEmptyComponent={
+            error ? (
+              <DataFallbackScreen onAction={refetch} />
+            ) : loading ? (
+              <ActivityIndicator
+                style={{ paddingVertical: theme.spacing.xl }}
+              />
+            ) : (
+              <EmptyState icon="camera" title="No items were uploaded" />
+            )
+          }
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() =>
+            !isFetchingNextPage ? (
+              <ActivityIndicator
+                style={{ paddingVertical: theme.spacing.xl }}
+              />
+            ) : (
+              <View />
+            )
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -121,44 +145,12 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.sm,
     color: theme.colors.textTertiary,
   },
-  emptyWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing['2xl'],
-  },
-  emptyCard: {
-    width: '100%',
-    borderRadius: theme.radii.xl,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: theme.spacing['2xl'],
-    alignItems: 'center',
-  },
-  emptyIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.radii.full,
-    backgroundColor: theme.colors.surfacePressed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  emptyTitle: {
-    fontSize: theme.fontSizes.base,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textSecondary,
-    marginBottom: theme.spacing.xs,
-  },
-  emptyMessage: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textTertiary,
-    textAlign: 'center',
-  },
   gridWrap: {
     flex: 1,
+  },
+  container: {
     paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing['3xl'],
   },
   gridHeader: {
     paddingBottom: theme.spacing.sm,

@@ -9,9 +9,9 @@ import {
 } from 'react-native-gesture-image-viewer';
 import { PartyStackParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLinkDetail } from '../hooks/useLinkDetail';
 import MediaViewerOverlay from '../components/MediaViewerOverlay';
 import { FlatList } from 'react-native-gesture-handler';
+import { useLinkPosts } from '../hooks/useLinkPosts';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'MediaViewer'>;
 
@@ -60,18 +60,26 @@ function ImageItem({ url, width, height }: MediaItemProps) {
 
 export default function MediaViewerScreen({ route, navigation }: Props) {
   const { linkId, initialIndex } = route.params;
-  const { link } = useLinkDetail(linkId);
+  const { allMedia, fetchNextPage, hasNextPage } = useLinkPosts(linkId);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
   const { currentIndex, totalCount } = useGestureViewerState();
 
-  const mediaItems = useMemo(() => {
-    if (!link) return [];
-    return link.posts
-      .flatMap((post) => post.media)
-      .map((item, index) => ({ ...item, index }));
-  }, [link]);
+  useEffect(() => {
+    if (
+      hasNextPage &&
+      allMedia.length > 0 &&
+      currentIndex >= allMedia.length - 3
+    ) {
+      fetchNextPage();
+    }
+  }, [currentIndex, allMedia.length, hasNextPage, fetchNextPage]);
+
+  const mediaItems = useMemo(
+    () => allMedia.map((item, index) => ({ ...item, index })),
+    [allMedia],
+  );
 
   const mediaHeight = height - insets.bottom;
 

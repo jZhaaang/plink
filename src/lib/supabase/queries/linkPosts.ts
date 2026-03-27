@@ -3,12 +3,18 @@ import { LinkPostRow, LinkPostInsert } from '../../models';
 
 export async function getLinkPostsByLinkId(
   linkId: string,
-): Promise<LinkPostRow[]> {
+  page: number,
+  pageSize: number = 10,
+) {
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
   const { data, error } = await supabase
     .from('link_posts')
-    .select('*')
+    .select(`*, profiles (*), link_post_media (*)`)
     .eq('link_id', linkId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
   if (error) throw error;
 

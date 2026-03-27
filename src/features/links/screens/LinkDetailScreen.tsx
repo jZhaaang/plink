@@ -3,10 +3,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
   Text,
-  ScrollView,
   Pressable,
   RefreshControl,
   GestureResponderEvent,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
@@ -40,27 +41,41 @@ import CameraModal from '../components/CameraModal';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { useAuth } from '../../../providers/AuthProvider';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
+import { useLinkPosts } from '../hooks/useLinkPosts';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
 export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
+  const theme = UnistylesRuntime.getTheme();
 
   const {
-    link,
+    linkDetail,
     loading: linkLoading,
     error: linkError,
     refetch: refetchLink,
   } = useLinkDetail(linkId);
 
+  const {
+    posts,
+    allMedia,
+    loading: postsLoading,
+    error: postsError,
+    refetch: refetchPosts,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useLinkPosts(linkId);
+
   const linkActions = useLinkDetailActions({
     linkId,
     partyId,
-    link,
+    linkDetail,
+    posts,
     onDelete: () => {
       const parentNavigation = navigation.getParent();
       if (parentNavigation) {
@@ -107,10 +122,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editBannerVisible, setEditBannerVisible] = useState(false);
 
-  const allMedia = useMemo(() => {
-    if (!link) return [];
-    return link.posts.flatMap((post) => post.media);
-  }, [link]);
   const imageMedia = useMemo(
     () => allMedia.filter((media) => media.type === 'image'),
     [allMedia],
@@ -136,17 +147,18 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   );
 
   if (linkLoading) return <LoadingScreen label="Loading..." />;
-  if (linkError || !link) return <DataFallbackScreen onAction={refetchLink} />;
+  if (linkError || !linkDetail)
+    return <DataFallbackScreen onAction={refetchLink} />;
 
-  const startFormatted = formatDateTime(link.created_at);
-  const endFormatted = formatDateTime(link.end_time);
-  const isActive = link && !link.end_time;
-  const isOwner = link.owner_id === userId;
-  const isMember = link.members.some((m) => m.id === userId) ?? false;
-  const memberAvatars = link.members
+  const startFormatted = formatDateTime(linkDetail.created_at);
+  const endFormatted = formatDateTime(linkDetail.end_time);
+  const isActive = linkDetail && !linkDetail.end_time;
+  const isOwner = linkDetail.owner_id === userId;
+  const isMember = linkDetail.members.some((m) => m.id === userId) ?? false;
+  const memberAvatars = linkDetail.members
     .map((m) => m.avatarUrl)
     .filter((url): url is string => !!url);
-  const owner = link.members.find((m) => m.id === link.owner_id);
+  const owner = linkDetail.members.find((m) => m.id === linkDetail.owner_id);
 
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
@@ -252,7 +264,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
         <HeroBanner
           variant="default"
-          bannerUri={link.bannerUrl ?? null}
+          bannerUri={linkDetail.bannerUrl ?? null}
           emptyHint="Add a photo to set a banner"
           onBack={() => navigation.goBack()}
           onMenuPress={handleMenuPress}
@@ -269,148 +281,174 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               </Text>
             </View>
           </View>
-          <Text style={styles.heroTitle}>{link.name}</Text>
+          <Text style={styles.heroTitle}>{linkDetail.name}</Text>
           <Text style={styles.heroSubtitle}>
-            {link.members.length}{' '}
-            {link.members.length === 1 ? 'member' : 'members'}
+            {linkDetail.members.length}{' '}
+            {linkDetail.members.length === 1 ? 'member' : 'members'}
           </Text>
         </HeroBanner>
 
         <View style={styles.contentArea}>
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={{ paddingBottom: 160 }}
+          <FlatList
+            data={posts}
+            keyExtractor={(item) => item.id}
             refreshControl={
               <RefreshControl
                 refreshing={linkLoading}
-                onRefresh={refetchLink}
+                onRefresh={() => {
+                  refetchLink();
+                  refetchPosts();
+                }}
               />
             }
-          >
-            <Card style={{ marginHorizontal: 16, marginTop: 16 }}>
-              <CardSection>
-                {/* Time info */}
-                <View style={styles.infoRow}>
-                  <Feather name="calendar" size={14} color="#64748b" />
-                  <Text style={styles.infoText}>
-                    {isActive
-                      ? `Started ${startFormatted.date} at ${startFormatted.time}`
-                      : `${startFormatted.date} — ${endFormatted.date}`}
-                  </Text>
-                </View>
-                <View style={[styles.infoRow, { marginBottom: 12 }]}>
-                  <Feather name="clock" size={14} color="#64748b" />
-                  <Text style={styles.infoText}>
-                    {isActive
-                      ? `Active for ${formatDuration(link.created_at, null)}`
-                      : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
-                  </Text>
-                </View>
+            contentContainerStyle={styles.container}
+            ListHeaderComponent={
+              <>
+                {/* Info Card */}
+                <Card>
+                  <CardSection>
+                    {/* Time info */}
+                    <View style={styles.infoRow}>
+                      <Feather name="calendar" size={14} color="#64748b" />
+                      <Text style={styles.infoText}>
+                        {isActive
+                          ? `Started ${startFormatted.date} at ${startFormatted.time}`
+                          : `${startFormatted.date} — ${endFormatted.date}`}
+                      </Text>
+                    </View>
+                    <View style={[styles.infoRow, { marginBottom: 12 }]}>
+                      <Feather name="clock" size={14} color="#64748b" />
+                      <Text style={styles.infoText}>
+                        {isActive
+                          ? `Active for ${formatDuration(linkDetail.created_at, null)}`
+                          : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
+                      </Text>
+                    </View>
 
-                {/* Members row */}
-                <View style={[styles.membersRow]}>
-                  <AvatarStack avatarUris={memberAvatars} size={32} />
-                  <Text style={styles.infoText}>Created by {owner?.name}</Text>
-                </View>
+                    {/* Members row */}
+                    <View style={[styles.membersRow]}>
+                      <AvatarStack avatarUris={memberAvatars} size={32} />
+                      <Text style={styles.infoText}>
+                        Created by {owner?.name}
+                      </Text>
+                    </View>
 
-                <Divider style={{ marginVertical: 8 }} />
+                    <Divider style={{ marginVertical: 8 }} />
 
-                {/* Stats row */}
-                <View style={styles.statsRow}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{link.postCount}</Text>
-                    <Text style={styles.statLabel}>
-                      Post{link.postCount > 1 ? 's' : ''}
-                    </Text>
-                  </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{link.mediaCount}</Text>
-                    <Text style={styles.statLabel}>
-                      Item{link.mediaCount > 1 ? 's' : ''}
-                    </Text>
-                  </View>
-                </View>
-              </CardSection>
-            </Card>
-
-            <Divider style={{ marginVertical: 24 }} />
-
-            {/* All Items Section */}
-            <View style={styles.section}>
-              <SectionHeader
-                title="All Items"
-                count={link.mediaCount}
-                action={
-                  link.mediaCount > 6 ? (
-                    <Pressable onPress={handleSeeAllMedia}>
-                      <View style={styles.seeAllRow}>
-                        <Text style={styles.seeAllText}>See all</Text>
-                        <Feather
-                          name="chevron-right"
-                          size={16}
-                          color="#2563eb"
-                        />
+                    {/* Stats row */}
+                    <View style={styles.statsRow}>
+                      <View style={styles.statItem}>
+                        <Text style={styles.statValue}>
+                          {linkDetail.postCount}
+                        </Text>
+                        <Text style={styles.statLabel}>
+                          Post{linkDetail.postCount > 1 ? 's' : ''}
+                        </Text>
                       </View>
-                    </Pressable>
-                  ) : undefined
-                }
-              />
+                      <View style={styles.statDivider} />
+                      <View style={styles.statItem}>
+                        <Text style={styles.statValue}>
+                          {linkDetail.mediaCount}
+                        </Text>
+                        <Text style={styles.statLabel}>
+                          Item{linkDetail.mediaCount > 1 ? 's' : ''}
+                        </Text>
+                      </View>
+                    </View>
+                  </CardSection>
+                </Card>
 
-              {link.mediaCount === 0 ? (
-                <EmptyState
-                  icon="image"
-                  title="No media yet"
-                  message={
-                    isActive
-                      ? 'Media from all posts will appear here'
-                      : 'No media were added to this link'
+                <Divider style={{ marginVertical: 24 }} />
+
+                {/* All Items Section */}
+                <SectionHeader
+                  title="All Items"
+                  count={linkDetail.mediaCount}
+                  action={
+                    linkDetail.mediaCount > 6 ? (
+                      <Pressable onPress={handleSeeAllMedia}>
+                        <View style={styles.seeAllRow}>
+                          <Text style={styles.seeAllText}>See all</Text>
+                          <Feather
+                            name="chevron-right"
+                            size={16}
+                            color={theme.colors.primary}
+                          />
+                        </View>
+                      </Pressable>
+                    ) : undefined
                   }
                 />
-              ) : (
-                <MediaGrid
-                  media={allMedia}
+
+                {postsError ? (
+                  <DataFallbackScreen onAction={refetchPosts} />
+                ) : postsLoading ? (
+                  <ActivityIndicator
+                    style={{ paddingVertical: theme.spacing.xl }}
+                  />
+                ) : allMedia.length === 0 ? (
+                  <EmptyState
+                    icon="image"
+                    title="No media yet"
+                    message={
+                      isActive
+                        ? 'Media from all posts will appear here'
+                        : 'No media were added to this link'
+                    }
+                  />
+                ) : (
+                  <MediaGrid
+                    media={allMedia}
+                    onMediaPress={handleMediaPress}
+                    maxItems={6}
+                    scrollEnabled={false}
+                    onOverflowPress={handleSeeAllMedia}
+                  />
+                )}
+
+                <Divider style={{ marginVertical: 24 }} />
+
+                {/* Post Feed Section */}
+                <SectionHeader title="Posts" count={linkDetail.postCount} />
+              </>
+            }
+            renderItem={({ item, index }) => (
+              <AnimatedListItem index={index}>
+                <PostCard
+                  post={item}
                   onMediaPress={handleMediaPress}
-                  maxItems={6}
-                  scrollEnabled={false}
-                  onOverflowPress={handleSeeAllMedia}
+                  currentUserId={userId}
+                  onDeletePost={linkActions.deletePost}
                 />
-              )}
-            </View>
-
-            <Divider style={{ marginVertical: 24 }} />
-
-            {/* Post Feed Section */}
-            <View style={styles.section}>
-              <SectionHeader title="Posts" count={link.postCount} />
-
-              {link.postCount === 0 ? (
+              </AnimatedListItem>
+            )}
+            ListEmptyComponent={
+              postsError ? (
+                <DataFallbackScreen onAction={refetchPosts} />
+              ) : postsLoading ? (
+                <ActivityIndicator
+                  style={{ paddingVertical: theme.spacing.xl }}
+                />
+              ) : (
                 <EmptyState
                   icon="camera"
                   title="No posts yet"
                   message={
                     isActive
                       ? 'Be the first to share!'
-                      : 'No media were shared in this link'
+                      : 'No media was shared in this link'
                   }
                 />
-              ) : (
-                link.posts.map((post, index) => (
-                  <AnimatedListItem key={post.id} index={index}>
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onMediaPress={handleMediaPress}
-                      currentUserId={userId}
-                      onDeletePost={linkActions.deletePost}
-                    />
-                  </AnimatedListItem>
-                ))
-              )}
-            </View>
-
-            <Divider style={{ marginVertical: 24 }} />
-          </ScrollView>
+              )
+            }
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? <ActivityIndicator /> : null
+            }
+          />
 
           {/* Bottom Actions (for active links) */}
           {isActive && isMember && (
@@ -431,7 +469,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           {isActive && !isMember && (
             <JoinLinkBanner
               onJoin={linkActions.joinLink}
-              memberCount={link.members.length}
+              memberCount={linkDetail.members.length}
             />
           )}
 
@@ -455,7 +493,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           {/* Edit Link Name Modal */}
           <CreateLinkModal
             visible={editModalVisible}
-            initialName={link?.name ?? ''}
+            initialName={linkDetail?.name ?? ''}
             onClose={() => setEditModalVisible(false)}
             onSubmit={handleEditName}
           />
@@ -464,7 +502,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             visible={editBannerVisible}
             onClose={() => setEditBannerVisible(false)}
             images={imageMedia}
-            initialPath={link.banner_path}
+            initialPath={linkDetail.banner_path}
             saving={linkActions.savingBanner}
             onSave={handleSaveBanner}
           />
@@ -523,6 +561,11 @@ const styles = StyleSheet.create((theme) => ({
   contentArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  container: {
+    paddingTop: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: 100,
   },
   scrollView: {
     flex: 1,

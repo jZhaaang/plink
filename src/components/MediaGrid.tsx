@@ -1,4 +1,10 @@
-import { FlatList, View, Text, LayoutChangeEvent } from 'react-native';
+import {
+  FlatList,
+  View,
+  Text,
+  LayoutChangeEvent,
+  FlatListProps,
+} from 'react-native';
 import { LinkPostMedia } from '../lib/models';
 import { Feather } from '@expo/vector-icons';
 import MediaTile from './MediaTile';
@@ -6,13 +12,14 @@ import { StyleSheet } from 'react-native-unistyles';
 import { useState } from 'react';
 import React from 'react';
 
-interface Props {
+interface Props extends Omit<
+  FlatListProps<LinkPostMedia>,
+  'data' | 'renderItem' | 'numColumns' | 'keyExtractor'
+> {
   media: LinkPostMedia[];
   columns?: number;
   maxItems?: number;
   scrollEnabled?: boolean;
-  ListHeaderComponent?: React.ComponentType;
-  ListFooterComponent?: React.ComponentType;
   onMediaPress?: (item: LinkPostMedia) => void;
   onOverflowPress?: () => void;
 }
@@ -24,13 +31,17 @@ export default function MediaGrid({
   columns = 3,
   maxItems,
   scrollEnabled = true,
-  ListHeaderComponent,
-  ListFooterComponent,
   onMediaPress,
   onOverflowPress,
+  ...flatListProps
 }: Props) {
   const [containerWidth, setContainerWidth] = useState(0);
-  const itemSize = (containerWidth - GAP * (columns - 1)) / columns;
+
+  const flattenedStyle = StyleSheet.flatten(
+    flatListProps.contentContainerStyle,
+  );
+  const padding = Number(flattenedStyle?.paddingHorizontal ?? 0) * 2;
+  const itemSize = (containerWidth - padding - GAP * (columns - 1)) / columns;
   const playButtonSize = containerWidth * 0.1;
 
   const handleLayout = (e: LayoutChangeEvent) => {
@@ -102,12 +113,13 @@ export default function MediaGrid({
       data={displayedMedia}
       numColumns={columns}
       keyExtractor={(item) => item.id}
-      columnWrapperStyle={{ gap: GAP }}
-      contentContainerStyle={{ gap: GAP }}
-      ListHeaderComponent={ListHeaderComponent}
-      ListFooterComponent={ListFooterComponent}
       renderItem={({ item, index }) => renderTile(item, index)}
-      ListEmptyComponent={<View />}
+      {...flatListProps}
+      columnWrapperStyle={[flatListProps.columnWrapperStyle, { gap: GAP }]}
+      contentContainerStyle={[
+        flatListProps.contentContainerStyle,
+        { gap: GAP },
+      ]}
     />
   );
 }

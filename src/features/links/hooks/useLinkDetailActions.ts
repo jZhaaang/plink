@@ -19,13 +19,14 @@ import { compressImage } from '../../../lib/media/compress';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import { logger } from '../../../lib/telemetry/logger';
-import { LinkDetail } from '../../../lib/models';
+import { LinkDetail, LinkPostWithMedia } from '../../../lib/models';
 import { deleteBulk } from '../../../lib/media-service/client';
 
 type UseLinkDetailActionsParams = {
   linkId: string;
   partyId: string;
-  link: LinkDetail | null;
+  linkDetail: LinkDetail | null;
+  posts: LinkPostWithMedia[];
   onDelete?: () => void;
   onLeave?: () => void;
 };
@@ -33,7 +34,8 @@ type UseLinkDetailActionsParams = {
 export function useLinkDetailActions({
   linkId,
   partyId,
-  link,
+  linkDetail,
+  posts,
   onDelete,
   onLeave,
 }: UseLinkDetailActionsParams) {
@@ -125,12 +127,12 @@ export function useLinkDetailActions({
   );
 
   const deleteLinkAction = useCallback(async () => {
-    if (!link) return;
+    if (!linkDetail) return;
 
     const confirmed = await dialog.confirmTypedDanger(
       'Delete Link?',
       'This will permanently delete the link and all its media. This cannot be undone.',
-      link.name,
+      linkDetail.name,
     );
     if (!confirmed) return;
 
@@ -140,7 +142,7 @@ export function useLinkDetailActions({
       trackEvent('link_deleted', { link_id: linkId });
       trackEvent('link_post_deleted', {
         link_id: linkId,
-        posts_count: link.posts.length,
+        posts_count: posts.length,
       });
       trackEvent('media_deleted', {
         link_id: linkId,
@@ -156,7 +158,7 @@ export function useLinkDetailActions({
       logger.error('Error deleting link', { err });
       await dialog.error('Failed to Delete Link', getErrorMessage(err));
     }
-  }, [linkId, partyId, link, dialog, invalidate, onDelete]);
+  }, [linkId, partyId, linkDetail, dialog, invalidate, onDelete]);
 
   const joinLink = useCallback(async () => {
     const confirmed = await dialog.confirmAsk(
@@ -203,8 +205,8 @@ export function useLinkDetailActions({
 
   const deletePost = useCallback(
     async (postId: string) => {
-      if (!link) return;
-      const post = link.posts.find((p) => p.id === postId);
+      if (!linkDetail) return;
+      const post = posts.find((p) => p.id === postId);
       if (!post) return;
 
       const confirmed = await dialog.confirmDanger(
@@ -214,10 +216,10 @@ export function useLinkDetailActions({
       if (!confirmed) return;
 
       try {
-        const allMedia = link.posts.flatMap((p) => p.media);
+        const allMedia = posts.flatMap((p) => p.media);
         const deletedPaths = new Set(post.media.map((m) => m.path));
         const isDeletingBanner =
-          !!link.banner_path && deletedPaths.has(link.banner_path);
+          !!linkDetail.banner_path && deletedPaths.has(linkDetail.banner_path);
         const nextImageBanner = isDeletingBanner
           ? allMedia.find(
               (m) => m.type === 'image' && !deletedPaths.has(m.path),
@@ -249,7 +251,7 @@ export function useLinkDetailActions({
         await dialog.error('Failed to Delete Post', getErrorMessage(err));
       }
     },
-    [linkId, link, dialog, invalidate],
+    [linkId, linkDetail, dialog, invalidate],
   );
 
   return {

@@ -23,9 +23,6 @@ export type LinkPostMediaInsert = TablesInsert<'link_post_media'>;
 export type LinkPostMediaUpdate = TablesUpdate<'link_post_media'>;
 
 export type Link = LinkRow & { bannerUrl?: string };
-export type LinkWithMembers = Link & {
-  members: Profile[];
-};
 
 export type LinkPost = LinkPostRow & {
   owner: Profile;
@@ -35,20 +32,17 @@ export type LinkPostWithMedia = LinkPost & {
   media: LinkPostMedia[];
 };
 
-export type LinkDetail = LinkWithMembers & {
-  posts: LinkPostWithMedia[];
+export type LinkDetail = Link & {
+  members: Profile[];
   postCount: number;
   mediaCount: number;
 };
 
-export type HomeFeedLink = Link & {
+export type HomeFeedLink = LinkDetail & {
   party: Party;
-  members: Profile[];
   media: LinkPostMedia[];
 };
 
-export type ActiveFeedLink = Link & {
+export type ActiveFeedLink = LinkDetail & {
   party: Party;
-  members: Profile[];
-  mediaCount: number;
 };

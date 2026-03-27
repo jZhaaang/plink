@@ -1,22 +1,65 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../lib/queryKeys';
-import { getPastLinksByPartyId } from '../../../lib/supabase/queries/links';
+import { getPastLinkDetailsByPartyId } from '../../../lib/supabase/queries/links';
 import { resolveLink } from '../../../lib/resolvers/link';
+import { LinkDetail } from '../../../lib/models';
+import { resolveProfile } from '../../../lib/resolvers/profile';
+import { Image } from 'expo-image';
 
 const PAGE_SIZE = 10;
 
 export function usePastLinks(partyId: string) {
+  const queryClient = useQueryClient();
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
     useInfiniteQuery({
       queryKey: queryKeys.parties.pastLinks(partyId),
       queryFn: async ({ pageParam = 0 }) => {
-        const rawLinks = await getPastLinksByPartyId(
+        const rawLinks = await getPastLinkDetailsByPartyId(
           partyId,
           pageParam,
           PAGE_SIZE,
         );
-        const resolved = await Promise.all(rawLinks.map(resolveLink));
-        return resolved;
+
+        const linkDetails: LinkDetail[] = await Promise.all(
+          rawLinks.map(async (link) => {
+            const postCount = link.link_posts.length;
+            const mediaCount = link.link_posts.reduce(
+              (sum, p) => sum + p.link_post_media.length,
+              0,
+            );
+
+            const [resolvedLink, resolvedMembers] = await Promise.all([
+              resolveLink(link),
+              Promise.all(
+                link.link_members.map((lm) => resolveProfile(lm.profiles)),
+              ),
+            ]);
+
+            const avatarUrls = resolvedMembers.map((m) => m.avatarUrl);
+
+            const prefetchUrls = avatarUrls.filter(
+              (url): url is string => typeof url === 'string' && url.length > 0,
+            );
+            prefetchUrls.map((url) => Image.prefetch(url));
+
+            const linkDetail: LinkDetail = {
+              ...resolvedLink,
+              members: resolvedMembers,
+              postCount,
+              mediaCount,
+            };
+
+            queryClient.setQueryData(
+              queryKeys.links.detail(link.id),
+              linkDetail,
+            );
+
+            return linkDetail;
+          }),
+        );
+
+        return linkDetails;
       },
       initialPageParam: 0,
       getNextPageParam: (lastPage, allPages) => {

@@ -9,8 +9,9 @@ export const queryKeys = {
     pastLinks: (partyId: string) => ['parties', 'pastLinks', partyId] as const,
   },
   links: {
-    detail: (linkId: string) => ['links', 'detail', linkId] as const,
     active: (userId: string) => ['links', 'active', userId] as const,
+    detail: (linkId: string) => ['links', 'detail', linkId] as const,
+    posts: (linkId: string) => ['links', 'posts', linkId] as const,
   },
   activity: {
     feed: (userId: string) => ['activity', 'feed', userId] as const,
