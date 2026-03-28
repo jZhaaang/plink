@@ -42,7 +42,7 @@ export async function upload(req: AuthenticatedRequest, res: Response) {
       ContentType: contentType,
     });
 
-    const signedUrl = await s3GetSignedUrl(s3, command, { expiresIn: 300 });
+    const signedUrl = await s3GetSignedUrl(s3, command, { expiresIn: 3600 });
 
     res.json({ uploadUrl: signedUrl, key });
   } catch (err) {
@@ -69,7 +69,7 @@ export async function getSignedUrl(req: AuthenticatedRequest, res: Response) {
       Key: key,
     });
 
-    const signedUrl = await s3GetSignedUrl(s3, command, { expiresIn: 300 });
+    const signedUrl = await s3GetSignedUrl(s3, command, { expiresIn: 3600 });
 
     res.json({ url: signedUrl });
   } catch (err) {
