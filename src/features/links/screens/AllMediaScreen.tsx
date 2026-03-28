@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import {
   EmptyState,
   LoadingScreen,
   MediaGrid,
+  Spinner,
 } from '../../../components';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useLinkPosts } from '../hooks/useLinkPosts';
@@ -82,9 +83,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
             error ? (
               <DataFallbackScreen onAction={refetch} />
             ) : loading ? (
-              <ActivityIndicator
-                style={{ paddingVertical: theme.spacing.xl }}
-              />
+              <Spinner style={{ paddingVertical: theme.spacing.xl }} />
             ) : (
               <EmptyState icon="camera" title="No items were uploaded" />
             )
@@ -95,9 +94,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
           onEndReachedThreshold={0.5}
           ListFooterComponent={() =>
             !isFetchingNextPage ? (
-              <ActivityIndicator
-                style={{ paddingVertical: theme.spacing.xl }}
-              />
+              <Spinner style={{ paddingVertical: theme.spacing.xl }} />
             ) : (
               <View />
             )

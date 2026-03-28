@@ -1,5 +1,5 @@
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { View, Text, FlatList } from 'react-native';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Burnt from 'burnt';
@@ -18,6 +18,7 @@ import {
   Divider,
   EmptyState,
   SectionHeader,
+  Spinner,
 } from '../../components';
 import HomeLinkCard from './components/HomeLinkCard';
 import ActiveLinkCard from './components/ActiveLinkCard';
@@ -28,8 +29,9 @@ export default function HomeScreen({ navigation }: Props) {
   const { userId } = useAuth();
   const dialog = useDialog();
   const insets = useSafeAreaInsets();
-  const invalidate = useInvalidate();
+  const { theme } = useUnistyles();
 
+  const invalidate = useInvalidate();
   const {
     feedLinks,
     activeLinks,
@@ -146,7 +148,7 @@ export default function HomeScreen({ navigation }: Props) {
             error ? (
               <DataFallbackScreen onAction={refetch} />
             ) : feedLoading ? (
-              <ActivityIndicator style={{ paddingVertical: 16 }} />
+              <Spinner style={{ paddingVertical: theme.spacing.xl }} />
             ) : (
               <EmptyState
                 icon="link"
@@ -161,7 +163,7 @@ export default function HomeScreen({ navigation }: Props) {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage ? (
-              <ActivityIndicator style={{ paddingVertical: 20 }} />
+              <Spinner style={{ paddingVertical: theme.spacing.xl }} />
             ) : null
           }
           refreshing={feedLoading}

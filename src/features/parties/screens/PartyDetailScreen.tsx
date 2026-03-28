@@ -8,7 +8,6 @@ import {
   RefreshControl,
   GestureResponderEvent,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -42,6 +41,7 @@ import {
   AnimatedListItem,
   HeroBanner,
   MemberAvatar,
+  Spinner,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { StatusBar } from 'expo-status-bar';
@@ -445,9 +445,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
               pastLinksError ? (
                 <DataFallbackScreen onAction={refetchPastLinks} />
               ) : pastLinksLoading ? (
-                <ActivityIndicator
-                  style={{ paddingVertical: theme.spacing.xl }}
-                />
+                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
               ) : (
                 <EmptyState
                   icon="archive"
@@ -462,9 +460,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             onEndReachedThreshold={0.5}
             ListFooterComponent={
               isFetchingNextPage ? (
-                <ActivityIndicator
-                  style={{ paddingVertical: theme.spacing.xl }}
-                />
+                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
               ) : null
             }
           />

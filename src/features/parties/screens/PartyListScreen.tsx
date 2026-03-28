@@ -2,13 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PartyStackParamList } from '../../../navigation/types';
 import { parties as partiesStorage } from '../../../lib/media-service/parties';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  FlatList,
-  View,
-  Text,
-  Pressable,
-  ActivityIndicator,
-} from 'react-native';
+import { FlatList, View, Text, Pressable } from 'react-native';
 import PartyCard from '../components/PartyCard';
 import {
   AnimatedListItem,
@@ -16,6 +10,7 @@ import {
   DataFallbackScreen,
   Divider,
   EmptyState,
+  Spinner,
 } from '../../../components';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useState } from 'react';
@@ -126,7 +121,7 @@ export default function PartyListScreen({ navigation }: Props) {
             partiesError ? (
               <DataFallbackScreen onAction={refetchParties} />
             ) : partiesLoading ? (
-              <ActivityIndicator style={{ paddingVertical: 16 }} />
+              <Spinner style={{ paddingVertical: theme.spacing.xl }} />
             ) : (
               <EmptyState
                 icon="users"

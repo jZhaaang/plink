@@ -7,7 +7,6 @@ import {
   RefreshControl,
   GestureResponderEvent,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { PartyStackParamList } from '../../../navigation/types';
@@ -30,6 +29,7 @@ import {
   MediaGrid,
   HeroBanner,
   UploadProgressModal,
+  Spinner,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -394,9 +394,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 {postsError ? (
                   <DataFallbackScreen onAction={refetchPosts} />
                 ) : postsLoading ? (
-                  <ActivityIndicator
-                    style={{ paddingVertical: theme.spacing.xl }}
-                  />
+                  <Spinner style={{ paddingVertical: theme.spacing.xl }} />
                 ) : allMedia.length === 0 ? (
                   <EmptyState
                     icon="image"
@@ -437,9 +435,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
               postsError ? (
                 <DataFallbackScreen onAction={refetchPosts} />
               ) : postsLoading ? (
-                <ActivityIndicator
-                  style={{ paddingVertical: theme.spacing.xl }}
-                />
+                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
               ) : (
                 <EmptyState
                   icon="camera"
@@ -457,7 +453,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             }}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
-              isFetchingNextPage ? <ActivityIndicator /> : null
+              isFetchingNextPage ? (
+                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
+              ) : null
             }
           />
 
