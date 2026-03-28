@@ -7,13 +7,13 @@ import {
   GestureViewer,
   useGestureViewerState,
 } from 'react-native-gesture-image-viewer';
-import { PartyStackParamList } from '../../../navigation/types';
+import { SignedInParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MediaViewerOverlay from '../components/MediaViewerOverlay';
 import { FlatList } from 'react-native-gesture-handler';
 import { useLinkPosts } from '../hooks/useLinkPosts';
 
-type Props = NativeStackScreenProps<PartyStackParamList, 'MediaViewer'>;
+type Props = NativeStackScreenProps<SignedInParamList, 'MediaViewer'>;
 
 type MediaItemProps = {
   url: string;

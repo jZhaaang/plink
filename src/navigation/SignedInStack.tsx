@@ -7,6 +7,8 @@ import { ActiveLinkProvider } from '../providers/ActiveLinkProvider';
 import { QueryProvider } from '../providers/QueryProvider';
 import { useAuth } from '../providers/AuthProvider';
 import { usePushNotifications } from '../features/activity/hooks/usePushNotifications';
+import MediaViewerScreen from '../features/links/screens/MediaViewerScreen';
+import AllMediaScreen from '../features/links/screens/AllMediaScreen';
 
 const Stack = createNativeStackNavigator<SignedInParamList>();
 type SignedInRoute = RouteProp<RootStackParamList, 'SignedIn'>;
@@ -33,6 +35,19 @@ export default function SignedInStack() {
           <Stack.Screen
             name="CompleteProfile"
             component={CompleteProfileScreen}
+          />
+          <Stack.Screen
+            name="MediaViewer"
+            component={MediaViewerScreen}
+            options={{
+              presentation: 'fullScreenModal',
+              animation: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name="AllMedia"
+            component={AllMediaScreen}
+            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
           />
         </Stack.Navigator>
       </ActiveLinkProvider>

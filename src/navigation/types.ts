@@ -9,24 +9,24 @@ export type AuthStackParamList = {
 export type SignedInParamList = {
   App: NavigatorScreenParams<TabsParamList>;
   CompleteProfile: undefined;
-};
-
-export type LinkFlowParamList = {
-  LinkDetail: { linkId: string; partyId: string };
   MediaViewer: { linkId: string; initialIndex: number };
   AllMedia: { linkId: string };
 };
 
 export type HomeStackParamList = {
   HomeFeed: undefined;
-} & LinkFlowParamList;
+  LinkDetail: { linkId: string; partyId: string };
+};
 
 export type PartyStackParamList = {
   PartyList: undefined;
   PartyDetail: { partyId: string };
-} & LinkFlowParamList;
+  LinkDetail: { linkId: string; partyId: string };
+};
 
-export type LinkStackParamList = LinkFlowParamList;
+export type LinkStackParamList = {
+  LinkDetail: { linkId: string; partyId: string };
+};
 
 export type TabsParamList = {
   Home: NavigatorScreenParams<HomeStackParamList>;

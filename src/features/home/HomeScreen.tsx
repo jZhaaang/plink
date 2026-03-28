@@ -1,10 +1,13 @@
 import { View, Text, FlatList } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 import * as Burnt from 'burnt';
 import { useAuth } from '../../providers/AuthProvider';
-import { HomeStackParamList } from '../../navigation/types';
+import { HomeStackParamList, SignedInParamList } from '../../navigation/types';
 import { useInvalidate } from '../../lib/supabase/hooks/useInvalidate';
 import { useHomeFeed } from './hooks/useHomeFeed';
 import { useDialog } from '../../providers/DialogProvider';
@@ -22,11 +25,13 @@ import {
 } from '../../components';
 import HomeLinkCard from './components/HomeLinkCard';
 import ActiveLinkCard from './components/ActiveLinkCard';
+import { useNavigation } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeFeed'>;
 
 export default function HomeScreen({ navigation }: Props) {
   const { userId } = useAuth();
+  const rootNav = useNavigation<NativeStackNavigationProp<SignedInParamList>>();
   const dialog = useDialog();
   const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
@@ -139,7 +144,7 @@ export default function HomeScreen({ navigation }: Props) {
                 link={item}
                 onPress={() => navigateToLink(item.id, item.party_id)}
                 onMediaPress={() =>
-                  navigation.navigate('AllMedia', { linkId: item.id })
+                  rootNav.navigate('AllMedia', { linkId: item.id })
                 }
               />
             </AnimatedListItem>

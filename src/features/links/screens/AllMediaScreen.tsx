@@ -2,7 +2,7 @@ import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
-import { PartyStackParamList } from '../../../navigation/types';
+import { SignedInParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { LinkPostMedia } from '../../../lib/models';
 import {
@@ -15,7 +15,7 @@ import {
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useLinkPosts } from '../hooks/useLinkPosts';
 
-type Props = NativeStackScreenProps<PartyStackParamList, 'AllMedia'>;
+type Props = NativeStackScreenProps<SignedInParamList, 'AllMedia'>;
 
 export default function AllMediaScreen({ route, navigation }: Props) {
   const { linkId } = route.params;

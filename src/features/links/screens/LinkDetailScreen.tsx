@@ -1,5 +1,8 @@
 import { ComponentProps, useCallback, useMemo, useState } from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 import {
   View,
   Text,
@@ -9,7 +12,10 @@ import {
   FlatList,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { PartyStackParamList } from '../../../navigation/types';
+import {
+  PartyStackParamList,
+  SignedInParamList,
+} from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
 import PostCard from '../components/PostCard';
@@ -38,7 +44,11 @@ import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
-import { CommonActions, useFocusEffect } from '@react-navigation/native';
+import {
+  CommonActions,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { useAuth } from '../../../providers/AuthProvider';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
@@ -51,6 +61,7 @@ type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
+  const rootNav = useNavigation<NativeStackNavigationProp<SignedInParamList>>();
   const { theme } = useUnistyles();
 
   const {
@@ -162,14 +173,14 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const handleMediaPress = (item: LinkPostMedia) => {
     const index = allMedia.findIndex((m) => m.id === item.id);
-    navigation.navigate('MediaViewer', {
+    rootNav.navigate('MediaViewer', {
       linkId,
       initialIndex: index === -1 ? 0 : index,
     });
   };
 
   const handleSeeAllMedia = () => {
-    navigation.navigate('AllMedia', { linkId });
+    rootNav.navigate('AllMedia', { linkId });
   };
 
   const handleMenuPress = (event: GestureResponderEvent) => {
@@ -320,7 +331,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           : `${startFormatted.date} — ${endFormatted.date}`}
                       </Text>
                     </View>
-                    <View style={[styles.infoRow, { marginBottom: 12 }]}>
+                    <View
+                      style={[
+                        styles.infoRow,
+                        { marginBottom: theme.spacing.md },
+                      ]}
+                    >
                       <Feather
                         name="clock"
                         size={theme.iconSizes.sm}
@@ -344,7 +360,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                       </Text>
                     </View>
 
-                    <Divider style={{ marginVertical: 8 }} />
+                    <Divider style={{ marginVertical: theme.spacing.sm }} />
 
                     {/* Stats row */}
                     <View style={styles.statsRow}>
@@ -369,7 +385,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   </CardSection>
                 </Card>
 
-                <Divider style={{ marginVertical: 24 }} />
+                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
 
                 {/* All Items Section */}
                 <SectionHeader
@@ -415,7 +431,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   />
                 )}
 
-                <Divider style={{ marginVertical: 24 }} />
+                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
 
                 {/* Post Feed Section */}
                 <SectionHeader title="Posts" count={linkDetail.postCount} />
