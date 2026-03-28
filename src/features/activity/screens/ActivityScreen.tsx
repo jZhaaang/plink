@@ -1,5 +1,7 @@
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { TabsParamList } from '../../../navigation/types';
+import {
+  ActivityStackParamList,
+  TabsParamList,
+} from '../../../navigation/types';
 import { useActivityFeed } from '../hooks/useActivityFeed';
 import { Text, SectionList, View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,21 +20,27 @@ import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import * as Burnt from 'burnt';
 import { StyleSheet } from 'react-native-unistyles';
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 
-type Props = BottomTabScreenProps<TabsParamList, 'Activity'>;
+type Props = NativeStackScreenProps<ActivityStackParamList, 'Activity'>;
 
 export default function ActivityScreen({ navigation }: Props) {
   const { userId } = useAuth();
+  const tabNav = useNavigation<NativeStackNavigationProp<TabsParamList>>();
+  const dialog = useDialog();
+  const insets = useSafeAreaInsets();
+
+  const invalidate = useInvalidate();
   const {
     sections,
     loading: activityLoading,
     error: activityError,
     refetch: refetchActivity,
   } = useActivityFeed(userId);
-  const dialog = useDialog();
-  const invalidate = useInvalidate();
-  const insets = useSafeAreaInsets();
-
   const clearAll = async () => {
     const confirmed = await dialog.confirmDanger(
       'Clear Activity',
@@ -94,7 +102,7 @@ export default function ActivityScreen({ navigation }: Props) {
             onPress={
               item.link_id && item.party_id
                 ? () =>
-                    navigation.navigate('Link', {
+                    tabNav.navigate('Party', {
                       screen: 'LinkDetail',
                       params: {
                         linkId: item.link_id,
@@ -103,7 +111,7 @@ export default function ActivityScreen({ navigation }: Props) {
                     })
                 : item.party_id
                   ? () =>
-                      navigation.navigate('Party', {
+                      tabNav.navigate('Party', {
                         screen: 'PartyDetail',
                         params: { partyId: item.party_id },
                       })

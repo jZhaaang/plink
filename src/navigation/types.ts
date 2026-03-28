@@ -28,12 +28,20 @@ export type LinkStackParamList = {
   LinkDetail: { linkId: string; partyId: string };
 };
 
+export type ActivityStackParamList = {
+  Activity: undefined;
+};
+
+export type ProfileStackParamList = {
+  Profile: undefined;
+};
+
 export type TabsParamList = {
   Home: NavigatorScreenParams<HomeStackParamList>;
   Party: NavigatorScreenParams<PartyStackParamList>;
   Link: NavigatorScreenParams<LinkStackParamList>;
-  Activity: undefined;
-  Profile: undefined;
+  Activity: NavigatorScreenParams<ActivityStackParamList>;
+  Profile: NavigatorScreenParams<ProfileStackParamList>;
 };
 
 export type RootStackParamList = {
