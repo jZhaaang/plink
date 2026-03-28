@@ -17,6 +17,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import ExpandableFAB, { FABAction } from './ExpandableFAB';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
+export const TAB_BAR_HEIGHT = 50;
+export const TAB_BAR_FAB = 64;
+
 type NestedRoute = Route<string> & {
   state?: NavigationState | PartialState<NavigationState>;
 };
@@ -123,7 +126,7 @@ export default function CustomTabBar({
   }));
 
   const tabBarAnimatedStyle = useAnimatedStyle(() => {
-    const height = 55 + insets.bottom + 30;
+    const height = TAB_BAR_FAB + insets.bottom;
     return {
       transform: [
         {
@@ -179,8 +182,8 @@ export default function CustomTabBar({
         style={[
           styles.tabBar,
           {
-            paddingBottom: 10 + insets.bottom,
-            height: 55 + insets.bottom,
+            paddingBottom: insets.bottom,
+            height: TAB_BAR_HEIGHT + insets.bottom,
           },
           tabBarAnimatedStyle,
         ]}
@@ -214,17 +217,15 @@ export default function CustomTabBar({
                 >
                   <View style={styles.centerButton}>
                     {isViewingActiveLink ? (
-                      <View style={styles.centerButtonInner}>
-                        <Animated.View
-                          style={[styles.centerIconWrap, centerRotationStyle]}
-                        >
-                          <MaterialCommunityIcons
-                            name="plus"
-                            size={theme.iconSizes.xl}
-                            color={theme.colors.white}
-                          />
-                        </Animated.View>
-                      </View>
+                      <Animated.View
+                        style={[styles.centerIconWrap, centerRotationStyle]}
+                      >
+                        <MaterialCommunityIcons
+                          name="plus"
+                          size={theme.iconSizes.xl}
+                          color={theme.colors.white}
+                        />
+                      </Animated.View>
                     ) : (
                       <MaterialCommunityIcons
                         name={centerIcon}
@@ -262,7 +263,7 @@ export default function CustomTabBar({
                   color: isFocused
                     ? theme.colors.primary
                     : theme.colors.lightGray,
-                  size: 24,
+                  size: theme.iconSizes.lg,
                 })}
               </View>
             </Pressable>
@@ -290,16 +291,12 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
   },
   centerButton: {
-    width: 64,
-    height: 64,
+    width: TAB_BAR_FAB,
+    height: TAB_BAR_FAB,
     borderRadius: theme.radii.full,
     backgroundColor: theme.colors.info,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  centerButtonInner: {
-    width: 64,
-    height: 64,
   },
   centerIconWrap: {
     position: 'absolute',
