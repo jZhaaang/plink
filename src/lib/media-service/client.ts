@@ -49,6 +49,29 @@ export async function getSignedUrl(key: string): Promise<string> {
   return data.url;
 }
 
+export async function getSignedUrlsBatch(
+  linkId: string,
+  keys: string[],
+): Promise<Record<string, string>> {
+  const headers = await getAuthHeaders();
+
+  const res = await fetch(`${BASE_URL}/media/urls`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ linkId, keys }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(
+      body?.error || `Batch signed URL request failed: ${res.status}`,
+    );
+  }
+
+  const data = await res.json();
+  return data.urls as Record<string, string>;
+}
+
 export async function deleteFile(key: string): Promise<void> {
   const headers = await getAuthHeaders();
 

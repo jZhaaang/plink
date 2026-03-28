@@ -1,7 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { extFromMime } from '../utils/extFromMime';
 import { deleteBulk } from './client';
-import { uploadFile, getUrls, removeFiles } from './core';
+import { uploadFile, getUrls, removeFiles, getLinkMediaUrls } from './core';
 
 type UploadType = { type: 'post'; postId: string } | { type: 'banner' };
 
@@ -29,6 +29,7 @@ export const links = {
   },
 
   getUrls,
+  getLinkMediaUrls,
 
   remove: removeFiles,
 
