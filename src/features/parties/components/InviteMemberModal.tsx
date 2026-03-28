@@ -133,7 +133,7 @@ export default function InviteMemberModal({
           <Image
             source={{ uri: foundUserAvatarUrl ?? undefined }}
             cachePolicy="memory-disk"
-            style={{ width: 44, height: 44, borderRadius: 22 }}
+            style={styles.userAvatar}
           />
           <View style={styles.userInfo}>
             <Text style={styles.userName}>{state.user.name || 'Unknown'}</Text>
@@ -201,6 +201,11 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.surfacePressed,
     borderRadius: theme.radii.lg,
+  },
+  userAvatar: {
+    width: theme.avatarSizes.md,
+    height: theme.avatarSizes.md,
+    borderRadius: theme.radii.full,
   },
   userInfo: {
     marginLeft: theme.spacing.md,

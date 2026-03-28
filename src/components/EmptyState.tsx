@@ -41,7 +41,7 @@ export default function EmptyState({
 const styles = StyleSheet.create((theme) => ({
   container: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: theme.spacing['2xl'],
     paddingHorizontal: theme.spacing.lg,
   },
   iconWrapper: {

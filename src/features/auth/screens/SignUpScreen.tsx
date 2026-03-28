@@ -65,9 +65,7 @@ export default function SignUpScreen({ navigation }: Props) {
 
         <View style={styles.headingGroup}>
           <Text style={styles.heading}>Create your account</Text>
-          <Text style={styles.subheading}>
-            Join and start sharing memories
-          </Text>
+          <Text style={styles.subheading}>Join and start sharing memories</Text>
         </View>
 
         <View style={styles.form}>
@@ -198,7 +196,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   hint: {
     paddingLeft: theme.spacing.xs,
-    fontSize: 11,
+    fontSize: theme.fontSizes.xs,
     color: theme.colors.textTertiary,
   },
   footer: {

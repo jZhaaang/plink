@@ -86,7 +86,7 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
   },
   activityText: {
-    fontSize: 15,
+    fontSize: theme.fontSizes.sm,
     fontWeight: theme.fontWeights.medium,
     color: theme.colors.textPrimary,
   },

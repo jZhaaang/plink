@@ -126,7 +126,7 @@ export default function HomeScreen({ navigation }: Props) {
                     )}
                   </View>
 
-                  <Divider style={{ marginVertical: 12 }} />
+                  <Divider style={{ marginVertical: theme.spacing.md }} />
                 </>
               )}
 

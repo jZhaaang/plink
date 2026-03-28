@@ -289,7 +289,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   hint: {
     paddingLeft: theme.spacing.xs,
-    fontSize: 11,
+    fontSize: theme.fontSizes.xs,
     color: theme.colors.textTertiary,
   },
 }));

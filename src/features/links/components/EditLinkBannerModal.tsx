@@ -127,7 +127,10 @@ export default function EditLinkBannerModal({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 10, paddingRight: 4 }}
+            contentContainerStyle={{
+              gap: theme.spacing.md,
+              paddingRight: theme.spacing.xs,
+            }}
           >
             {images.map((image) => {
               const isSelected = image.path === selectedPath;
@@ -179,7 +182,7 @@ export default function EditLinkBannerModal({
 const styles = StyleSheet.create((theme) => ({
   modalContent: {
     width: '94%',
-    borderRadius: 24,
+    borderRadius: theme.radii.xl,
     overflow: 'hidden',
   },
   body: {

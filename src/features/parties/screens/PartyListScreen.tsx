@@ -101,7 +101,10 @@ export default function PartyListScreen({ navigation }: Props) {
         <FlatList
           data={partyDetails}
           keyExtractor={(p) => p.id}
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+          contentContainerStyle={{
+            padding: theme.spacing.lg,
+            paddingBottom: 100,
+          }}
           refreshing={partiesLoading}
           onRefresh={refetchParties}
           renderItem={({ item, index }) => (

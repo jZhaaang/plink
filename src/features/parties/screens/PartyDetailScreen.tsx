@@ -558,13 +558,13 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     backgroundColor: theme.colors.accentSurface,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: 6,
+    paddingVertical: theme.spacing.xs,
     borderRadius: theme.radii.full,
   },
   inviteText: {
     color: theme.colors.primary,
     fontSize: theme.fontSizes.xs,
     fontWeight: theme.fontWeights.semibold,
-    marginLeft: 6,
+    marginLeft: theme.spacing.xs,
   },
 }));
