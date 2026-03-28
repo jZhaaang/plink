@@ -93,7 +93,7 @@ export default function AllMediaScreen({ route, navigation }: Props) {
           }}
           onEndReachedThreshold={0.5}
           ListFooterComponent={() =>
-            !isFetchingNextPage ? (
+            isFetchingNextPage ? (
               <Spinner style={{ paddingVertical: theme.spacing.xl }} />
             ) : (
               <View />
