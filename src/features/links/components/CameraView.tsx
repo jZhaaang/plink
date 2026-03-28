@@ -189,7 +189,7 @@ const styles = StyleSheet.create((theme) => ({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: theme.spacing.sm,
   },
   shutterOuter: {
     width: 80,
