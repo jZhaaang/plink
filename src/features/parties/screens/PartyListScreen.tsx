@@ -29,6 +29,7 @@ import { logger } from '../../../lib/telemetry/logger';
 import * as Burnt from 'burnt';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Ionicons } from '@expo/vector-icons';
+import { TAB_BAR_HEIGHT } from '../../../navigation/CustomTabBar';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyList'>;
 
@@ -97,14 +98,10 @@ export default function PartyListScreen({ navigation }: Props) {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.container}>
         <Text style={styles.screenTitle}>Your Parties</Text>
-        <Divider />
+        <Divider style={{ marginVertical: theme.spacing.xl }} />
         <FlatList
           data={partyDetails}
           keyExtractor={(p) => p.id}
-          contentContainerStyle={{
-            padding: theme.spacing.lg,
-            paddingBottom: 100,
-          }}
           refreshing={partiesLoading}
           onRefresh={refetchParties}
           renderItem={({ item, index }) => (
@@ -150,7 +147,7 @@ export default function PartyListScreen({ navigation }: Props) {
           style={[
             styles.fab,
             {
-              bottom: insets.bottom + 80,
+              bottom: TAB_BAR_HEIGHT,
             },
           ]}
         >
@@ -186,7 +183,6 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.xl,
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.lg,
   },
   fab: {
     backgroundColor: theme.colors.primary,

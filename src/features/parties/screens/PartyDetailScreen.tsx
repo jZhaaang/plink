@@ -9,7 +9,6 @@ import {
   GestureResponderEvent,
   FlatList,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 
 import { PartyStackParamList } from '../../../navigation/types';
@@ -62,7 +61,6 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
   const { partyId } = route.params;
   const { userId } = useAuth();
   const dialog = useDialog();
-  const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
 
   const invalidate = useInvalidate();
@@ -325,9 +323,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             data={pastLinks}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: Math.max(insets.bottom, 100),
-            }}
+            contentContainerStyle={styles.container}
             refreshControl={
               <RefreshControl
                 refreshing={partyLoading}
@@ -340,7 +336,10 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             ListHeaderComponent={
               <>
                 <View
-                  style={[styles.section, { paddingTop: 48, paddingBottom: 0 }]}
+                  style={[
+                    styles.section,
+                    { paddingTop: theme.avatarSizes.xl / 2, paddingBottom: 0 },
+                  ]}
                 >
                   <Text style={styles.partyName}>{partyDetail.name}</Text>
                   <View style={styles.partyMetaRow}>
@@ -528,6 +527,9 @@ const styles = StyleSheet.create((theme) => ({
   contentArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  container: {
+    paddingBottom: theme.spacing.xl,
   },
   section: {
     paddingHorizontal: theme.spacing.xl,

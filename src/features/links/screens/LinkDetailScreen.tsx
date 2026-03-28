@@ -588,9 +588,8 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
   },
   container: {
-    paddingTop: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: 100,
+    paddingVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
   },
   scrollView: {
     flex: 1,

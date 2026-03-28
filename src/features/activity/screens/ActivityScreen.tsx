@@ -1,7 +1,4 @@
-import {
-  ActivityStackParamList,
-  TabsParamList,
-} from '../../../navigation/types';
+import { TabsParamList } from '../../../navigation/types';
 import { useActivityFeed } from '../hooks/useActivityFeed';
 import { Text, SectionList, View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,15 +17,10 @@ import { logger } from '../../../lib/telemetry/logger';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 import * as Burnt from 'burnt';
 import { StyleSheet } from 'react-native-unistyles';
-import {
-  NativeStackNavigationProp,
-  NativeStackScreenProps,
-} from '@react-navigation/native-stack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
-type Props = NativeStackScreenProps<ActivityStackParamList, 'Activity'>;
-
-export default function ActivityScreen({ navigation }: Props) {
+export default function ActivityScreen() {
   const { userId } = useAuth();
   const tabNav = useNavigation<NativeStackNavigationProp<TabsParamList>>();
   const dialog = useDialog();
@@ -130,9 +122,9 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
   },
   container: {
-    flex: 1,
     backgroundColor: theme.colors.background,
     paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
