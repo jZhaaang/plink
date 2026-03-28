@@ -3,6 +3,7 @@ import {
   ActivityIndicatorProps,
   View,
   Text,
+  StyleProp,
   ViewStyle,
 } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
@@ -12,9 +13,14 @@ type Tone = 'brand' | 'inverse' | 'muted';
 interface SpinnerProps {
   size?: ActivityIndicatorProps['size'];
   tone?: Tone;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function Spinner({ size = 'small', tone = 'brand' }: SpinnerProps) {
+export function Spinner({
+  size = 'small',
+  tone = 'brand',
+  style,
+}: SpinnerProps) {
   const { theme } = useUnistyles();
 
   const colors: Record<Tone, string> = {
@@ -22,13 +28,14 @@ export function Spinner({ size = 'small', tone = 'brand' }: SpinnerProps) {
     inverse: theme.colors.spinnerInverse,
     muted: theme.colors.spinnerMuted,
   };
-  return <ActivityIndicator size={size} color={colors[tone]} />;
+
+  return <ActivityIndicator size={size} color={colors[tone]} style={style} />;
 }
 
 interface LoadingScreenProps {
   label?: string;
   tone?: Exclude<Tone, 'muted'>;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function LoadingScreen({
