@@ -63,21 +63,23 @@ export function MediaViewerBottomBar({
       style={[styles.container, animatedStyle]}
       pointerEvents={pointerEvents}
     >
-      <LinearGradient
-        colors={['transparent', 'rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 1)']}
-        locations={[0, 0.5, 1]}
-        pointerEvents="none"
-        style={StyleSheet.absoluteFillObject}
-      />
+      {isVideo && player && (
+        <View style={styles.videoControlsSection}>
+          <LinearGradient
+            colors={['transparent', 'rgba(0, 0, 0, 0.7)']}
+            pointerEvents="none"
+            style={StyleSheet.absoluteFillObject}
+          />
+          <VideoControls player={player} />
+        </View>
+      )}
 
       <View
         style={[
-          styles.content,
+          styles.band,
           { paddingBottom: insets.bottom + theme.spacing.sm },
         ]}
       >
-        {isVideo && player && <VideoControls player={player} />}
-
         <View style={styles.row}>
           <View style={styles.userInfo}>
             <Image
@@ -122,8 +124,11 @@ const styles = StyleSheet.create((theme) => ({
     bottom: 0,
     zIndex: 10,
   },
-  content: {
+  videoControlsSection: {},
+  band: {
+    backgroundColor: theme.colors.black,
     paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
   },
   row: {
     flexDirection: 'row',
