@@ -247,3 +247,57 @@ export function requireAccess(action: 'read' | 'write' | 'delete') {
     }
   };
 }
+
+export function requireLinkAccess() {
+  return async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const { linkId } = req.body;
+    const userId = req.userId;
+
+    if (!linkId || !userId) {
+      res.status(400).json({ error: 'linkId is required' });
+      return;
+    }
+
+    try {
+      const { data: link } = await supabase
+        .from('links')
+        .select('party_id')
+        .eq('id', linkId)
+        .single();
+
+      if (!link) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
+      }
+
+      const { data: member } = await supabase
+        .from('party_members')
+        .select('user_id')
+        .eq('party_id', link.party_id)
+        .eq('user_id', userId)
+        .single();
+
+      if (!member) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
+      }
+
+      next();
+    } catch (err) {
+      console.error(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          event: 'batch_link_authorization_failed',
+          userId,
+          linkId,
+          reason: err instanceof Error ? err.message : 'Unknown error',
+        }),
+      );
+      res.status(500).json({ error: 'Authorization check failed' });
+    }
+  };
+}

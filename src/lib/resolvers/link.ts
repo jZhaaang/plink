@@ -28,6 +28,7 @@ export async function resolveLink(link: LinkRow): Promise<Link> {
 }
 
 export async function resolveLinkPostMediaItems(
+  linkId: string,
   mediaItems: LinkPostMediaRow[],
 ): Promise<Map<string, LinkPostMedia>> {
   const allPaths: string[] = [];
@@ -40,7 +41,7 @@ export async function resolveLinkPostMediaItems(
 
   let urlMap = null;
   try {
-    urlMap = await linksStorage.getUrls(allPaths);
+    urlMap = await linksStorage.getLinkMediaUrls(linkId, allPaths);
   } catch (err) {
     logger.error('Error resolving link post media items', { err });
     return new Map();

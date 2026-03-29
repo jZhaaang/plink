@@ -61,7 +61,10 @@ export function useHomeFeed(userId: string) {
             ]);
 
           const allRawMedia = link.link_posts.flatMap((p) => p.link_post_media);
-          const mediaMap = await resolveLinkPostMediaItems(allRawMedia);
+          const mediaMap = await resolveLinkPostMediaItems(
+            link.id,
+            allRawMedia,
+          );
           const allMedia = Array.from(mediaMap.values());
 
           if (resolvedParty.avatarUrl) Image.prefetch(resolvedParty.avatarUrl);

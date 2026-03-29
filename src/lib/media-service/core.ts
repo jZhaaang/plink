@@ -4,6 +4,7 @@ import {
   deleteBulk,
   getSignedUrl,
   requestUploadUrl,
+  getSignedUrlsBatch,
 } from './client';
 
 async function uriToBlob(uri: string): Promise<Blob> {
@@ -89,6 +90,43 @@ export async function getUrls(paths: string[]): Promise<Map<string, string>> {
         path: uncached[i],
         error: r.reason,
       });
+    }
+  }
+
+  return result;
+}
+
+export async function getLinkMediaUrls(
+  linkId: string,
+  paths: string[],
+): Promise<Map<string, string>> {
+  if (paths.length === 0) return new Map();
+
+  const now = Date.now();
+  const result = new Map<string, string>();
+  const uncached: string[] = [];
+
+  for (const p of paths) {
+    const cached = urlCache.get(p);
+    if (cached && cached.expiresAt - CACHE_BUFFER > now) {
+      result.set(p, cached.url);
+    } else {
+      uncached.push(p);
+    }
+  }
+
+  if (uncached.length === 0) return result;
+
+  const expiresAt = now + 3600 * 1000;
+  const urlMap = await getSignedUrlsBatch(linkId, uncached);
+
+  for (const path of uncached) {
+    const url = urlMap[path];
+    if (url) {
+      result.set(path, url);
+      urlCache.set(path, { url, expiresAt });
+    } else {
+      logger.warn('Failed to resolve signed URL in batch response', { path });
     }
   }
 

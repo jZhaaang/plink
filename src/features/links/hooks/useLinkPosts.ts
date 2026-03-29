@@ -33,7 +33,7 @@ export function useLinkPosts(linkId: string) {
         );
 
         const allRawMedia = rawPosts.flatMap((p) => p.link_post_media);
-        const mediaMap = await resolveLinkPostMediaItems(allRawMedia);
+        const mediaMap = await resolveLinkPostMediaItems(linkId, allRawMedia);
 
         const posts: LinkPostWithMedia[] = rawPosts.map((post) => {
           const owner = profilesMap.get(post.owner_id);
