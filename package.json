@@ -23,7 +23,6 @@
     "babel-preset-expo": "~54.0.0",
     "burnt": "^0.13.0",
     "expo": "~54.0.12",
-    "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.9",
     "expo-crypto": "~15.0.8",
     "expo-dev-client": "~6.0.20",

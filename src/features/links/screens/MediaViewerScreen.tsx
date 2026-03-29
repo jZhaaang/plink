@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
 import { View, useWindowDimensions, StatusBar, Pressable } from 'react-native';
 import {
   GestureViewer,
@@ -12,18 +12,17 @@ import { SignedInParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native-gesture-handler';
 import { useLinkPosts } from '../hooks/useLinkPosts';
-import Animated, {
+import {
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
-import { VideoControls } from '../components/VideoControls';
 import { LinkPostWithMedia } from '../../../lib/models';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
-import Burnt from 'burnt';
+import * as Burnt from 'burnt';
 import { File, Paths } from 'expo-file-system';
 import { logger } from '../../../lib/telemetry/logger';
 import { MediaViewerTopBar } from '../components/MediaViewerTopBar';
@@ -32,13 +31,17 @@ import { MediaViewerBottomBar } from '../components/MediaViewerBottomBar';
 type Props = NativeStackScreenProps<SignedInParamList, 'MediaViewer'>;
 
 type MediaItemProps = {
-  url: string;
   width: number;
   height: number;
   onPress: () => void;
 };
 
-function ImageItem({ url, width, height, onPress }: MediaItemProps) {
+function ImageItem({
+  url,
+  width,
+  height,
+  onPress,
+}: MediaItemProps & { url: string }) {
   return (
     <Pressable onPress={onPress}>
       <Image
@@ -53,22 +56,17 @@ function ImageItem({ url, width, height, onPress }: MediaItemProps) {
 }
 
 function VideoItem({
-  url,
   width,
   height,
+  player,
   isActive,
-  overlayOpacity,
-  overlayPointerEvents,
   onPress,
 }: MediaItemProps & {
+  player: VideoPlayer;
   isActive: boolean;
   overlayOpacity: SharedValue<number>;
   overlayPointerEvents: 'box-none' | 'none';
 }) {
-  const player = useVideoPlayer(url, (p) => {
-    p.loop = false;
-  });
-
   useEffect(() => {
     if (isActive) {
       player.play();
@@ -77,10 +75,6 @@ function VideoItem({
       player.currentTime = 0;
     }
   }, [isActive, player]);
-
-  const controlsStyle = useAnimatedStyle(() => ({
-    opacity: overlayOpacity.value,
-  }));
 
   return (
     <View style={{ width, height }}>
@@ -95,16 +89,6 @@ function VideoItem({
         onPress={onPress}
         style={[StyleSheet.absoluteFill, { zIndex: 1 }]}
       />
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { justifyContent: 'flex-end', zIndex: 2 },
-          controlsStyle,
-        ]}
-        pointerEvents={overlayPointerEvents}
-      >
-        <VideoControls player={player} />
-      </Animated.View>
     </View>
   );
 }
@@ -168,6 +152,13 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
   );
   const mediaHeight = height - insets.bottom;
 
+  const currentPlayer = useVideoPlayer(
+    currentMedia?.type === 'video' ? currentMedia.url : '',
+    (p) => {
+      p.loop = false;
+    },
+  );
+
   const handleDownload = async () => {
     if (!currentMedia) return;
 
@@ -180,16 +171,26 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
     try {
       const ext = currentMedia.mime.split('/')[1] ?? 'jpg';
       const dest = new File(Paths.cache, `plink_${currentMedia.id}.${ext}`);
-      const file = await File.downloadFileAsync(currentMedia.url, dest);
+      const file = dest.exists
+        ? dest
+        : await File.downloadFileAsync(currentMedia.url, dest);
       await MediaLibrary.saveToLibraryAsync(file.uri);
-      Burnt.toast({ title: 'Saved to photos', preset: 'done' });
+      Burnt.toast({
+        title: 'Successfully downloaded',
+        preset: 'done',
+        haptic: 'success',
+      });
     } catch (err) {
       logger.error('Error downloading media', {
         err,
         mediaId: currentMedia.id,
         url: currentMedia.url,
       });
-      Burnt.toast({ title: 'Download failed', preset: 'error' });
+      Burnt.toast({
+        title: 'Download failed',
+        preset: 'error',
+        haptic: 'warning',
+      });
     }
   };
 
@@ -202,15 +203,26 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
     try {
       const ext = currentMedia.mime.split('/')[1] ?? 'jpg';
       const dest = new File(Paths.cache, `plink_${currentMedia.id}.${ext}`);
-      const file = await File.downloadFileAsync(currentMedia.url, dest);
+      const file = dest.exists
+        ? dest
+        : await File.downloadFileAsync(currentMedia.url, dest);
       await Sharing.shareAsync(file.uri);
+      Burnt.toast({
+        title: 'Successfully shared',
+        preset: 'done',
+        haptic: 'success',
+      });
     } catch (err) {
       logger.error('Error sharing media', {
         err,
         mediaId: currentMedia.id,
         url: currentMedia.url,
       });
-      Burnt.toast({ title: 'Could not share', preset: 'error' });
+      Burnt.toast({
+        title: 'Could not share',
+        preset: 'error',
+        haptic: 'warning',
+      });
     }
   };
 
@@ -220,9 +232,9 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
       if (item.type === 'video') {
         return (
           <VideoItem
-            url={item.url}
             width={width}
             height={mediaHeight}
+            player={currentPlayer}
             isActive={isActive}
             overlayOpacity={overlayOpacity}
             overlayPointerEvents={overlayPointerEvents}
@@ -280,9 +292,12 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
               onShare={handleShare}
             />
             <MediaViewerBottomBar
+              post={currentPost}
+              currentMediaId={currentMedia.id}
+              isVideo={currentMedia.type === 'video'}
+              player={currentPlayer}
               animatedStyle={overlayAnimatedStyle}
               pointerEvents={overlayPointerEvents}
-              post={currentPost}
             />
           </View>
         )}

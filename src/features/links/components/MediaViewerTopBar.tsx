@@ -1,6 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
 import Animated, { AnimatedStyle } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,8 +13,6 @@ interface MediaViewerTopBarProps {
   onDownload: () => void;
   onShare: () => void;
 }
-
-export const BLUR_INTENSITY = 65;
 
 export function MediaViewerTopBar({
   currentIndex,
@@ -34,22 +31,16 @@ export function MediaViewerTopBar({
       pointerEvents={pointerEvents}
       style={[styles.container, animatedStyle]}
     >
-      <View style={[styles.row, { paddingTop: insets.top }]}>
-        <View style={styles.pill}>
-          <BlurView
-            intensity={BLUR_INTENSITY}
-            tint="dark"
-            style={styles.pillInner}
-          >
-            <Pressable onPress={onClose} hitSlop={12} style={styles.pillButton}>
-              <Feather
-                name="x"
-                size={theme.iconSizes.md}
-                color={theme.colors.white}
-              />
-            </Pressable>
-          </BlurView>
-        </View>
+      <View
+        style={[styles.band, { paddingTop: insets.top + theme.spacing.sm }]}
+      >
+        <Pressable onPress={onClose} hitSlop={12} style={styles.iconButton}>
+          <Feather
+            name="x"
+            size={theme.iconSizes.md}
+            color={theme.colors.white}
+          />
+        </Pressable>
 
         <View style={[styles.counterContainer, { top: insets.top }]}>
           <Text style={styles.counter}>
@@ -57,32 +48,25 @@ export function MediaViewerTopBar({
           </Text>
         </View>
 
-        <View style={styles.pill}>
-          <BlurView
-            intensity={BLUR_INTENSITY}
-            tint="dark"
-            style={styles.pillInner}
+        <View style={styles.actions}>
+          <Pressable onPress={onShare} hitSlop={12} style={styles.iconButton}>
+            <Feather
+              name="share"
+              size={theme.iconSizes.md}
+              color={theme.colors.white}
+            />
+          </Pressable>
+          <Pressable
+            onPress={onDownload}
+            hitSlop={12}
+            style={styles.iconButton}
           >
-            <Pressable onPress={onShare} hitSlop={12} style={styles.pillButton}>
-              <Feather
-                name="share"
-                size={theme.iconSizes.md}
-                color={theme.colors.white}
-              />
-            </Pressable>
-            <View style={styles.pillDivider} />
-            <Pressable
-              onPress={onDownload}
-              hitSlop={12}
-              style={styles.pillButton}
-            >
-              <Feather
-                name="download"
-                size={theme.iconSizes.md}
-                color={theme.colors.white}
-              />
-            </Pressable>
-          </BlurView>
+            <Feather
+              name="download"
+              size={theme.iconSizes.md}
+              color={theme.colors.white}
+            />
+          </Pressable>
         </View>
       </View>
     </Animated.View>
@@ -96,6 +80,14 @@ const styles = StyleSheet.create((theme) => ({
     left: 0,
     right: 0,
     zIndex: 10,
+  },
+  band: {
+    backgroundColor: theme.colors.black,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
   },
   row: {
     flexDirection: 'row',
@@ -120,21 +112,11 @@ const styles = StyleSheet.create((theme) => ({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: theme.radii.sm,
   },
-  pill: {
-    borderRadius: theme.radii.full,
-    overflow: 'hidden',
-  },
-  pillInner: {
+  actions: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
-  pillButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-  },
-  pillDivider: {
-    width: 1,
-    height: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  iconButton: {
+    padding: theme.spacing.sm,
   },
 }));

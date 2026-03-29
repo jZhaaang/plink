@@ -91,8 +91,8 @@ export function VideoControls({ player }: VideoControlsProps) {
           bubbleTextColor: theme.colors.white,
           heartbeatColor: 'rgba(255, 255, 255, 0.4)',
         }}
-        sliderHeight={3}
-        thumbWidth={14}
+        sliderHeight={theme.spacing.xs}
+        thumbWidth={theme.iconSizes.sm}
       />
 
       <Text style={styles.time}>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   time: {
     color: theme.colors.white,
-    fontSize: theme.fontSizes.xs,
+    fontSize: theme.fontSizes.sm,
     fontWeight: theme.fontWeights.medium,
     minWidth: 76,
     textAlign: 'right',
