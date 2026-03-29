@@ -34,7 +34,7 @@ export function MediaViewerTopBar({
       <View
         style={[styles.band, { paddingTop: insets.top + theme.spacing.sm }]}
       >
-        <Pressable onPress={onClose} hitSlop={12} style={styles.iconButton}>
+        <Pressable onPress={onClose} hitSlop={8} style={styles.iconButton}>
           <Feather
             name="x"
             size={theme.iconSizes.md}
@@ -49,18 +49,14 @@ export function MediaViewerTopBar({
         </View>
 
         <View style={styles.actions}>
-          <Pressable onPress={onShare} hitSlop={12} style={styles.iconButton}>
+          <Pressable onPress={onShare} hitSlop={8} style={styles.iconButton}>
             <Feather
               name="share"
               size={theme.iconSizes.md}
               color={theme.colors.white}
             />
           </Pressable>
-          <Pressable
-            onPress={onDownload}
-            hitSlop={12}
-            style={styles.iconButton}
-          >
+          <Pressable onPress={onDownload} hitSlop={8} style={styles.iconButton}>
             <Feather
               name="download"
               size={theme.iconSizes.md}
