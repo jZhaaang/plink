@@ -155,6 +155,20 @@ export default function CustomTabBar({
           onPress={closeMenu}
         />
       )}
+
+      {isViewingActiveLink && (
+        <View
+          pointerEvents="box-none"
+          style={[styles.expandableFABWrap, { bottom: insets.bottom }]}
+        >
+          <ExpandableFAB
+            actions={fabActions}
+            isExpanded={isExpanded}
+            menuOpen={menuOpen}
+          />
+        </View>
+      )}
+
       <Animated.View
         style={[
           styles.tabBar,
@@ -171,15 +185,6 @@ export default function CustomTabBar({
           if (route.name === 'Link') {
             return (
               <View key={route.key} style={styles.centerTab}>
-                {/* Expandable action items */}
-                {isViewingActiveLink && (
-                  <ExpandableFAB
-                    actions={fabActions}
-                    isExpanded={isExpanded}
-                    menuOpen={menuOpen}
-                  />
-                )}
-
                 {/* Main center button */}
                 <Pressable
                   onPress={() => {
@@ -281,6 +286,12 @@ const styles = StyleSheet.create((theme) => ({
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  expandableFABWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   tab: {
     flex: 1,

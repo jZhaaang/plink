@@ -99,8 +99,9 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     position: 'absolute',
     bottom: 0,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    width: 64,
   },
   fabItem: {
     position: 'absolute',
