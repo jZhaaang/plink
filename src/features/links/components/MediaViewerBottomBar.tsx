@@ -1,4 +1,4 @@
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { AnimatedStyle } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +17,7 @@ interface MediaViewerBottomBarProps {
   player?: VideoPlayer;
   animatedStyle: AnimatedStyle;
   pointerEvents: 'box-none' | 'none';
+  onMediaSelect: (mediaId: string) => void;
 }
 
 export function MediaViewerBottomBar({
@@ -26,6 +27,7 @@ export function MediaViewerBottomBar({
   player,
   animatedStyle,
   pointerEvents,
+  onMediaSelect,
 }: MediaViewerBottomBarProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
@@ -103,10 +105,12 @@ export function MediaViewerBottomBar({
               style={styles.thumbnailStrip}
               contentContainerStyle={{ gap: theme.spacing.xs }}
               renderItem={({ item }) => (
-                <MediaThumbnail
-                  media={item}
-                  isActive={item.id === currentMediaId}
-                />
+                <Pressable onPress={() => onMediaSelect(item.id)}>
+                  <MediaThumbnail
+                    media={item}
+                    isActive={item.id === currentMediaId}
+                  />
+                </Pressable>
               )}
             />
           )}

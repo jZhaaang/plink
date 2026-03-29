@@ -5,6 +5,7 @@ import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
 import { View, useWindowDimensions, StatusBar, Pressable } from 'react-native';
 import {
   GestureViewer,
+  useGestureViewerController,
   useGestureViewerEvent,
   useGestureViewerState,
 } from 'react-native-gesture-image-viewer';
@@ -138,6 +139,7 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
   const { posts, allMedia, fetchNextPage, hasNextPage } = useLinkPosts(linkId);
   const { width, height } = useWindowDimensions();
   const { currentIndex, totalCount } = useGestureViewerState();
+  const controller = useGestureViewerController();
 
   const overlayOpacity = useSharedValue(1);
   const overlayVisibleRef = useRef(true);
@@ -264,6 +266,14 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
     }
   };
 
+  const handleMediaSelect = useCallback(
+    (mediaId: string) => {
+      const index = allMedia.findIndex((m) => m.id === mediaId);
+      if (index !== -1) controller.goToIndex(index);
+    },
+    [allMedia, controller],
+  );
+
   const renderItem = useCallback(
     (item) => {
       const isActive = item.index === currentIndex;
@@ -337,6 +347,7 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
               player={currentPlayer}
               animatedStyle={overlayAnimatedStyle}
               pointerEvents={overlayPointerEvents}
+              onMediaSelect={handleMediaSelect}
             />
           </View>
         )}
