@@ -6,6 +6,10 @@ export type LinkRow = Tables<'links'>;
 export type LinkInsert = TablesInsert<'links'>;
 export type LinkUpdate = TablesUpdate<'links'>;
 
+export type LinkLocationRow = Tables<'link_locations'>;
+export type LinkLocationInsert = TablesInsert<'link_locations'>;
+export type LinkLocationUpdate = TablesUpdate<'link_locations'>;
+
 export type LinkMemberRow = Tables<'link_members'>;
 export type LinkMemberInsert = TablesInsert<'link_members'>;
 export type LinkMemberUpdate = TablesUpdate<'link_members'>;
@@ -36,6 +40,7 @@ export type LinkDetail = Link & {
   members: Profile[];
   postCount: number;
   mediaCount: number;
+  locations: LinkLocationRow[];
 };
 
 export type HomeFeedLink = LinkDetail & {

@@ -3,7 +3,8 @@ import { LinkRow, LinkInsert, LinkUpdate } from '../../models';
 
 const LINK_DETAIL_SELECT = `*,
   link_members (user_id, profiles(*)),
-  link_posts (id, link_post_media(id))` as const;
+  link_posts (id, link_post_media(id)),
+  link_locations (*)` as const;
 
 export async function getLinksByUserId(userId: string): Promise<LinkRow[]> {
   const { data, error } = await supabase

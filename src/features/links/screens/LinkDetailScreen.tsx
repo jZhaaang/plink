@@ -258,7 +258,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   }
 
-  const handleEditName = async (newName: string) => {
+  const handleEdit = async (newName: string) => {
     await linkActions.editName(newName);
     setEditModalVisible(false);
   };
@@ -519,8 +519,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           <CreateLinkModal
             visible={editModalVisible}
             initialName={linkDetail?.name ?? ''}
+            initialLocations={linkDetail?.locations ?? []}
             onClose={() => setEditModalVisible(false)}
-            onSubmit={handleEditName}
+            onSubmit={handleEdit}
           />
 
           <EditLinkBannerModal

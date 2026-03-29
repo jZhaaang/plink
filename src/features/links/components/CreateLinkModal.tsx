@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import { Button, Modal, ModalHeader, TextField } from '../../../components';
 import { StyleSheet } from 'react-native-unistyles';
+import LocationPicker, { StagedLocation } from './LocationPicker';
+import { LinkLocationRow } from '../../../lib/models';
 
 interface Props {
   visible: boolean;
   initialName?: string;
+  initialLocations?: LinkLocationRow[];
   loading?: boolean;
   onClose: () => void;
-  onSubmit: (name: string) => Promise<void>;
+  onSubmit: (name: string, locations: StagedLocation[]) => Promise<void>;
 }
 
 export default function CreateLinkModal({
   visible,
   initialName = '',
+  initialLocations = [],
   loading,
   onClose,
   onSubmit,
 }: Props) {
   const [name, setName] = useState(initialName);
+  const [locations, setLocations] =
+    useState<StagedLocation[]>(initialLocations);
   const [localLoading, setLocalLoading] = useState(false);
 
   const isEditMode = initialName !== '';
@@ -26,6 +32,7 @@ export default function CreateLinkModal({
   useEffect(() => {
     if (visible) {
       setName(initialName);
+      setLocations(initialLocations);
     }
   }, [visible, initialName]);
 
@@ -33,7 +40,7 @@ export default function CreateLinkModal({
     if (!name.trim()) return;
     setLocalLoading(true);
     try {
-      await onSubmit(name.trim());
+      await onSubmit(name.trim(), locations);
       if (!isEditMode) {
         setName('');
       }
@@ -43,20 +50,27 @@ export default function CreateLinkModal({
   };
 
   const handleClose = () => {
-    if (isEditMode) {
-      setName(initialName);
-    } else {
-      setName('');
-    }
+    setName(isEditMode ? initialName : '');
+    setLocations(isEditMode ? initialLocations : []);
     onClose();
   };
 
-  const hasChanges = name.trim() !== initialName;
+  const hasChanges =
+    name.trim() !== initialName ||
+    locations.length !== initialLocations.length ||
+    locations.some(
+      (loc, i) => loc.mapbox_id !== initialLocations[i]?.mapbox_id,
+    );
 
   return (
-    <Modal visible={visible} onClose={handleClose} animationType="slide">
+    <Modal
+      visible={visible}
+      onClose={handleClose}
+      animationType="slide"
+      scrollEnabled={false}
+    >
       <ModalHeader
-        title={isEditMode ? 'Edit Link Name' : 'Start a Link'}
+        title={isEditMode ? 'Edit Link' : 'Start a Link'}
         onClose={handleClose}
       />
 
@@ -69,6 +83,13 @@ export default function CreateLinkModal({
         maxLength={50}
         returnKeyType="done"
       />
+
+      {isEditMode && (
+        <View style={styles.locationSection}>
+          <Text style={styles.locationLabel}>Locations</Text>
+          <LocationPicker locations={locations} onChange={setLocations} />
+        </View>
+      )}
 
       <View style={styles.submitWrap}>
         <Button
@@ -84,6 +105,15 @@ export default function CreateLinkModal({
 }
 
 const styles = StyleSheet.create((theme) => ({
+  locationSection: {
+    marginTop: theme.spacing.lg,
+  },
+  locationLabel: {
+    fontSize: theme.fontSizes.xs,
+    fontWeight: theme.fontWeights.medium,
+    color: theme.colors.iconSecondary,
+    marginBottom: theme.spacing.xs,
+  },
   submitWrap: {
     marginTop: theme.spacing['2xl'],
   },
