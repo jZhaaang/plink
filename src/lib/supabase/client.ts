@@ -1,19 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
-import Constants from 'expo-constants';
 import { Database } from './types';
 import { secureStoreAdapter } from './storageAdapter';
 
-const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
-const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: secureStoreAdapter,
+export const supabase = createClient<Database>(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storage: secureStoreAdapter,
+    },
   },
-});
+);

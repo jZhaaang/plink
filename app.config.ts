@@ -6,8 +6,6 @@ export default {
   scheme: 'plink',
   version: '1.1.1',
   extra: {
-    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
-    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
     sentryDSN: process.env.SENTRY_DSN ?? '',
     posthogAPIKey: process.env.POSTHOG_API_KEY ?? '',
     eas: {
