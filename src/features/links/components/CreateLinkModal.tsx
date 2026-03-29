@@ -34,7 +34,7 @@ export default function CreateLinkModal({
       setName(initialName);
       setLocations(initialLocations);
     }
-  }, [visible, initialName]);
+  }, [visible, initialName, initialLocations]);
 
   const handleSubmit = async () => {
     if (!name.trim()) return;

@@ -55,6 +55,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
 import { useLinkPosts } from '../hooks/useLinkPosts';
+import { StagedLocation } from '../components/LocationPicker';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -202,7 +203,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   if (isOwner) {
     menuItems.push({
       icon: 'edit-2',
-      label: 'Edit Name',
+      label: 'Edit Link',
       action: () => {
         setMenuVisible(false);
         setEditModalVisible(true);
@@ -258,8 +259,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   }
 
-  const handleEdit = async (newName: string) => {
-    await linkActions.editName(newName);
+  const handleEdit = async (name: string, locations: StagedLocation[]) => {
+    await Promise.all([
+      linkDetail.name !== name && linkActions.editName(name),
+      linkActions.editLocations(locations),
+    ]);
     setEditModalVisible(false);
   };
 
@@ -516,13 +520,15 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           </DropdownMenu>
 
           {/* Edit Link Name Modal */}
-          <CreateLinkModal
-            visible={editModalVisible}
-            initialName={linkDetail?.name ?? ''}
-            initialLocations={linkDetail?.locations ?? []}
-            onClose={() => setEditModalVisible(false)}
-            onSubmit={handleEdit}
-          />
+          {editModalVisible && (
+            <CreateLinkModal
+              visible={editModalVisible}
+              initialName={linkDetail?.name ?? ''}
+              initialLocations={linkDetail?.locations ?? []}
+              onClose={() => setEditModalVisible(false)}
+              onSubmit={handleEdit}
+            />
+          )}
 
           <EditLinkBannerModal
             visible={editBannerVisible}
