@@ -98,59 +98,59 @@ export default function CreatePartyModal({
         onClose={handleClose}
       />
 
-      {/* Banner picker */}
-      <Pressable
-        onPress={chooseBanner}
-        style={({ pressed }) => ({
-          opacity: pressed ? theme.opacity.pressed : 1,
-        })}
-      >
-        <View style={styles.bannerWrap}>
-          {bannerUri ? (
-            <Image
-              source={{ uri: bannerUri }}
-              contentFit="cover"
-              style={{ width: '100%', height: '100%' }}
-            />
-          ) : (
-            <View style={styles.emptyPicker}>
-              <View style={styles.emptyPickerIcon}>
-                <MaterialIcons
-                  name="add-photo-alternate"
-                  size={theme.iconSizes.xl}
-                  color={theme.colors.gray}
+      <View style={styles.heroArea}>
+        {/* Banner picker */}
+        <Pressable onPress={chooseBanner} style={styles.bannerWrap}>
+          {({ pressed }) => (
+            <>
+              {bannerUri ? (
+                <Image
+                  source={{ uri: bannerUri }}
+                  contentFit="cover"
+                  style={{ width: '100%', height: '100%' }}
                 />
-              </View>
-            </View>
-          )}
-        </View>
-      </Pressable>
+              ) : (
+                <View style={styles.emptyPicker}>
+                  <View style={styles.emptyPickerIcon}>
+                    <MaterialIcons
+                      name="add-photo-alternate"
+                      size={theme.iconSizes.xl}
+                      color={theme.colors.gray}
+                    />
+                  </View>
+                </View>
+              )}
 
-      {/* Avatar picker */}
-      <Pressable
-        onPress={chooseAvatar}
-        style={({ pressed }) => ({
-          opacity: pressed ? theme.opacity.pressed : 1,
-        })}
-      >
-        <View style={styles.avatarWrap}>
-          {avatarUri ? (
-            <Image
-              source={{ uri: avatarUri }}
-              contentFit="cover"
-              style={{ width: '100%', height: '100%' }}
-            />
-          ) : (
-            <View style={styles.emptyPicker}>
-              <MaterialIcons
-                name="add-a-photo"
-                size={theme.iconSizes.lg}
-                color={theme.colors.gray}
-              />
-            </View>
+              {pressed && <View style={styles.pressedOverlay} />}
+            </>
           )}
-        </View>
-      </Pressable>
+        </Pressable>
+
+        {/* Avatar picker */}
+        <Pressable onPress={chooseAvatar} style={styles.avatarWrap}>
+          {({ pressed }) => (
+            <>
+              {avatarUri ? (
+                <Image
+                  source={{ uri: avatarUri }}
+                  contentFit="cover"
+                  style={{ width: '100%', height: '100%' }}
+                />
+              ) : (
+                <View style={styles.emptyPicker}>
+                  <MaterialIcons
+                    name="add-a-photo"
+                    size={theme.iconSizes.lg}
+                    color={theme.colors.gray}
+                  />
+                </View>
+              )}
+
+              {pressed && <View style={styles.pressedOverlay} />}
+            </>
+          )}
+        </Pressable>
+      </View>
 
       <View style={styles.formSection}>
         <TextField
@@ -183,6 +183,9 @@ export default function CreatePartyModal({
 }
 
 const styles = StyleSheet.create((theme) => ({
+  heroArea: {
+    paddingBottom: theme.avatarSizes.xl / 2,
+  },
   emptyPicker: {
     flex: 1,
     backgroundColor: theme.colors.lightGray,
@@ -198,6 +201,11 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSizes.sm,
     color: theme.colors.iconSecondary,
   },
+  pressedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    overflow: 'hidden',
+  },
   bannerWrap: {
     borderRadius: theme.radii.xl,
     overflow: 'hidden',
@@ -206,12 +214,13 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.border,
   },
   avatarWrap: {
+    position: 'absolute',
+    bottom: 0,
+    left: theme.spacing.lg,
     width: theme.avatarSizes.xl,
     height: theme.avatarSizes.xl,
     borderRadius: theme.radii.full,
     overflow: 'hidden',
-    marginTop: -(theme.avatarSizes.xl / 2),
-    marginLeft: theme.spacing.lg,
     borderWidth: 2,
     borderColor: theme.colors.border,
   },
