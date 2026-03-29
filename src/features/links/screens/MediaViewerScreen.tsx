@@ -12,7 +12,7 @@ import { SignedInParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native-gesture-handler';
 import { useLinkPosts } from '../hooks/useLinkPosts';
-import {
+import Animated, {
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
@@ -56,34 +56,72 @@ function ImageItem({
 }
 
 function VideoItem({
+  thumbnailUrl,
   width,
   height,
   player,
   isActive,
   onPress,
 }: MediaItemProps & {
+  thumbnailUrl: string;
   player: VideoPlayer;
   isActive: boolean;
   overlayOpacity: SharedValue<number>;
   overlayPointerEvents: 'box-none' | 'none';
 }) {
+  const [isReady, setIsReady] = useState(false);
+  const thumbnailOpacity = useSharedValue(1);
+
   useEffect(() => {
+    const sub = player.addListener('statusChange', (e) => {
+      if (e.status === 'readyToPlay') {
+        setIsReady(true);
+        thumbnailOpacity.value = withTiming(0, { duration: 200 });
+      }
+    });
+
     if (isActive) {
       player.play();
     } else {
       player.pause();
       player.currentTime = 0;
+      setIsReady(false);
+      thumbnailOpacity.value = 1;
     }
-  }, [isActive, player]);
+
+    return () => sub.remove();
+  }, [isActive, player, thumbnailOpacity]);
+
+  useEffect(() => {
+    thumbnailOpacity.value = 1;
+  }, [thumbnailUrl, thumbnailOpacity]);
+
+  const thumbnailStyle = useAnimatedStyle(() => ({
+    opacity: thumbnailOpacity.value,
+  }));
 
   return (
     <View style={{ width, height }}>
-      <VideoView
-        player={player}
-        style={{ width, height }}
-        contentFit="contain"
-        nativeControls={false}
-      />
+      {isReady && (
+        <VideoView
+          player={player}
+          style={{ width, height }}
+          contentFit="contain"
+          nativeControls={false}
+        />
+      )}
+
+      <Animated.View
+        style={[StyleSheet.absoluteFill, thumbnailStyle]}
+        pointerEvents="none"
+      >
+        <Image
+          source={thumbnailUrl}
+          style={{ width, height }}
+          contentFit="contain"
+          cachePolicy="memory-disk"
+        />
+      </Animated.View>
 
       <Pressable
         onPress={onPress}
@@ -232,6 +270,7 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
       if (item.type === 'video') {
         return (
           <VideoItem
+            thumbnailUrl={item.thumbnailUrl ?? null}
             width={width}
             height={mediaHeight}
             player={currentPlayer}
