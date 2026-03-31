@@ -19,7 +19,6 @@ import {
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
 import PostCard from '../components/PostCard';
-import CreateLinkModal from '../components/CreateLinkModal';
 import {
   EmptyState,
   Divider,
@@ -49,13 +48,12 @@ import {
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import EditLinkBannerModal from '../components/EditLinkBannerModal';
 import { useAuth } from '../../../providers/AuthProvider';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
 import { useLinkPosts } from '../hooks/useLinkPosts';
-import { StagedLocation } from '../components/LocationPicker';
+import EditLinkModal, { EditLinkChanges } from '../components/EditLinkModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -132,7 +130,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     y: number;
   } | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editBannerVisible, setEditBannerVisible] = useState(false);
 
   const imageMedia = useMemo(
     () => allMedia.filter((media) => media.type === 'image'),
@@ -209,14 +206,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         setEditModalVisible(true);
       },
     });
-    menuItems.push({
-      icon: 'image',
-      label: 'Edit Banner',
-      action: () => {
-        setMenuVisible(false);
-        setEditBannerVisible(true);
-      },
-    });
 
     if (isActive) {
       menuItems.push({
@@ -259,17 +248,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   }
 
-  const handleEdit = async (name: string, locations: StagedLocation[]) => {
-    await Promise.all([
-      linkDetail.name !== name && linkActions.editName(name),
-      linkActions.editLocations(locations),
-    ]);
+  const handleEditSave = async (changes: EditLinkChanges) => {
+    await linkActions.editLink(changes);
     setEditModalVisible(false);
-  };
-
-  const handleSaveBanner = async (croppedUri: string) => {
-    await linkActions.saveBanner(croppedUri);
-    setEditBannerVisible(false);
   };
 
   return (
@@ -532,24 +513,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             ))}
           </DropdownMenu>
 
-          {/* Edit Link Name Modal */}
-          {editModalVisible && (
-            <CreateLinkModal
-              visible={editModalVisible}
-              initialName={linkDetail?.name ?? ''}
-              initialLocations={linkDetail?.locations ?? []}
-              onClose={() => setEditModalVisible(false)}
-              onSubmit={handleEdit}
-            />
-          )}
-
-          <EditLinkBannerModal
-            visible={editBannerVisible}
-            onClose={() => setEditBannerVisible(false)}
+          <EditLinkModal
+            visible={editModalVisible}
+            link={linkDetail}
             images={imageMedia}
-            initialPath={linkDetail.banner_path}
             saving={linkActions.savingBanner}
-            onSave={handleSaveBanner}
+            onClose={() => setEditModalVisible(false)}
+            onSave={handleEditSave}
           />
 
           <UploadProgressModal visible={uploading} progress={progress} />

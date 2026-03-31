@@ -64,77 +64,60 @@ export function useLinkDetailActions({
     }
   }, [linkId, partyId, dialog, invalidate]);
 
-  const editName = useCallback(
-    async (newName: string) => {
+  const editLink = useCallback(
+    async ({
+      name,
+      bannerUri,
+      locations,
+    }: {
+      name: string;
+      bannerUri: string | null;
+      locations: StagedLocation[];
+    }) => {
+      setSavingBanner(!!bannerUri);
       try {
-        await updateLinkById(linkId, { name: newName });
+        const nameChanged = name !== linkDetail?.name;
+        const bannerChanged = !!bannerUri;
+        const locationsChanged =
+          locations.length !== linkDetail?.locations.length ||
+          locations.some(
+            (location, i) =>
+              location.mapbox_id !== linkDetail?.locations[i]?.mapbox_id,
+          );
+
+        await Promise.all([
+          nameChanged ? updateLinkById(linkId, { name }) : Promise.resolve(),
+          bannerChanged
+            ? (async () => {
+                const compressed = await compressImage(bannerUri);
+                const bannerPath = await linksStorage.upload(
+                  linkId,
+                  { type: 'banner' },
+                  compressed.uri,
+                  'image/jpeg',
+                );
+                await updateLinkById(linkId, { banner_path: bannerPath });
+              })()
+            : Promise.resolve(),
+          locationsChanged
+            ? upsertLinkLocations(linkId, locations)
+            : Promise.resolve(),
+        ]);
         trackEvent('link_updated', { link_id: linkId });
         invalidate.onLinkChanged(linkId, partyId);
         Burnt.toast({
-          title: 'Link renamed',
+          title: 'Link updated',
           preset: 'done',
           haptic: 'success',
         });
       } catch (err) {
-        logger.error('Error updating link name', { err });
-        await dialog.error('Failed to Edit Link Name', getErrorMessage(err));
-      }
-    },
-    [linkId, partyId, dialog, invalidate],
-  );
-
-  const editLocations = useCallback(
-    async (locations: StagedLocation[]) => {
-      try {
-        await upsertLinkLocations(linkId, locations);
-        trackEvent('link_updated', { link_id: linkId });
-        invalidate.onLinkChanged(linkId, partyId);
-        Burnt.toast({
-          title: 'Locations updated',
-          preset: 'done',
-          haptic: 'success',
-        });
-      } catch (err) {
-        logger.error('Error updating link locations', { err });
-        await dialog.error(
-          'Failed to Update Link Locations',
-          getErrorMessage(err),
-        );
-      }
-    },
-    [linkId, partyId, dialog, invalidate],
-  );
-
-  const saveBanner = useCallback(
-    async (croppedUri: string) => {
-      setSavingBanner(true);
-      try {
-        const compressed = await compressImage(croppedUri);
-        const bannerPath = await linksStorage.upload(
-          linkId,
-          { type: 'banner' },
-          compressed.uri,
-          'image/jpeg',
-        );
-        await updateLinkById(linkId, {
-          banner_path: bannerPath,
-          banner_crop_x: 50,
-          banner_crop_y: 42,
-        });
-        invalidate.onLinkChanged(linkId, partyId);
-        Burnt.toast({
-          title: 'Banner updated',
-          preset: 'done',
-          haptic: 'success',
-        });
-      } catch (err) {
-        logger.error('Error updating link banner', { err });
-        await dialog.error('Failed to Update Banner', getErrorMessage(err));
+        logger.error('Error updating link', { err });
+        await dialog.error('Failed to Update Link', getErrorMessage(err));
       } finally {
         setSavingBanner(false);
       }
     },
-    [linkId, partyId, dialog, invalidate],
+    [linkId, partyId, linkDetail, dialog, invalidate],
   );
 
   const deleteLinkAction = useCallback(async () => {
@@ -258,9 +241,7 @@ export function useLinkDetailActions({
 
   return {
     endLink: endLinkAction,
-    editName,
-    editLocations,
-    saveBanner,
+    editLink,
     savingBanner,
     deleteLink: deleteLinkAction,
     joinLink,
