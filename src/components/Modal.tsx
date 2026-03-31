@@ -58,14 +58,18 @@ export default function Modal({
           >
             <View style={[styles.content, contentStyle]}>
               <SafeAreaView edges={['bottom', 'left', 'right']}>
-                <ScrollView
-                  scrollEnabled={scrollEnabled}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.scrollContent}
-                >
-                  {children}
-                </ScrollView>
+                {scrollEnabled ? (
+                  <ScrollView
+                    scrollEnabled={scrollEnabled}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
+                  >
+                    {children}
+                  </ScrollView>
+                ) : (
+                  children
+                )}
               </SafeAreaView>
             </View>
           </Pressable>

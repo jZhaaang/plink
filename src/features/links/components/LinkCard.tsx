@@ -1,13 +1,14 @@
 import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
-import { Link } from '../../../lib/models';
+import { LinkDetail } from '../../../lib/models';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
 import { Card } from '../../../components';
+import { primaryLocationLabel } from '../../../lib/utils/location';
 
 interface Props {
-  link: Link;
+  link: LinkDetail;
   onPress?: (linkId: string) => void;
 }
 
@@ -20,6 +21,7 @@ function formatDate(dateString: string | null): string {
 export default function LinkCard({ link, onPress }: Props) {
   const { theme } = useUnistyles();
 
+  const locationLabel = primaryLocationLabel(link.locations);
   const isActive = !link.end_time;
 
   return (
@@ -71,11 +73,25 @@ export default function LinkCard({ link, onPress }: Props) {
           <Text style={styles.linkName} numberOfLines={1}>
             {link.name}
           </Text>
-          <Text style={styles.dateText} numberOfLines={1}>
-            {isActive
-              ? `Started ${formatDate(link.created_at)}`
-              : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
-          </Text>
+          <View style={styles.footerRow}>
+            <Text style={styles.dateText} numberOfLines={1}>
+              {isActive
+                ? `Started ${formatDate(link.created_at)}`
+                : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
+            </Text>
+            {locationLabel && (
+              <View style={styles.locationRow}>
+                <Feather
+                  name="map-pin"
+                  size={10}
+                  color="rgba(255,255,255,0.7)"
+                />
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {locationLabel}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </Card>
@@ -116,6 +132,12 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.md,
   },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing.xs,
+  },
   linkName: {
     fontSize: theme.fontSizes.base,
     fontWeight: theme.fontWeights.semibold,
@@ -126,5 +148,16 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.white,
     opacity: theme.opacity.pressed,
     marginTop: 2,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 2,
+  },
+  locationText: {
+    fontSize: theme.fontSizes.xs,
+    color: 'rgba(255,255,255,0.7)',
+    flexShrink: 1,
   },
 }));

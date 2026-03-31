@@ -1,5 +1,11 @@
 import { supabase } from '../client';
 import { PartyRow, PartyInsert, PartyUpdate } from '../../models';
+import { LINK_DETAIL_SELECT } from './links';
+
+const PARTY_DETAIL_SELECT = `*,
+  party_members (user_id, profiles (*)),
+  link_count: links (count),
+  active_link: links (${LINK_DETAIL_SELECT})` as const;
 
 export async function getPartiesByUserId(userId: string): Promise<PartyRow[]> {
   const { data, error } = await supabase
@@ -60,26 +66,10 @@ export async function deleteParty(partyId: string): Promise<void> {
   return;
 }
 
-export async function getPartyDetailsByUserId(userId: string) {
-  const { data, error } = await supabase
-    .from('party_members')
-    .select(
-      `parties (*, party_members (user_id, profiles (*)), link_count: links (count), active_link: links (*))`,
-    )
-    .eq('user_id', userId)
-    .is('parties.active_link.end_time', null);
-
-  if (error) throw error;
-
-  return data.map((d) => d.parties);
-}
-
 export async function getPartyDetailById(partyId: string) {
   const { data, error } = await supabase
     .from('parties')
-    .select(
-      `*, party_members (user_id,profiles (*)), link_count: links (count), active_link:links (*)`,
-    )
+    .select(PARTY_DETAIL_SELECT)
     .eq('id', partyId)
     .is('active_link.end_time', null)
     .single();
@@ -87,4 +77,16 @@ export async function getPartyDetailById(partyId: string) {
   if (error) throw error;
 
   return data;
+}
+
+export async function getPartyDetailsByUserId(userId: string) {
+  const { data, error } = await supabase
+    .from('party_members')
+    .select(`parties (${PARTY_DETAIL_SELECT})`)
+    .eq('user_id', userId)
+    .is('parties.active_link.end_time', null);
+
+  if (error) throw error;
+
+  return data.map((d) => d.parties);
 }

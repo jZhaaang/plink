@@ -6,13 +6,13 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { LinkRow } from '../lib/models';
+import { LinkDetail } from '../lib/models';
 import { useActiveLink } from '../features/links/hooks/useActiveLink';
 
 type UploadAction = 'camera-photo' | 'camera-video' | 'gallery' | null;
 
 type ActiveLinkContextValue = {
-  activeLink: LinkRow | null;
+  activeLink: LinkDetail | null;
   loading: boolean;
 
   createLinkVisible: boolean;

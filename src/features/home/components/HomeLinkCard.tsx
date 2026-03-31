@@ -1,9 +1,10 @@
 import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import type { HomeFeedLink } from '../../../lib/models';
 import { AvatarStack, Card, CardSection, MediaGrid } from '../../../components';
+import { primaryLocationLabel } from '../../../lib/utils/location';
 
 interface Props {
   link: HomeFeedLink;
@@ -22,6 +23,7 @@ function formatDate(dateString: string | null): string {
 export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
   const { theme } = useUnistyles();
 
+  const locationLabel = primaryLocationLabel(link.locations);
   const memberAvatarUris =
     link.members
       ?.map((m) => m.avatarUrl)
@@ -83,6 +85,18 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
               {link.media.length} {link.media.length === 1 ? 'item' : 'items'}
             </Text>
           </View>
+          {locationLabel && (
+            <View style={styles.metaItem}>
+              <Feather
+                name="map-pin"
+                size={theme.iconSizes.xs}
+                color={theme.colors.textTertiary}
+              />
+              <Text style={styles.metaText} numberOfLines={1}>
+                {locationLabel}
+              </Text>
+            </View>
+          )}
         </View>
       </CardSection>
     </Card>
@@ -120,12 +134,10 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.fontWeights.semibold,
     color: theme.colors.textPrimary,
   },
-  date: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
-  },
   footer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: theme.spacing.sm,
     gap: theme.spacing.lg,
   },

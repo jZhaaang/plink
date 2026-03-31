@@ -21,6 +21,8 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { logger } from '../../../lib/telemetry/logger';
 import { LinkDetail, LinkPostWithMedia } from '../../../lib/models';
 import { deleteBulk } from '../../../lib/media-service/client';
+import { StagedLocation } from '../components/LocationPicker';
+import { upsertLinkLocations } from '../../../lib/supabase/queries/linkLocations';
 
 type UseLinkDetailActionsParams = {
   linkId: string;
@@ -86,6 +88,32 @@ export function useLinkDetailActions({
       } catch (err) {
         logger.error('Error updating link name', { err });
         await dialog.error('Failed to Edit Link Name', getErrorMessage(err));
+      }
+    },
+    [linkId, partyId, dialog, invalidate],
+  );
+
+  const editLocations = useCallback(
+    async (locations: StagedLocation[]) => {
+      try {
+        await upsertLinkLocations(linkId, locations);
+        trackEvent('link_updated', { link_id: linkId });
+        invalidate.linkDetail(linkId);
+        invalidate.homeActiveLinks();
+        invalidate.activeLink();
+        invalidate.partyDetail(partyId);
+        invalidate.pastLinks(partyId);
+        Burnt.toast({
+          title: 'Locations updated',
+          preset: 'done',
+          haptic: 'success',
+        });
+      } catch (err) {
+        logger.error('Error updating link locations', { err });
+        await dialog.error(
+          'Failed to Update Link Locations',
+          getErrorMessage(err),
+        );
       }
     },
     [linkId, partyId, dialog, invalidate],
@@ -257,6 +285,7 @@ export function useLinkDetailActions({
   return {
     endLink: endLinkAction,
     editName,
+    editLocations,
     saveBanner,
     savingBanner,
     deleteLink: deleteLinkAction,

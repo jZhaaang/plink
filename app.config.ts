@@ -15,11 +15,13 @@ export default {
   android: {
     package: 'com.anonymous.plink',
     googleServicesFile: './google-services.json',
+    permissions: ['android.permission.ACCESS_COARSE_LOCATION'],
   },
   ios: {
     bundleIdentifier: 'com.jimmy.plink',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSLocationWhenInUseUsageDescription: 'Used to find places near you',
     },
   },
   plugins: [

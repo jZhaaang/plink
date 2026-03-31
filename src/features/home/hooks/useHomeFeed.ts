@@ -20,6 +20,7 @@ import type {
   LinkDetail,
 } from '../../../lib/models';
 import { resolveProfile } from '../../../lib/resolvers/profile';
+import { useMemo } from 'react';
 
 const PAGE_SIZE = 3;
 
@@ -50,6 +51,9 @@ export function useHomeFeed(userId: string) {
             (sum, p) => sum + p.link_post_media.length,
             0,
           );
+          const locations = [...link.link_locations].sort(
+            (a, b) => a.order_index - b.order_index,
+          );
 
           const [resolvedLink, resolvedParty, resolvedMembers] =
             await Promise.all([
@@ -77,14 +81,14 @@ export function useHomeFeed(userId: string) {
             members: resolvedMembers,
             postCount,
             mediaCount,
+            locations,
           };
 
           queryClient.setQueryData(queryKeys.links.detail(link.id), linkDetail);
 
           return {
-            ...resolvedLink,
+            ...linkDetail,
             party: resolvedParty,
-            members: resolvedMembers,
             media: allMedia,
             postCount,
             mediaCount,
@@ -117,6 +121,9 @@ export function useHomeFeed(userId: string) {
             (sum, p) => sum + p.link_post_media.length,
             0,
           );
+          const locations = [...link.link_locations].sort(
+            (a, b) => a.order_index - b.order_index,
+          );
 
           const [resolvedLink, resolvedParty, resolvedMembers] =
             await Promise.all([
@@ -137,6 +144,7 @@ export function useHomeFeed(userId: string) {
             members: resolvedMembers,
             postCount,
             mediaCount,
+            locations,
           };
 
           queryClient.setQueryData(queryKeys.links.detail(link.id), linkDetail);
@@ -161,7 +169,15 @@ export function useHomeFeed(userId: string) {
     enabled: !!userId,
   });
 
-  const feedLinks = data?.pages.flat() ?? [];
+  // deduplicate paginated links for when a link ends
+  const feedLinks = useMemo(() => {
+    const seen = new Set<string>();
+    return (data?.pages.flat() ?? []).filter((link) => {
+      if (seen.has(link.id)) return false;
+      seen.add(link.id);
+      return true;
+    });
+  }, [data?.pages]);
 
   return {
     feedLinks,

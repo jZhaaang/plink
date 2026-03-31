@@ -15,6 +15,9 @@ export function useLinkDetail(linkId: string) {
         (sum, p) => sum + p.link_post_media.length,
         0,
       );
+      const locations = [...rawLink.link_locations].sort(
+        (a, b) => a.order_index - b.order_index,
+      );
 
       if (!rawLink) {
         throw new Error('Link not found');
@@ -39,6 +42,7 @@ export function useLinkDetail(linkId: string) {
         members: resolvedMembers,
         postCount,
         mediaCount,
+        locations,
       };
     },
     enabled: !!linkId,

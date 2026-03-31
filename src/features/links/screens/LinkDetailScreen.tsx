@@ -55,6 +55,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
 import { useLinkPosts } from '../hooks/useLinkPosts';
+import { StagedLocation } from '../components/LocationPicker';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -202,7 +203,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   if (isOwner) {
     menuItems.push({
       icon: 'edit-2',
-      label: 'Edit Name',
+      label: 'Edit Link',
       action: () => {
         setMenuVisible(false);
         setEditModalVisible(true);
@@ -258,8 +259,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   }
 
-  const handleEditName = async (newName: string) => {
-    await linkActions.editName(newName);
+  const handleEdit = async (name: string, locations: StagedLocation[]) => {
+    await Promise.all([
+      linkDetail.name !== name && linkActions.editName(name),
+      linkActions.editLocations(locations),
+    ]);
     setEditModalVisible(false);
   };
 
@@ -331,12 +335,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           : `${startFormatted.date} — ${endFormatted.date}`}
                       </Text>
                     </View>
-                    <View
-                      style={[
-                        styles.infoRow,
-                        { marginBottom: theme.spacing.md },
-                      ]}
-                    >
+                    <View style={styles.infoRow}>
                       <Feather
                         name="clock"
                         size={theme.iconSizes.sm}
@@ -348,6 +347,24 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
                       </Text>
                     </View>
+                    {linkDetail.locations.length > 0 && (
+                      <View
+                        style={[styles.infoRow, { alignItems: 'flex-start' }]}
+                      >
+                        <Feather
+                          name="map-pin"
+                          size={theme.iconSizes.sm}
+                          color={theme.colors.gray}
+                        />
+                        <View style={{ flex: 1 }}>
+                          {linkDetail.locations.map((location) => (
+                            <Text key={location.id} style={styles.infoText}>
+                              {location.name}
+                            </Text>
+                          ))}
+                        </View>
+                      </View>
+                    )}
 
                     {/* Members row */}
                     <View style={[styles.membersRow]}>
@@ -516,12 +533,15 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           </DropdownMenu>
 
           {/* Edit Link Name Modal */}
-          <CreateLinkModal
-            visible={editModalVisible}
-            initialName={linkDetail?.name ?? ''}
-            onClose={() => setEditModalVisible(false)}
-            onSubmit={handleEditName}
-          />
+          {editModalVisible && (
+            <CreateLinkModal
+              visible={editModalVisible}
+              initialName={linkDetail?.name ?? ''}
+              initialLocations={linkDetail?.locations ?? []}
+              onClose={() => setEditModalVisible(false)}
+              onSubmit={handleEdit}
+            />
+          )}
 
           <EditLinkBannerModal
             visible={editBannerVisible}

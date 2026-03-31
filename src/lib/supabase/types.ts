@@ -79,6 +79,50 @@ export type Database = {
           },
         ];
       };
+      link_locations: {
+        Row: {
+          address: string | null;
+          created_at: string | null;
+          id: string;
+          latitude: number;
+          link_id: string;
+          longitude: number;
+          mapbox_id: string | null;
+          name: string;
+          order_index: number;
+        };
+        Insert: {
+          address?: string | null;
+          created_at?: string | null;
+          id?: string;
+          latitude: number;
+          link_id: string;
+          longitude: number;
+          mapbox_id?: string | null;
+          name: string;
+          order_index?: number;
+        };
+        Update: {
+          address?: string | null;
+          created_at?: string | null;
+          id?: string;
+          latitude?: number;
+          link_id?: string;
+          longitude?: number;
+          mapbox_id?: string | null;
+          name?: string;
+          order_index?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'link_locations_link_id_fkey';
+            columns: ['link_id'];
+            isOneToOne: false;
+            referencedRelation: 'links';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       link_members: {
         Row: {
           created_at: string | null;
