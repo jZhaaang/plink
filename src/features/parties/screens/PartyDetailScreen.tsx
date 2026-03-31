@@ -210,7 +210,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       await deleteParty(partyId);
       trackEvent('party_deleted', { party_id: partyId });
-      invalidate.onPartyChanged(partyId);
+      invalidate.onPartyDeleted(partyId);
       Burnt.toast({
         title: 'Party deleted',
         preset: 'done',

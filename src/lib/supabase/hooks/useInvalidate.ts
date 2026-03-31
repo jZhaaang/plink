@@ -91,10 +91,39 @@ export function useInvalidate() {
       base.activity();
     },
 
+    onLinkDeleted: (linkId: string, partyId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.links.detail(linkId),
+        refetchType: 'none',
+      });
+      base.partyDetail(partyId);
+      base.pastLinks(partyId);
+      base.homeFeed();
+      base.homeActiveLinks();
+      base.activeLink();
+      base.activity();
+    },
+
     onPartyChanged: (partyId: string) => {
       base.parties();
       base.partyDetail(partyId);
       base.pastLinks(partyId);
+      base.homeFeed();
+      base.homeActiveLinks();
+      base.activeLink();
+      base.activity();
+    },
+
+    onPartyDeleted: (partyId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.parties.detail(partyId),
+        refetchType: 'none',
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.parties.pastLinks(partyId),
+        refetchType: 'none',
+      });
+      base.parties();
       base.homeFeed();
       base.homeActiveLinks();
       base.activeLink();

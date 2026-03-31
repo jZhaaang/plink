@@ -141,7 +141,7 @@ export function useLinkDetailActions({
       trackEvent('media_deleted', {
         link_id: linkId,
       });
-      invalidate.onLinkChanged(linkId, partyId);
+      invalidate.onLinkDeleted(linkId, partyId);
       Burnt.toast({ title: 'Link deleted', preset: 'done', haptic: 'success' });
       onDelete?.();
     } catch (err) {
