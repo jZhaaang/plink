@@ -44,7 +44,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
 import CameraModal from '../components/CameraModal';
 import {
-  CommonActions,
+  StackActions,
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
@@ -87,17 +87,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     linkDetail,
     posts,
     onDelete: () => {
-      const parentNavigation = navigation.getParent();
-      if (parentNavigation) {
-        parentNavigation.dispatch(
-          CommonActions.navigate('Party', {
-            screen: 'PartyDetail',
-            params: { partyId },
-          }),
-        );
-        return;
+      const state = navigation.getState();
+      const isStackRoot = state.index === 0;
+
+      if (!isStackRoot) {
+        navigation.dispatch(StackActions.pop());
+      } else {
+        navigation.getParent()?.navigate('Party', {
+          screen: 'PartyDetail',
+          params: { partyId },
+        });
       }
-      navigation.goBack();
     },
     onLeave: () => navigation.goBack(),
   });
