@@ -1,5 +1,5 @@
 import { Tables, TablesInsert, TablesUpdate } from '../supabase/types';
-import { Link } from './link';
+import { LinkDetail } from './link';
 import { Profile } from './profile';
 
 export type PartyRow = Tables<'parties'>;
@@ -16,6 +16,6 @@ export type Party = PartyRow & {
 };
 export type PartyDetail = Party & {
   members: Profile[];
-  activeLink: Link | null;
+  activeLink: LinkDetail | null;
   linkCount: number;
 };

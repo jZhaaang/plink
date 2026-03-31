@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveLinkContext } from '../providers/ActiveLinkProvider';
 import { Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinkRow } from '../lib/models';
+import { LinkDetail } from '../lib/models';
 import { NavigationState, PartialState, Route } from '@react-navigation/native';
 import Animated, {
   interpolate,
@@ -91,7 +91,7 @@ export default function CustomTabBar({
 
   const handleCenterPress = (
     navigation: BottomTabBarProps['navigation'],
-    activeLink: LinkRow | null,
+    activeLink: LinkDetail | null,
   ) => {
     if (activeLink) {
       navigation.navigate('Link', {

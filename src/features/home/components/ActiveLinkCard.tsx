@@ -5,6 +5,7 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { ActiveFeedLink } from '../../../lib/models';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import { Button, Card, CardSection } from '../../../components';
+import { primaryLocationLabel } from '../../../lib/utils/location';
 
 interface Props {
   peek?: boolean;
@@ -23,6 +24,7 @@ export default function ActiveLinkCard({
 }: Props) {
   const { theme } = useUnistyles();
 
+  const locationLabel = primaryLocationLabel(link.locations);
   const SCREEN_WIDTH = Dimensions.get('window').width;
   const HORIZONTAL_PADDING = theme.spacing.md * 2;
 
@@ -62,6 +64,19 @@ export default function ActiveLinkCard({
               with {link.party.name}
             </Text>
           </View>
+
+          {locationLabel && (
+            <View style={styles.locationWrap}>
+              <MaterialIcons
+                name="place"
+                size={theme.iconSizes.xs}
+                color={theme.colors.textTertiary}
+              />
+              <Text style={styles.locationText} numberOfLines={2}>
+                {locationLabel}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Bottom row */}
@@ -131,6 +146,21 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  locationWrap: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
+    gap: 2,
+    maxWidth: 150,
+    marginLeft: theme.spacing.sm,
+  },
+  locationText: {
+    fontSize: theme.fontSizes.xs,
+    color: theme.colors.textTertiary,
+    textAlign: 'right',
+    flexShrink: 1,
+  },
+
   textWrap: {
     flex: 1,
     marginLeft: theme.spacing.sm,

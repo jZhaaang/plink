@@ -335,12 +335,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           : `${startFormatted.date} — ${endFormatted.date}`}
                       </Text>
                     </View>
-                    <View
-                      style={[
-                        styles.infoRow,
-                        { marginBottom: theme.spacing.md },
-                      ]}
-                    >
+                    <View style={styles.infoRow}>
                       <Feather
                         name="clock"
                         size={theme.iconSizes.sm}
@@ -352,6 +347,24 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
                       </Text>
                     </View>
+                    {linkDetail.locations.length > 0 && (
+                      <View
+                        style={[styles.infoRow, { alignItems: 'flex-start' }]}
+                      >
+                        <Feather
+                          name="map-pin"
+                          size={theme.iconSizes.sm}
+                          color={theme.colors.gray}
+                        />
+                        <View style={{ flex: 1 }}>
+                          {linkDetail.locations.map((location) => (
+                            <Text key={location.id} style={styles.infoText}>
+                              {location.name}
+                            </Text>
+                          ))}
+                        </View>
+                      </View>
+                    )}
 
                     {/* Members row */}
                     <View style={[styles.membersRow]}>

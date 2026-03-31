@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { PartyDetail } from '../../../lib/models';
+import { LinkDetail, PartyDetail } from '../../../lib/models';
 import { resolveParty } from '../../../lib/resolvers/party';
 import { resolveProfile } from '../../../lib/resolvers/profile';
 import { getPartyDetailsByUserId } from '../../../lib/supabase/queries/parties';
@@ -19,7 +19,7 @@ export function usePartyDetailList(userId: string | null) {
 
       const partyDetails: PartyDetail[] = await Promise.all(
         rawParties.map(async (party) => {
-          const activeRaw = party.active_link?.[0] ?? null;
+          const rawActiveLink = party.active_link?.[0] ?? null;
 
           const [resolvedParty, resolvedMembers, resolvedActiveLink] =
             await Promise.all([
@@ -27,7 +27,50 @@ export function usePartyDetailList(userId: string | null) {
               Promise.all(
                 party.party_members.map((pm) => resolveProfile(pm.profiles)),
               ),
-              activeRaw ? resolveLink(activeRaw) : Promise.resolve(null),
+              rawActiveLink
+                ? (async (): Promise<LinkDetail> => {
+                    const postCount = rawActiveLink.link_posts.length;
+                    const mediaCount = rawActiveLink.link_posts.reduce(
+                      (sum, p) => sum + p.link_post_media.length,
+                      0,
+                    );
+                    const locations = [...rawActiveLink.link_locations].sort(
+                      (a, b) => a.order_index - b.order_index,
+                    );
+
+                    const [resolvedLink, resolvedMembers] = await Promise.all([
+                      resolveLink(rawActiveLink),
+                      Promise.all(
+                        rawActiveLink.link_members.map((lm) =>
+                          resolveProfile(lm.profiles),
+                        ),
+                      ),
+                    ]);
+
+                    const avatarUrls = resolvedMembers.map((m) => m.avatarUrl);
+
+                    const prefetchUrls = avatarUrls.filter(
+                      (url): url is string =>
+                        typeof url === 'string' && url.length > 0,
+                    );
+                    prefetchUrls.map((url) => Image.prefetch(url));
+
+                    const linkDetail: LinkDetail = {
+                      ...resolvedLink,
+                      members: resolvedMembers,
+                      postCount,
+                      mediaCount,
+                      locations,
+                    };
+
+                    queryClient.setQueryData(
+                      queryKeys.links.detail(rawActiveLink.id),
+                      linkDetail,
+                    );
+
+                    return linkDetail;
+                  })()
+                : Promise.resolve(null),
             ]);
 
           const avatarUrls = resolvedMembers.map((m) => m.avatarUrl);

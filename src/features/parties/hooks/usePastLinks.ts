@@ -28,6 +28,9 @@ export function usePastLinks(partyId: string) {
               (sum, p) => sum + p.link_post_media.length,
               0,
             );
+            const locations = [...link.link_locations].sort(
+              (a, b) => a.order_index - b.order_index,
+            );
 
             const [resolvedLink, resolvedMembers] = await Promise.all([
               resolveLink(link),
@@ -48,6 +51,7 @@ export function usePastLinks(partyId: string) {
               members: resolvedMembers,
               postCount,
               mediaCount,
+              locations,
             };
 
             queryClient.setQueryData(

@@ -1,7 +1,7 @@
 import { supabase } from '../client';
 import { LinkRow, LinkInsert, LinkUpdate } from '../../models';
 
-const LINK_DETAIL_SELECT = `*,
+export const LINK_DETAIL_SELECT = `*,
   link_members (user_id, profiles(*)),
   link_posts (id, link_post_media(id)),
   link_locations (*)` as const;
@@ -40,19 +40,21 @@ export async function getLinksByPartyId(partyId: string): Promise<LinkRow[]> {
   return data;
 }
 
-export async function getActiveLinkByUserId(
-  userId: string,
-): Promise<LinkRow | null> {
+export async function getActiveLinkDetailByUserId(userId: string) {
   const { data, error } = await supabase
     .from('link_members')
-    .select('links!inner (*)')
+    .select(`links!inner (${LINK_DETAIL_SELECT})`)
     .eq('user_id', userId)
-    .is('links.end_time', null);
+    .is('links.end_time', null)
+    .limit(1)
+    .single();
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
 
-  if (!data || data.length === 0 || !data[0]?.links) return null;
-  return data[0].links;
+  return data?.links ?? null;
 }
 
 export async function getLinkDetailById(linkId: string) {
@@ -128,7 +130,7 @@ export async function getRecentLinksByUserId(
   const { data, error } = await supabase
     .from('links')
     .select(
-      `*, link_members (user_id, profiles (*)), link_posts (link_post_media (*)), parties!inner (*)`,
+      `*, link_members (user_id, profiles (*)), link_posts (link_post_media (*)), link_locations (*), parties!inner (*)`,
     )
     .in('id', linkIds)
     .not('end_time', 'is', null)
