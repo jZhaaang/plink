@@ -253,9 +253,7 @@ export function useStagedMediaActions({
         link_id: linkId,
         count: successes.length,
       });
-      invalidate.linkDetail(linkId);
-      invalidate.partyDetail(partyId);
-      invalidate.activity();
+      invalidate.onLinkChanged(linkId, partyId);
       setStagedAssets([]);
     } catch (err) {
       const originalErr = err;

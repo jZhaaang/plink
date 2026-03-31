@@ -111,11 +111,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
       if (link) {
         setCreateModalVisible(false);
         trackEvent('link_created', { party_id: partyId, link_id: link.id });
-        invalidate.partyDetail(partyId);
-        invalidate.homeActiveLinks();
-        invalidate.activeLink();
-        invalidate.parties();
-        invalidate.activity();
+        invalidate.onPartyChanged(partyId);
         Burnt.toast({
           title: 'Link started!',
           preset: 'done',
@@ -176,8 +172,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       setEditModalVisible(false);
       trackEvent('party_updated', { party_id: partyId });
-      invalidate.partyDetail(partyId);
-      invalidate.parties();
+      invalidate.onPartyChanged(partyId);
       Burnt.toast({
         title: 'Party updated',
         preset: 'done',
@@ -215,11 +210,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
 
       await deleteParty(partyId);
       trackEvent('party_deleted', { party_id: partyId });
-      invalidate.parties();
-      invalidate.homeFeed();
-      invalidate.homeActiveLinks();
-      invalidate.activeLink();
-      invalidate.activity();
+      invalidate.onPartyChanged(partyId);
       Burnt.toast({
         title: 'Party deleted',
         preset: 'done',
@@ -244,11 +235,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     try {
       await deletePartyMember(partyId, userId);
       trackEvent('party_left', { partyId: partyId });
-      invalidate.parties();
-      invalidate.partyDetail(partyId);
-      invalidate.activity();
-      invalidate.homeActiveLinks();
-      invalidate.activeLink();
+      invalidate.onPartyChanged(partyId);
       Burnt.toast({ title: 'Left Party', preset: 'done', haptic: 'success' });
       navigation.navigate('PartyList');
     } catch (err) {
@@ -508,8 +495,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
               partyId={partyId}
               existingMemberIds={existingMemberIds}
               onSuccess={() => {
-                invalidate.partyDetail(partyId);
-                invalidate.activity();
+                invalidate.onPartyChanged(partyId);
               }}
             />
           )}

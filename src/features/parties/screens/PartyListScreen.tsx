@@ -76,7 +76,7 @@ export default function PartyListScreen({ navigation }: Props) {
 
       await updatePartyById(party.id, { banner_path: bannerPath });
       trackEvent('party_created', { party_id: party.id });
-      invalidate.parties();
+      invalidate.onPartyChanged(party.id);
       Burnt.toast({
         title: 'Party created',
         preset: 'done',

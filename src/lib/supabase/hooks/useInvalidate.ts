@@ -6,7 +6,7 @@ export function useInvalidate() {
   const queryClient = useQueryClient();
   const { userId } = useAuth();
 
-  return {
+  const base = {
     homeFeed: () => {
       if (userId) {
         queryClient.invalidateQueries({
@@ -75,6 +75,30 @@ export function useInvalidate() {
 
     all: () => {
       queryClient.invalidateQueries();
+    },
+  };
+
+  return {
+    ...base,
+
+    onLinkChanged: (linkId: string, partyId: string) => {
+      base.linkDetail(linkId);
+      base.partyDetail(partyId);
+      base.pastLinks(partyId);
+      base.homeFeed();
+      base.homeActiveLinks();
+      base.activeLink();
+      base.activity();
+    },
+
+    onPartyChanged: (partyId: string) => {
+      base.parties();
+      base.partyDetail(partyId);
+      base.pastLinks(partyId);
+      base.homeFeed();
+      base.homeActiveLinks();
+      base.activeLink();
+      base.activity();
     },
   };
 }
