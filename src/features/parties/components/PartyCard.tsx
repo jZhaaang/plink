@@ -82,7 +82,12 @@ export default function PartyCard({
         )}
 
         <View style={styles.infoPill}>
-          <Text variant="headingMd" color="primary" numberOfLines={1}>
+          <Text
+            variant="headingMd"
+            color="primary"
+            style={{ flex: 1 }}
+            numberOfLines={1}
+          >
             {name}
           </Text>
           {memberCount > 0 && (
@@ -139,11 +144,5 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
-  },
-  partyName: {
-    flex: 1,
-    fontSize: theme.fontSizes.base,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
   },
 }));
