@@ -394,7 +394,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                   ))}
                 </ScrollView>
 
-                <Divider />
+                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
 
                 {/* Active Link */}
                 <View style={styles.section}>
@@ -545,7 +545,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   membersList: {
     paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
     gap: theme.spacing.md,
   },
   invitePill: {
