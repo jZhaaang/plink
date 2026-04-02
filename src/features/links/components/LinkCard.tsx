@@ -1,10 +1,10 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { LinkDetail } from '../../../lib/models';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
-import { Card } from '../../../components';
+import { Card, Text } from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
 
 interface Props {
@@ -64,17 +64,19 @@ export default function LinkCard({ link, onPress }: Props) {
         {isActive && (
           <View style={styles.badgeWrap}>
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>Active</Text>
+              <Text variant="labelSm" color="inverse">
+                Active
+              </Text>
             </View>
           </View>
         )}
 
         <View style={styles.footer}>
-          <Text style={styles.linkName} numberOfLines={1}>
+          <Text variant="headingMd" color="inverse" numberOfLines={1}>
             {link.name}
           </Text>
           <View style={styles.footerRow}>
-            <Text style={styles.dateText} numberOfLines={1}>
+            <Text variant="bodySm" color="inverseMuted" numberOfLines={1}>
               {isActive
                 ? `Started ${formatDate(link.created_at)}`
                 : `${formatDate(link.created_at)} - ${formatDate(link.end_time)}`}
@@ -86,7 +88,12 @@ export default function LinkCard({ link, onPress }: Props) {
                   size={10}
                   color="rgba(255,255,255,0.7)"
                 />
-                <Text style={styles.locationText} numberOfLines={1}>
+                <Text
+                  variant="bodySm"
+                  color="inverseMuted"
+                  style={styles.locationText}
+                  numberOfLines={1}
+                >
                   {locationLabel}
                 </Text>
               </View>
@@ -119,11 +126,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.full,
     backgroundColor: theme.colors.badgeActive,
   },
-  badgeText: {
-    fontSize: theme.fontSizes.xs,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textInverse,
-  },
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -138,17 +140,6 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'space-between',
     marginTop: theme.spacing.xs,
   },
-  linkName: {
-    fontSize: theme.fontSizes.base,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textInverse,
-  },
-  dateText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.white,
-    opacity: theme.opacity.pressed,
-    marginTop: 2,
-  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -156,8 +147,6 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: 2,
   },
   locationText: {
-    fontSize: theme.fontSizes.xs,
-    color: 'rgba(255,255,255,0.7)',
     flexShrink: 1,
   },
 }));

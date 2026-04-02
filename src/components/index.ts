@@ -20,3 +20,4 @@ export { default as AnimatedListItem } from './AnimatedListItem';
 export { default as HeroBanner } from './HeroBanner';
 export { default as UploadProgressModal } from './UploadProgressModal';
 export { default as MemberAvatar } from './MemberAvatar';
+export { default as Text } from './Text';

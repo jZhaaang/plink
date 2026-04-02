@@ -1,10 +1,10 @@
-import { View, Text, Dimensions } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { ActiveFeedLink } from '../../../lib/models';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { Button, Card, CardSection } from '../../../components';
+import { Button, Card, CardSection, Text } from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
 
 interface Props {
@@ -57,10 +57,10 @@ export default function ActiveLinkCard({
           )}
 
           <View style={styles.textWrap}>
-            <Text style={styles.linkName} numberOfLines={1}>
+            <Text variant="headingSm" color="primary" numberOfLines={1}>
               {link.name}
             </Text>
-            <Text style={styles.partyName} numberOfLines={1}>
+            <Text variant="bodySm" color="secondary" numberOfLines={1}>
               with {link.party.name}
             </Text>
           </View>
@@ -72,7 +72,12 @@ export default function ActiveLinkCard({
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.locationText} numberOfLines={2}>
+              <Text
+                variant="bodySm"
+                color="tertiary"
+                style={styles.locationText}
+                numberOfLines={2}
+              >
                 {locationLabel}
               </Text>
             </View>
@@ -88,7 +93,7 @@ export default function ActiveLinkCard({
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText}>
+              <Text variant="bodySm" color="tertiary">
                 {formatRelativeTime(link.created_at)}
               </Text>
             </View>
@@ -98,7 +103,9 @@ export default function ActiveLinkCard({
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText}>{link.members.length}</Text>
+              <Text variant="bodySm" color="tertiary">
+                {link.members.length}
+              </Text>
             </View>
             <View style={styles.metaItem}>
               <MaterialIcons
@@ -106,7 +113,9 @@ export default function ActiveLinkCard({
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText}>{link.mediaCount}</Text>
+              <Text variant="bodySm" color="tertiary">
+                {link.mediaCount}
+              </Text>
             </View>
           </View>
 
@@ -155,24 +164,12 @@ const styles = StyleSheet.create((theme) => ({
     marginLeft: theme.spacing.sm,
   },
   locationText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
     textAlign: 'right',
     flexShrink: 1,
   },
-
   textWrap: {
     flex: 1,
     marginLeft: theme.spacing.sm,
-  },
-  linkName: {
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  partyName: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textSecondary,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -188,9 +185,5 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
-  },
-  metaText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
   },
 }));

@@ -1,4 +1,5 @@
-import { View, Text, ViewProps, ViewStyle } from 'react-native';
+import { View, ViewProps, ViewStyle } from 'react-native';
+import { Text } from './';
 import { StyleSheet } from 'react-native-unistyles';
 
 interface SectionHeaderProps extends Omit<ViewProps, 'style'> {
@@ -18,12 +19,14 @@ export default function SectionHeader({
   return (
     <View {...rest} style={[styles.container, style]}>
       <View style={styles.left}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text variant="headingMd" color="primary" numberOfLines={1}>
           {title}
         </Text>
         {count != null && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{count}</Text>
+            <Text variant="labelSm" color="secondary">
+              {count}
+            </Text>
           </View>
         )}
       </View>
@@ -42,21 +45,11 @@ const styles = StyleSheet.create((theme) => ({
   left: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  title: {
-    fontSize: theme.fontSizes.base,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-    marginRight: theme.spacing.sm,
+    gap: theme.spacing.sm,
   },
   badge: {
     backgroundColor: theme.colors.surfacePressed,
     borderRadius: theme.radii.full,
     paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.iconSecondary,
   },
 }));

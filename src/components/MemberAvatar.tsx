@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Text } from './';
 import { Image } from 'expo-image';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Profile } from '../lib/models';
@@ -20,11 +21,11 @@ export default function MemberAvatar({ member, size }: Props) {
         style={styles.avatar(avatarSize)}
       />
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>
+        <Text variant="labelMd" color="primary">
           {member.name ?? member.username ?? 'Unknown'}
         </Text>
         {member.username && (
-          <Text style={styles.username} numberOfLines={1}>
+          <Text variant="bodySm" color="tertiary">
             @{member.username}
           </Text>
         )}
@@ -45,19 +46,5 @@ const styles = StyleSheet.create((theme) => ({
   }),
   info: {
     marginLeft: theme.spacing.md,
-    flex: 1,
-  },
-  name: {
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.medium,
-    color: theme.colors.textPrimary,
-    marginTop: theme.spacing.xs,
-    textAlign: 'center',
-  },
-  username: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
-    textAlign: 'center',
-    marginTop: 1,
   },
 }));

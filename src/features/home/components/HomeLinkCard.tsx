@@ -1,9 +1,15 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import type { HomeFeedLink } from '../../../lib/models';
-import { AvatarStack, Card, CardSection, MediaGrid } from '../../../components';
+import {
+  AvatarStack,
+  Card,
+  CardSection,
+  MediaGrid,
+  Text,
+} from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
 
 interface Props {
@@ -52,10 +58,10 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
           )}
 
           <View style={styles.headerText}>
-            <Text style={styles.linkName} numberOfLines={1}>
+            <Text variant="headingMd" color="primary" numberOfLines={1}>
               {link.name}
             </Text>
-            <Text style={styles.partyName} numberOfLines={1}>
+            <Text variant="bodySm" color="secondary" numberOfLines={1}>
               with {link.party.name} on {formatDate(link.created_at)}
             </Text>
           </View>
@@ -81,7 +87,7 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
         {/* Footer metadata */}
         <View style={styles.footer}>
           <View style={styles.metaItem}>
-            <Text style={styles.metaText}>
+            <Text variant="bodySm" color="tertiary">
               {link.media.length} {link.media.length === 1 ? 'item' : 'items'}
             </Text>
           </View>
@@ -92,7 +98,7 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText} numberOfLines={1}>
+              <Text variant="bodySm" color="tertiary" numberOfLines={1}>
                 {locationLabel}
               </Text>
             </View>

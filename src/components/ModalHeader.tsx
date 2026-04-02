@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
+import { Text } from './';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface Props {
@@ -20,8 +21,14 @@ export default function ModalHeader({
   return (
     <View style={styles.header}>
       <View style={styles.titleGroup}>
-        <Text style={styles.title}>{title}</Text>
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        <Text variant="headingLg" color="primary">
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text variant="bodyMd" color="tertiary">
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
 
       <Pressable
@@ -50,16 +57,6 @@ const styles = StyleSheet.create((theme) => ({
   titleGroup: {
     flex: 1,
     marginRight: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textTertiary,
-    marginTop: 2,
   },
   closeCircle: {
     width: 36,

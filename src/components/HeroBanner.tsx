@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { View, Text, Pressable, GestureResponderEvent } from 'react-native';
+import { View, Pressable, GestureResponderEvent } from 'react-native';
+import { Text } from './';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -37,7 +38,11 @@ export default function HeroBanner({
             size={theme.iconSizes.lg}
             color={theme.colors.gray}
           />
-          {emptyHint && <Text style={styles.emptyBannerText}>{emptyHint}</Text>}
+          {emptyHint && (
+            <Text variant="bodyMd" color="tertiary">
+              {emptyHint}
+            </Text>
+          )}
         </View>
       );
     }
@@ -175,10 +180,6 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.sm,
-  },
-  emptyBannerText: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.iconSecondary,
   },
   overlayContent: {
     position: 'absolute',

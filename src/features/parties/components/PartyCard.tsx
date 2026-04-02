@@ -1,9 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { AvatarStack, Card } from '../../../components';
+import { AvatarStack, Card, Text } from '../../../components';
 
 interface Props {
   name: string;
@@ -73,12 +73,16 @@ export default function PartyCard({
           />
         ) : (
           <View style={styles.partyAvatar}>
-            <MaterialIcons name="group" size={18} color={theme.colors.gray} />
+            <MaterialIcons
+              name="group"
+              size={theme.iconSizes.md}
+              color={theme.colors.gray}
+            />
           </View>
         )}
 
         <View style={styles.infoPill}>
-          <Text style={styles.partyName} numberOfLines={1}>
+          <Text variant="headingMd" color="primary" numberOfLines={1}>
             {name}
           </Text>
           {memberCount > 0 && (

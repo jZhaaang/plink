@@ -1,6 +1,7 @@
-import { View, Text, ViewProps, ViewStyle } from 'react-native';
+import { View, ViewProps, ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { Text } from './';
 
 interface EmptyStateProps extends Omit<ViewProps, 'style'> {
   icon?: keyof typeof Feather.glyphMap;
@@ -31,8 +32,14 @@ export default function EmptyState({
           />
         </View>
       )}
-      <Text style={styles.title}>{title}</Text>
-      {message && <Text style={styles.message}>{message}</Text>}
+      <Text variant="labelMd" color="secondary">
+        {title}
+      </Text>
+      {message && (
+        <Text variant="bodySm" color="tertiary">
+          {message}
+        </Text>
+      )}
       {action && <View style={styles.actionWrapper}>{action}</View>}
     </View>
   );
@@ -49,18 +56,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.full,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
-  },
-  title: {
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.medium,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-  },
-  message: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
-    textAlign: 'center',
-    marginTop: theme.spacing.xs,
   },
   actionWrapper: {
     marginTop: theme.spacing.lg,
