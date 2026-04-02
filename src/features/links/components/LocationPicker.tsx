@@ -15,6 +15,7 @@ import {
 } from '../../../lib/mapbox/placeSearch';
 import * as Location from 'expo-location';
 import { randomUUID } from 'expo-crypto';
+import { Row, Stack } from '../../../components';
 
 export type StagedLocation = {
   name: string;
@@ -130,10 +131,10 @@ export default function LocationPicker({
   };
 
   return (
-    <View>
+    <Stack gap="sm">
       {/* Staged locations */}
       {locations.map((loc, i) => (
-        <View key={i} style={styles.locationRow}>
+        <Row key={i} align="center" gap="sm">
           <View style={styles.pinWrap}>
             <Feather
               name="map-pin"
@@ -141,7 +142,7 @@ export default function LocationPicker({
               color={theme.colors.primary}
             />
           </View>
-          <View style={styles.locationInfo}>
+          <Stack flex={1}>
             <Text style={styles.locationName} numberOfLines={1}>
               {loc.name}
             </Text>
@@ -150,7 +151,7 @@ export default function LocationPicker({
                 {loc.address}
               </Text>
             )}
-          </View>
+          </Stack>
           <Pressable onPress={() => handleRemove(i)} hitSlop={10}>
             <Feather
               name="x"
@@ -158,13 +159,15 @@ export default function LocationPicker({
               color={theme.colors.iconSecondary}
             />
           </Pressable>
-        </View>
+        </Row>
       ))}
 
       {/* Search */}
       {isSearching ? (
         <View style={styles.searchWrap}>
-          <View
+          <Row
+            align="center"
+            gap="sm"
             style={styles.searchInput}
             onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}
           >
@@ -197,7 +200,7 @@ export default function LocationPicker({
                 />
               </Pressable>
             )}
-          </View>
+          </Row>
 
           {/* Results */}
           {results.length > 0 && (
@@ -243,7 +246,7 @@ export default function LocationPicker({
           </Text>
         </Pressable>
       )}
-    </View>
+    </Stack>
   );
 }
 
@@ -281,14 +284,11 @@ const styles = StyleSheet.create((theme) => ({
     elevation: 10,
   },
   searchInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
     borderRadius: theme.radii.xl,
     borderWidth: 1,
     borderColor: theme.colors.borderInput,
     backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.md,
-    gap: theme.spacing.sm,
   },
   input: {
     flex: 1,

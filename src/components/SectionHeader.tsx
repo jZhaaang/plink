@@ -1,6 +1,6 @@
 import { View, ViewProps, ViewStyle } from 'react-native';
-import { Text } from './';
-import { StyleSheet } from 'react-native-unistyles';
+import { Row, Text } from './';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 interface SectionHeaderProps extends Omit<ViewProps, 'style'> {
   title: string;
@@ -16,10 +16,18 @@ export default function SectionHeader({
   style,
   ...rest
 }: SectionHeaderProps) {
+  const { theme } = useUnistyles();
+
   return (
-    <View {...rest} style={[styles.container, style]}>
-      <View style={styles.left}>
-        <Text variant="headingMd" color="primary" numberOfLines={1}>
+    <Row
+      {...rest}
+      justify="space-between"
+      align="center"
+      gap="sm"
+      style={[{ marginBottom: theme.spacing.md }, style]}
+    >
+      <Row align="center" gap="xs">
+        <Text variant="headingMd" color="primary">
           {title}
         </Text>
         {count != null && (
@@ -29,24 +37,13 @@ export default function SectionHeader({
             </Text>
           </View>
         )}
-      </View>
+      </Row>
       {action}
-    </View>
+    </Row>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.md,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-  },
   badge: {
     backgroundColor: theme.colors.surfacePressed,
     borderRadius: theme.radii.full,

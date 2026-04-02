@@ -4,8 +4,16 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { ActiveFeedLink } from '../../../lib/models';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { Button, Card, CardSection, Text } from '../../../components';
+import {
+  Button,
+  Card,
+  CardSection,
+  Row,
+  Stack,
+  Text,
+} from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
+import { addNativeProfileToHermesProfile } from '@sentry/react-native/dist/js/profiling/integration';
 
 interface Props {
   peek?: boolean;
@@ -38,7 +46,7 @@ export default function ActiveLinkCard({
     >
       <CardSection>
         {/* Top row */}
-        <View style={styles.topRow}>
+        <Row align="center">
           {link.party.avatarUrl ? (
             <Image
               source={{ uri: link.party.avatarUrl }}
@@ -56,17 +64,22 @@ export default function ActiveLinkCard({
             </View>
           )}
 
-          <View style={styles.textWrap}>
+          <Stack flex={1} style={{ marginLeft: theme.spacing.md }}>
             <Text variant="headingSm" color="primary" numberOfLines={1}>
               {link.name}
             </Text>
             <Text variant="bodySm" color="secondary" numberOfLines={1}>
               with {link.party.name}
             </Text>
-          </View>
+          </Stack>
 
           {locationLabel && (
-            <View style={styles.locationWrap}>
+            <Row
+              align="flex-start"
+              justify="flex-end"
+              gap="xs"
+              style={{ marginLeft: theme.spacing.sm }}
+            >
               <MaterialIcons
                 name="place"
                 size={theme.iconSizes.xs}
@@ -76,18 +89,18 @@ export default function ActiveLinkCard({
                 variant="bodySm"
                 color="tertiary"
                 style={styles.locationText}
-                numberOfLines={2}
+                numberOfLines={1}
               >
                 {locationLabel}
               </Text>
-            </View>
+            </Row>
           )}
-        </View>
+        </Row>
 
         {/* Bottom row */}
-        <View style={styles.bottomRow}>
-          <View style={styles.meta}>
-            <View style={styles.metaItem}>
+        <Row align="center" justify="space-between">
+          <Row align="center" gap="md">
+            <Row align="center" gap="xs">
               <MaterialIcons
                 name="access-time"
                 size={theme.iconSizes.xs}
@@ -96,8 +109,8 @@ export default function ActiveLinkCard({
               <Text variant="bodySm" color="tertiary">
                 {formatRelativeTime(link.created_at)}
               </Text>
-            </View>
-            <View style={styles.metaItem}>
+            </Row>
+            <Row align="center" gap="xs">
               <MaterialIcons
                 name="people-outline"
                 size={theme.iconSizes.xs}
@@ -106,8 +119,8 @@ export default function ActiveLinkCard({
               <Text variant="bodySm" color="tertiary">
                 {link.members.length}
               </Text>
-            </View>
-            <View style={styles.metaItem}>
+            </Row>
+            <Row align="center" gap="xs">
               <MaterialIcons
                 name="image"
                 size={theme.iconSizes.xs}
@@ -116,8 +129,8 @@ export default function ActiveLinkCard({
               <Text variant="bodySm" color="tertiary">
                 {link.mediaCount}
               </Text>
-            </View>
-          </View>
+            </Row>
+          </Row>
 
           <Button
             title={isMember ? 'Joined' : 'Join'}
@@ -129,7 +142,7 @@ export default function ActiveLinkCard({
             variant={isMember ? 'outline' : 'primary'}
             disabled={isMember}
           />
-        </View>
+        </Row>
       </CardSection>
     </Card>
   );

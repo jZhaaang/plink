@@ -8,6 +8,8 @@ import {
   Card,
   CardSection,
   MediaGrid,
+  Row,
+  Stack,
   Text,
 } from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
@@ -39,7 +41,7 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
     <Card onPress={onPress} style={styles.card}>
       <CardSection>
         {/* Header */}
-        <View style={styles.header}>
+        <Row align="center" gap="sm" style={{ marginBottom: theme.spacing.md }}>
           {link.party.avatarUrl ? (
             <Image
               source={{ uri: link.party.avatarUrl }}
@@ -57,21 +59,26 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
             </View>
           )}
 
-          <View style={styles.headerText}>
+          <Stack
+            flex={1}
+            style={{
+              marginLeft: theme.spacing.sm,
+            }}
+          >
             <Text variant="headingMd" color="primary" numberOfLines={1}>
               {link.name}
             </Text>
             <Text variant="bodySm" color="secondary" numberOfLines={1}>
               with {link.party.name} on {formatDate(link.created_at)}
             </Text>
-          </View>
+          </Stack>
 
           <AvatarStack
             avatarUris={memberAvatarUris}
             maxVisible={3}
             size={theme.avatarSizes.xs}
           />
-        </View>
+        </Row>
 
         {/* Media grid */}
         {link.media.length > 0 && (
@@ -85,14 +92,19 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
         )}
 
         {/* Footer metadata */}
-        <View style={styles.footer}>
-          <View style={styles.metaItem}>
+        <Row
+          justify="space-between"
+          align="center"
+          gap="sm"
+          style={{ marginTop: theme.spacing.sm }}
+        >
+          <Row align="center" gap="xs">
             <Text variant="bodySm" color="tertiary">
               {link.media.length} {link.media.length === 1 ? 'item' : 'items'}
             </Text>
-          </View>
+          </Row>
           {locationLabel && (
-            <View style={styles.metaItem}>
+            <Row align="center" gap="xs">
               <Feather
                 name="map-pin"
                 size={theme.iconSizes.xs}
@@ -101,9 +113,9 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
               <Text variant="bodySm" color="tertiary" numberOfLines={1}>
                 {locationLabel}
               </Text>
-            </View>
+            </Row>
           )}
-        </View>
+        </Row>
       </CardSection>
     </Card>
   );
@@ -126,34 +138,5 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.lightGray,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  headerText: {
-    flex: 1,
-    marginLeft: theme.spacing.sm,
-  },
-  partyName: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textSecondary,
-  },
-  linkName: {
-    fontSize: theme.fontSizes.base,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: theme.spacing.sm,
-    gap: theme.spacing.lg,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  metaText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
   },
 }));
