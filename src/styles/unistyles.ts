@@ -7,6 +7,6 @@ StyleSheet.configure({
     dark: darkTheme,
   },
   settings: {
-    initialTheme: 'light',
+    adaptiveThemes: true,
   },
 });

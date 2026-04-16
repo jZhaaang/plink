@@ -1,11 +1,19 @@
-import { View, Text, Dimensions } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { ActiveFeedLink } from '../../../lib/models';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
-import { Button, Card, CardSection } from '../../../components';
+import {
+  Button,
+  Card,
+  CardSection,
+  Row,
+  Stack,
+  Text,
+} from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
+import { addNativeProfileToHermesProfile } from '@sentry/react-native/dist/js/profiling/integration';
 
 interface Props {
   peek?: boolean;
@@ -38,7 +46,7 @@ export default function ActiveLinkCard({
     >
       <CardSection>
         {/* Top row */}
-        <View style={styles.topRow}>
+        <Row align="center">
           {link.party.avatarUrl ? (
             <Image
               source={{ uri: link.party.avatarUrl }}
@@ -56,59 +64,73 @@ export default function ActiveLinkCard({
             </View>
           )}
 
-          <View style={styles.textWrap}>
-            <Text style={styles.linkName} numberOfLines={1}>
+          <Stack flex={1} style={{ marginLeft: theme.spacing.md }}>
+            <Text variant="headingSm" color="primary" numberOfLines={1}>
               {link.name}
             </Text>
-            <Text style={styles.partyName} numberOfLines={1}>
+            <Text variant="bodySm" color="secondary" numberOfLines={1}>
               with {link.party.name}
             </Text>
-          </View>
+          </Stack>
 
           {locationLabel && (
-            <View style={styles.locationWrap}>
+            <Row
+              align="flex-start"
+              justify="flex-end"
+              gap="xs"
+              style={{ marginLeft: theme.spacing.sm }}
+            >
               <MaterialIcons
                 name="place"
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.locationText} numberOfLines={2}>
+              <Text
+                variant="bodySm"
+                color="tertiary"
+                style={styles.locationText}
+                numberOfLines={1}
+              >
                 {locationLabel}
               </Text>
-            </View>
+            </Row>
           )}
-        </View>
+        </Row>
 
         {/* Bottom row */}
-        <View style={styles.bottomRow}>
-          <View style={styles.meta}>
-            <View style={styles.metaItem}>
+        <Row align="center" justify="space-between">
+          <Row align="center" gap="md">
+            <Row align="center" gap="xs">
               <MaterialIcons
                 name="access-time"
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText}>
+              <Text variant="bodySm" color="tertiary">
                 {formatRelativeTime(link.created_at)}
               </Text>
-            </View>
-            <View style={styles.metaItem}>
+            </Row>
+            <Row align="center" gap="xs">
               <MaterialIcons
                 name="people-outline"
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText}>{link.members.length}</Text>
-            </View>
-            <View style={styles.metaItem}>
+              <Text variant="bodySm" color="tertiary">
+                {link.members.length}
+              </Text>
+            </Row>
+            <Row align="center" gap="xs">
               <MaterialIcons
                 name="image"
                 size={theme.iconSizes.xs}
                 color={theme.colors.textTertiary}
               />
-              <Text style={styles.metaText}>{link.mediaCount}</Text>
-            </View>
-          </View>
+              <Text variant="bodySm" color="tertiary">
+                {link.mediaCount}
+              </Text>
+            </Row>
+          </Row>
 
           <Button
             title={isMember ? 'Joined' : 'Join'}
@@ -120,7 +142,7 @@ export default function ActiveLinkCard({
             variant={isMember ? 'outline' : 'primary'}
             disabled={isMember}
           />
-        </View>
+        </Row>
       </CardSection>
     </Card>
   );
@@ -155,24 +177,12 @@ const styles = StyleSheet.create((theme) => ({
     marginLeft: theme.spacing.sm,
   },
   locationText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
     textAlign: 'right',
     flexShrink: 1,
   },
-
   textWrap: {
     flex: 1,
     marginLeft: theme.spacing.sm,
-  },
-  linkName: {
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  partyName: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textSecondary,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -188,9 +198,5 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
-  },
-  metaText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
   },
 }));

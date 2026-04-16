@@ -1,6 +1,6 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-import Modal from './Modal';
+import { Text, Modal } from './';
 
 export interface UploadProgress {
   total: number;
@@ -29,8 +29,10 @@ export default function UploadProgressModal({
       contentStyle={styles.modalContent}
     >
       <View style={styles.body}>
-        <Text style={styles.title}>Uploading Media</Text>
-        <Text style={styles.count}>
+        <Text variant="headingMd" color="primary">
+          Uploading Media
+        </Text>
+        <Text variant="bodyMd" color="tertiary">
           {progress.completed} of {progress.total}
         </Text>
 
@@ -39,7 +41,9 @@ export default function UploadProgressModal({
         </View>
 
         {progress.failed > 0 && (
-          <Text style={styles.failedText}>{progress.failed} failed</Text>
+          <Text variant="bodySm" color="error">
+            {progress.failed} failed
+          </Text>
         )}
       </View>
     </Modal>
@@ -54,17 +58,6 @@ const styles = StyleSheet.create((theme) => ({
   body: {
     alignItems: 'center',
   },
-  title: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.xs,
-  },
-  count: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textTertiary,
-    marginBottom: theme.spacing.lg,
-  },
   progressTrack: {
     width: '100%',
     height: 8,
@@ -76,10 +69,5 @@ const styles = StyleSheet.create((theme) => ({
     height: '100%',
     backgroundColor: theme.colors.primary,
     borderRadius: theme.radii.full,
-  },
-  failedText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.error,
-    marginTop: theme.spacing.sm,
   },
 }));

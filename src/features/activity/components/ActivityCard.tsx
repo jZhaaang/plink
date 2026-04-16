@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { ActivityFeedItem } from '../../../lib/models';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { activityLine } from '../hooks/useActivityFeed';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { Card, CardSection } from '../../../components';
+import { Card, CardSection, Text } from '../../../components';
 
 interface Props {
   item: ActivityFeedItem;
@@ -48,8 +48,10 @@ export default function ActivityCard({ item, onPress }: Props) {
           </View>
 
           <View style={styles.textWrap}>
-            <Text style={styles.activityText}>{activityLine(item)}</Text>
-            <Text style={styles.timeText}>
+            <Text variant="labelMd" color="primary">
+              {activityLine(item)}
+            </Text>
+            <Text variant="bodySm" color="tertiary">
               {formatRelativeTime(item.created_at)}
             </Text>
           </View>
@@ -84,16 +86,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   textWrap: {
     flex: 1,
-  },
-  activityText: {
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.medium,
-    color: theme.colors.textPrimary,
-  },
-  timeText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textPlaceholder,
-    marginTop: theme.spacing.xs,
   },
   unreadDot: {
     width: 8,

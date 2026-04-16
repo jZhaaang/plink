@@ -5,7 +5,6 @@ import {
 } from '@react-navigation/native-stack';
 import {
   View,
-  Text,
   Pressable,
   RefreshControl,
   GestureResponderEvent,
@@ -35,6 +34,9 @@ import {
   HeroBanner,
   UploadProgressModal,
   Spinner,
+  Text,
+  Row,
+  Stack,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -265,20 +267,22 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
           onBack={() => navigation.goBack()}
           onMenuPress={handleMenuPress}
         >
-          <View style={styles.heroBadgeRow}>
+          <Row align="center">
             <View
               style={[
                 styles.statusBadge,
                 isActive ? styles.statusBadgeActive : styles.statusBadgeEnded,
               ]}
             >
-              <Text style={styles.statusBadgeText}>
+              <Text variant="labelSm" color="inverse">
                 {isActive ? 'Active' : 'Ended'}
               </Text>
             </View>
-          </View>
-          <Text style={styles.heroTitle}>{linkDetail.name}</Text>
-          <Text style={styles.heroSubtitle}>
+          </Row>
+          <Text variant="displaySm" color="inverse">
+            {linkDetail.name}
+          </Text>
+          <Text variant="bodyMd" color="inverseMuted">
             {linkDetail.members.length}{' '}
             {linkDetail.members.length === 1 ? 'member' : 'members'}
           </Text>
@@ -304,82 +308,86 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 <Card>
                   <CardSection>
                     {/* Time info */}
-                    <View style={styles.infoRow}>
-                      <Feather
-                        name="calendar"
-                        size={theme.iconSizes.sm}
-                        color={theme.colors.gray}
-                      />
-                      <Text style={styles.infoText}>
-                        {isActive
-                          ? `Started ${startFormatted.date} at ${startFormatted.time}`
-                          : `${startFormatted.date} — ${endFormatted.date}`}
-                      </Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                      <Feather
-                        name="clock"
-                        size={theme.iconSizes.sm}
-                        color={theme.colors.gray}
-                      />
-                      <Text style={styles.infoText}>
-                        {isActive
-                          ? `Active for ${formatDuration(linkDetail.created_at, null)}`
-                          : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
-                      </Text>
-                    </View>
-                    {linkDetail.locations.length > 0 && (
-                      <View
-                        style={[styles.infoRow, { alignItems: 'flex-start' }]}
-                      >
+                    <Stack gap="xs" style={{ marginBottom: theme.spacing.xs }}>
+                      <Row align="center" gap="xs">
                         <Feather
-                          name="map-pin"
+                          name="calendar"
                           size={theme.iconSizes.sm}
                           color={theme.colors.gray}
                         />
-                        <View style={{ flex: 1 }}>
-                          {linkDetail.locations.map((location) => (
-                            <Text key={location.id} style={styles.infoText}>
-                              {location.name}
-                            </Text>
-                          ))}
-                        </View>
-                      </View>
-                    )}
+                        <Text variant="bodySm" color="tertiary">
+                          {isActive
+                            ? `Started ${startFormatted.date} at ${startFormatted.time}`
+                            : `${startFormatted.date} — ${endFormatted.date}`}
+                        </Text>
+                      </Row>
+                      <Row align="center" gap="xs">
+                        <Feather
+                          name="clock"
+                          size={theme.iconSizes.sm}
+                          color={theme.colors.gray}
+                        />
+                        <Text variant="bodySm" color="tertiary">
+                          {isActive
+                            ? `Active for ${formatDuration(linkDetail.created_at, null)}`
+                            : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
+                        </Text>
+                      </Row>
+                      {linkDetail.locations.length > 0 && (
+                        <Row align="flex-start" gap="xs">
+                          <Feather
+                            name="map-pin"
+                            size={theme.iconSizes.sm}
+                            color={theme.colors.gray}
+                          />
+                          <View style={{ flex: 1 }}>
+                            {linkDetail.locations.map((location) => (
+                              <Text
+                                key={location.id}
+                                variant="bodySm"
+                                color="tertiary"
+                              >
+                                {location.name}
+                              </Text>
+                            ))}
+                          </View>
+                        </Row>
+                      )}
+                    </Stack>
 
                     {/* Members row */}
-                    <View style={[styles.membersRow]}>
+                    <Row align="center" justify="space-between">
                       <AvatarStack
                         avatarUris={memberAvatars}
                         size={theme.avatarSizes.sm}
                       />
-                      <Text style={styles.infoText}>
+                      <Text variant="bodySm" color="tertiary">
                         Created by {owner?.name}
                       </Text>
-                    </View>
+                    </Row>
 
                     <Divider style={{ marginVertical: theme.spacing.sm }} />
 
                     {/* Stats row */}
-                    <View style={styles.statsRow}>
-                      <View style={styles.statItem}>
-                        <Text style={styles.statValue}>
+                    <Row justify="space-evenly">
+                      <Stack align="center">
+                        <Text variant="displaySm" color="primary">
                           {linkDetail.postCount}
                         </Text>
-                        <Text style={styles.statLabel}>
+                        <Text variant="bodySm" color="tertiary">
                           Post{linkDetail.postCount > 1 ? 's' : ''}
                         </Text>
-                      </View>
+                      </Stack>
                       <View style={styles.statDivider} />
-                      <View style={styles.statItem}>
-                        <Text style={styles.statValue}>
+                      <Stack align="center">
+                        <Text variant="displaySm" color="primary">
                           {linkDetail.mediaCount}
                         </Text>
-                        <Text style={styles.statLabel}>
+                        <Text variant="bodySm" color="tertiary">
                           Item{linkDetail.mediaCount > 1 ? 's' : ''}
                         </Text>
-                      </View>
-                    </View>
+                      </Stack>
+                    </Row>
                   </CardSection>
                 </Card>
 
@@ -392,14 +400,16 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   action={
                     linkDetail.mediaCount > 6 ? (
                       <Pressable onPress={handleSeeAllMedia}>
-                        <View style={styles.seeAllRow}>
-                          <Text style={styles.seeAllText}>See all</Text>
+                        <Row>
+                          <Text variant="labelMd" color="accent">
+                            See all
+                          </Text>
                           <Feather
                             name="chevron-right"
                             size={theme.iconSizes.sm}
                             color={theme.colors.primary}
                           />
-                        </View>
+                        </Row>
                       </Pressable>
                     ) : undefined
                   }
@@ -543,11 +553,6 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  heroBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xs,
-  },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 2,
@@ -558,20 +563,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   statusBadgeEnded: {
     backgroundColor: theme.colors.badgeInactive,
-  },
-  statusBadgeText: {
-    fontSize: theme.fontSizes.xs,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textInverse,
-  },
-  heroTitle: {
-    fontSize: theme.fontSizes.xl,
-    fontWeight: theme.fontWeights.bold,
-    color: theme.colors.textInverse,
-  },
-  heroSubtitle: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textInverseMuted,
   },
   contentArea: {
     flex: 1,
@@ -584,37 +575,6 @@ const styles = StyleSheet.create((theme) => ({
   scrollView: {
     flex: 1,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  infoText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
-    marginLeft: theme.spacing.sm,
-  },
-  membersRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeights.bold,
-    color: theme.colors.textSecondary,
-  },
-  statLabel: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textPlaceholder,
-  },
   statDivider: {
     width: 1,
     backgroundColor: theme.colors.borderLight,
@@ -622,14 +582,5 @@ const styles = StyleSheet.create((theme) => ({
   },
   section: {
     paddingHorizontal: theme.spacing.lg,
-  },
-  seeAllRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  seeAllText: {
-    color: theme.colors.primary,
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.medium,
   },
 }));

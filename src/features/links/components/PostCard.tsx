@@ -1,4 +1,4 @@
-import { View, Text, Pressable, GestureResponderEvent } from 'react-native';
+import { View, Pressable, GestureResponderEvent } from 'react-native';
 import { Image } from 'expo-image';
 import { LinkPostMedia, LinkPostWithMedia } from '../../../lib/models';
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuItem,
   MediaGrid,
+  Text,
 } from '../../../components';
 import { formatRelativeTime } from '../../../lib/utils/formatTime';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
@@ -64,14 +65,16 @@ export default function PostCard({
             />
           ) : (
             <View style={[styles.avatar, styles.avatarFallback]}>
-              <Text style={styles.avatarFallbackText}>
+              <Text variant="labelMd" color="primary">
                 {post.owner.name?.charAt(0).toUpperCase() ?? '?'}
               </Text>
             </View>
           )}
           <View style={styles.headerTextWrap}>
-            <Text style={styles.ownerName}>{post.owner.name ?? 'Unknown'}</Text>
-            <Text style={styles.timeText}>
+            <Text variant="labelMd" color="primary">
+              {post.owner.name ?? 'Unknown'}
+            </Text>
+            <Text variant="bodySm" color="tertiary">
               {formatRelativeTime(post.created_at)}
             </Text>
           </View>
@@ -101,7 +104,7 @@ export default function PostCard({
               scrollEnabled={false}
               onMediaPress={onMediaPress}
             />
-            <Text style={styles.mediaCount}>
+            <Text variant="bodySm" color="tertiary" style={styles.mediaCount}>
               {mediaCount} item{mediaCount > 1 ? 's' : ''}
             </Text>
           </>
@@ -143,21 +146,9 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarFallbackText: {
-    color: theme.colors.textTertiary,
-    fontWeight: theme.fontWeights.medium,
-  },
   headerTextWrap: {
     marginLeft: theme.spacing.md,
     flex: 1,
-  },
-  ownerName: {
-    fontWeight: theme.fontWeights.medium,
-    color: theme.colors.textPrimary,
-  },
-  timeText: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
   },
   menuButton: {
     padding: theme.spacing.sm,
@@ -165,8 +156,6 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radii.full,
   },
   mediaCount: {
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textTertiary,
     marginTop: theme.spacing.sm,
   },
 }));

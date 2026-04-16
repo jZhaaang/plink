@@ -2,7 +2,6 @@ import { ComponentProps, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
-  Text,
   ScrollView,
   Pressable,
   RefreshControl,
@@ -41,6 +40,7 @@ import {
   HeroBanner,
   MemberAvatar,
   Spinner,
+  Text,
 } from '../../../components';
 import { PartyUpdate } from '../../../lib/models';
 import { StatusBar } from 'expo-status-bar';
@@ -328,14 +328,16 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                     { paddingTop: theme.avatarSizes.xl / 2, paddingBottom: 0 },
                   ]}
                 >
-                  <Text style={styles.partyName}>{partyDetail.name}</Text>
+                  <Text variant="displayMd" color="primary">
+                    {partyDetail.name}
+                  </Text>
                   <View style={styles.partyMetaRow}>
                     <Feather
                       name="calendar"
                       size={theme.iconSizes.xs}
                       color={theme.colors.textTertiary}
                     />
-                    <Text style={styles.partyMetaText}>
+                    <Text variant="bodySm" color="tertiary">
                       Created{' '}
                       {new Date(partyDetail.created_at).toLocaleDateString(
                         'en-US',
@@ -345,13 +347,16 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                         },
                       )}
                     </Text>
-                    <Text style={styles.partyMetaText}> · </Text>
+                    <Text variant="bodySm" color="tertiary">
+                      {' '}
+                      ·{' '}
+                    </Text>
                     <Feather
                       name="link"
                       size={13}
                       color={theme.colors.textTertiary}
                     />
-                    <Text style={styles.partyMetaText}>
+                    <Text variant="bodySm" color="tertiary">
                       {partyDetail.linkCount}{' '}
                       {partyDetail.linkCount === 1 ? 'link' : 'links'}
                     </Text>
@@ -369,7 +374,9 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                               size={theme.iconSizes.xs}
                               color={theme.colors.primary}
                             />
-                            <Text style={styles.inviteText}>Invite</Text>
+                            <Text variant="labelSm" color="accent">
+                              Invite
+                            </Text>
                           </View>
                         </Pressable>
                       ) : undefined
@@ -387,7 +394,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
                   ))}
                 </ScrollView>
 
-                <Divider />
+                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
 
                 {/* Active Link */}
                 <View style={styles.section}>
@@ -538,7 +545,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   membersList: {
     paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
     gap: theme.spacing.md,
   },
   invitePill: {
@@ -548,6 +554,7 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.radii.full,
+    gap: theme.spacing.xs,
   },
   inviteText: {
     color: theme.colors.primary,

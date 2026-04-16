@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from './';
 import { Image } from 'expo-image';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
@@ -34,7 +35,9 @@ export default function AvatarStack({
 
       {overflow > 0 && (
         <View style={styles.overflowBadge(avatarSize)}>
-          <Text style={styles.overflowText}>+{overflow}</Text>
+          <Text variant="labelSm" color="secondary">
+            +{overflow}
+          </Text>
         </View>
       )}
     </View>
@@ -65,9 +68,4 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.lightGray,
     borderColor: theme.colors.white,
   }),
-  overflowText: {
-    fontSize: theme.fontSizes.xs,
-    fontWeight: theme.fontWeights.bold,
-    color: theme.colors.darkGray,
-  },
 }));

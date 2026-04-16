@@ -66,11 +66,41 @@ const fontWeights = {
   extrabold: '800' as const,
 };
 
+const textStyles = {
+  displayLg: { fontSize: 30, fontWeight: '700' as const, lineHeight: 38 },
+  displayMd: { fontSize: 24, fontWeight: '700' as const, lineHeight: 32 },
+  displaySm: { fontSize: 20, fontWeight: '700' as const, lineHeight: 28 },
+
+  headingLg: { fontSize: 18, fontWeight: '600' as const, lineHeight: 26 },
+  headingMd: { fontSize: 16, fontWeight: '600' as const, lineHeight: 24 },
+  headingSm: { fontSize: 14, fontWeight: '600' as const, lineHeight: 20 },
+
+  bodyLg: { fontSize: 16, fontWeight: '400' as const, lineHeight: 24 },
+  bodyMd: { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 },
+  bodySm: { fontSize: 12, fontWeight: '400' as const, lineHeight: 16 },
+
+  labelMd: { fontSize: 14, fontWeight: '500' as const, lineHeight: 20 },
+  labelSm: { fontSize: 12, fontWeight: '500' as const, lineHeight: 16 },
+  caption: { fontSize: 11, fontWeight: '400' as const, lineHeight: 14 },
+};
+
 export const lightTheme = {
   colors: {
     background: palette.neutral50,
     surface: palette.white,
     surfacePressed: palette.slate100,
+    surfaceElevated: palette.white,
+    surfaceSubtle: palette.neutral50,
+    divider: palette.slate100,
+
+    errorSurface: '#fef2f2',
+    successSurface: '#ecfdf5',
+    warningSurface: '#fffbeb',
+    infoSurface: palette.blue50,
+
+    tabActive: palette.blue600,
+    tabInactive: palette.slate400,
+    tabBackground: palette.white,
 
     primary: palette.blue600,
     primaryLight: palette.blue200,
@@ -115,6 +145,8 @@ export const lightTheme = {
     warning: palette.amber600,
     badgeActive: 'rgba(34, 197, 94, 0.85)',
     badgeInactive: 'rgba(15, 23, 42, 0.85)',
+    badgeSurface: palette.blue50,
+    badgeText: palette.blue700,
   },
 
   opacity: {
@@ -126,6 +158,7 @@ export const lightTheme = {
   radii,
   fontSizes,
   fontWeights,
+  textStyles,
 
   shadows: {
     sm: {
@@ -175,6 +208,18 @@ export const darkTheme = {
     background: palette.slate900,
     surface: palette.slate800,
     surfacePressed: palette.slate700,
+    surfaceElevated: palette.white,
+    surfaceSubtle: palette.slate900,
+    divider: palette.slate100,
+
+    errorSurface: 'rgba(239, 68, 68, 0.12)',
+    successSurface: 'rgba(16, 185, 129, 0.12)',
+    warningSurface: 'rgba(217, 119, 6, 0.12)',
+    infoSurface: 'rgba(59, 130, 246, 0.12)',
+
+    tabActive: palette.blue600,
+    tabInactive: palette.slate400,
+    tabBackground: palette.slate900,
 
     textPrimary: palette.slate50,
     textSecondary: palette.slate300,
@@ -184,6 +229,14 @@ export const darkTheme = {
     border: palette.slate700,
     borderLight: palette.slate800,
     borderInput: palette.slate600,
+
+    badgeSurface: 'rgba(59, 130, 246, 0.15)',
+    badgeText: palette.blue200,
+
+    white: palette.white,
+    lightGray: palette.slate600,
+    gray: palette.slate400,
+    darkGray: palette.slate300,
   },
 } as const;
 
