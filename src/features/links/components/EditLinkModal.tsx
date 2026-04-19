@@ -12,7 +12,7 @@ import {
 } from '../../../components';
 import LocationPicker, { StagedLocation } from './LocationPicker';
 import { cropLinkBannerFromUrl } from '../../../lib/media/cropper';
-import { LinkDetail, LinkPostMedia } from '../../../lib/models';
+import { LinkDetail, LinkMedia, LinkPostMedia } from '../../../lib/models';
 
 export type EditLinkChanges = {
   name: string;
@@ -23,7 +23,7 @@ export type EditLinkChanges = {
 interface EditLinkModalProps {
   visible: boolean;
   link: LinkDetail;
-  images: LinkPostMedia[];
+  images: LinkMedia[];
   saving?: boolean;
   onClose: () => void;
   onSave: (changes: EditLinkChanges) => void;
@@ -58,7 +58,7 @@ export default function EditLinkModal({
     setSelectedPath(match?.path ?? null);
   }, [visible]);
 
-  const handleSelectImage = async (image: LinkPostMedia) => {
+  const handleSelectImage = async (image: LinkMedia) => {
     if (cropping) return;
 
     const prevPath = selectedPath;

@@ -93,6 +93,11 @@ export default function CustomTabBar({
     navigation: BottomTabBarProps['navigation'],
     activeLink: LinkDetail | null,
   ) => {
+    if (isViewingActiveLink) {
+      requestUpload('gallery');
+      return;
+    }
+
     if (activeLink) {
       navigation.navigate('Link', {
         screen: 'LinkDetail',
@@ -106,39 +111,6 @@ export default function CustomTabBar({
 
     openCreateLink();
   };
-
-  const centerRotationStyle = useAnimatedStyle(() => ({
-    transform: [
-      { rotate: `${interpolate(isExpanded.value, [0, 1], [0, 45])}deg` },
-    ],
-  }));
-
-  const fabActions: FABAction[] = useMemo(
-    () => [
-      {
-        icon: 'camera',
-        onPress: () => {
-          closeMenu();
-          requestUpload('camera-photo');
-        },
-      },
-      {
-        icon: 'video',
-        onPress: () => {
-          closeMenu();
-          requestUpload('camera-video');
-        },
-      },
-      {
-        icon: 'image-multiple',
-        onPress: () => {
-          closeMenu();
-          requestUpload('gallery');
-        },
-      },
-    ],
-    [closeMenu, requestUpload],
-  );
 
   return (
     <>
@@ -154,19 +126,6 @@ export default function CustomTabBar({
           }}
           onPress={closeMenu}
         />
-      )}
-
-      {isViewingActiveLink && (
-        <View
-          pointerEvents="box-none"
-          style={[styles.expandableFABWrap, { bottom: insets.bottom }]}
-        >
-          <ExpandableFAB
-            actions={fabActions}
-            isExpanded={isExpanded}
-            menuOpen={menuOpen}
-          />
-        </View>
       )}
 
       <Animated.View
@@ -188,31 +147,15 @@ export default function CustomTabBar({
                 {/* Main center button */}
                 <Pressable
                   onPress={() => {
-                    if (isViewingActiveLink) {
-                      toggleMenu();
-                    } else {
-                      handleCenterPress(navigation, activeLink);
-                    }
+                    handleCenterPress(navigation, activeLink);
                   }}
                 >
                   <View style={styles.centerButton}>
-                    {isViewingActiveLink ? (
-                      <Animated.View
-                        style={[styles.centerIconWrap, centerRotationStyle]}
-                      >
-                        <MaterialCommunityIcons
-                          name="plus"
-                          size={theme.iconSizes.xl}
-                          color={theme.colors.white}
-                        />
-                      </Animated.View>
-                    ) : (
-                      <MaterialCommunityIcons
-                        name={centerIcon}
-                        size={theme.iconSizes.xl}
-                        color={theme.colors.white}
-                      />
-                    )}
+                    <MaterialCommunityIcons
+                      name={centerIcon}
+                      size={theme.iconSizes.xl}
+                      color={theme.colors.white}
+                    />
                   </View>
                 </Pressable>
               </View>

@@ -3,15 +3,15 @@ import { extFromMime } from '../utils/extFromMime';
 import { deleteBulk } from './client';
 import { uploadFile, getUrls, removeFiles, getLinkMediaUrls } from './core';
 
-type UploadType = { type: 'post'; postId: string } | { type: 'banner' };
+type UploadType = { type: 'media' } | { type: 'banner' };
 
 export const links = {
   path(linkId: string, target: UploadType, contentType: string) {
     const ext = extFromMime(contentType);
 
     switch (target.type) {
-      case 'post':
-        return `links/${linkId}/posts/${target.postId}/${randomUUID()}.${ext}`;
+      case 'media':
+        return `links/${linkId}/media/${randomUUID()}.${ext}`;
       case 'banner':
         return `links/${linkId}/banner`;
     }

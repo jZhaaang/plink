@@ -1,4 +1,10 @@
-import { ComponentProps, useCallback, useMemo, useState } from 'react';
+import {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -9,6 +15,8 @@ import {
   RefreshControl,
   GestureResponderEvent,
   FlatList,
+  useWindowDimensions,
+  SectionList,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
@@ -17,7 +25,6 @@ import {
 } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
-import PostCard from '../components/PostCard';
 import {
   EmptyState,
   Divider,
@@ -37,6 +44,7 @@ import {
   Text,
   Row,
   Stack,
+  MediaTile,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -44,7 +52,6 @@ import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
-import CameraModal from '../components/CameraModal';
 import {
   StackActions,
   useFocusEffect,
@@ -56,6 +63,12 @@ import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
 import { useLinkPosts } from '../hooks/useLinkPosts';
 import EditLinkModal, { EditLinkChanges } from '../components/EditLinkModal';
+import { useLinkLocations } from '../hooks/useLinkLocations';
+import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
+import { confirmLinkLocation } from '../../../lib/supabase/queries/linkLocations';
+import { logger } from '../../../lib/telemetry/logger';
+import LocationSection from '../components/LocationSection';
+import LinkInfoCard from '../components/LinkInfoCard';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -65,6 +78,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const rootNav = useNavigation<NativeStackNavigationProp<SignedInParamList>>();
   const { theme } = useUnistyles();
 
+  const invalidate = useInvalidate();
   const {
     linkDetail,
     loading: linkLoading,
@@ -72,22 +86,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     refetch: refetchLink,
   } = useLinkDetail(linkId);
 
-  const {
-    posts,
-    allMedia,
-    loading: postsLoading,
-    error: postsError,
-    refetch: refetchPosts,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useLinkPosts(linkId);
-
+  const { data: locations = [], isLoading: locationsLoading } =
+    useLinkLocations(linkId);
+  const sections = [...locations, null];
   const linkActions = useLinkDetailActions({
     linkId,
     partyId,
     linkDetail,
-    posts,
     onDelete: () => {
       const state = navigation.getState();
       const isStackRoot = state.index === 0;
@@ -125,7 +130,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   });
   useThumbnailSubscription(linkId, pendingMediaIds, clearPendingMediaIds);
 
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{
     x: number;
@@ -133,29 +137,26 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   } | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
-  const imageMedia = useMemo(
-    () => allMedia.filter((media) => media.type === 'image'),
-    [allMedia],
-  );
-
   useFocusEffect(
     useCallback(() => {
       if (!uploadAction) return;
       clearUploadAction();
 
       switch (uploadAction) {
-        case 'camera-photo':
-          setCameraMode('photo');
-          break;
-        case 'camera-video':
-          setCameraMode('video');
-          break;
         case 'gallery':
           addFromGallery();
           break;
       }
     }, [uploadAction, clearUploadAction]),
   );
+
+  const { width: screenWidth } = useWindowDimensions();
+  const TILE_GAP = 2;
+  const TILE_COLUMNS = 4;
+  const CONTAINER_PADDING = 32;
+  const tileSize =
+    (screenWidth - CONTAINER_PADDING - TILE_GAP * (TILE_COLUMNS - 1)) /
+    TILE_COLUMNS;
 
   if (linkLoading) return <LoadingScreen label="Loading..." />;
   if (linkError || !linkDetail)
@@ -172,11 +173,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const owner = linkDetail.members.find((m) => m.id === linkDetail.owner_id);
 
   const handleMediaPress = (item: LinkPostMedia) => {
-    const index = allMedia.findIndex((m) => m.id === item.id);
-    rootNav.navigate('MediaViewer', {
-      linkId,
-      initialIndex: index === -1 ? 0 : index,
-    });
+    // const index = allMedia.findIndex((m) => m.id === item.id);
+    // rootNav.navigate('MediaViewer', {
+    //   linkId,
+    //   initialIndex: index === -1 ? 0 : index,
+    // });
   };
 
   const handleSeeAllMedia = () => {
@@ -255,6 +256,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     setEditModalVisible(false);
   };
 
+  const handleConfirmLocation = async (locationId: string) => {
+    try {
+      await confirmLinkLocation(locationId);
+      invalidate.onLinkLocationsChanged(linkId);
+    } catch (err) {
+      logger.error('Failed to confirm location', { err });
+    }
+  };
+
+  const handleChangeLocation = (locationId: string) => {};
+
   return (
     <>
       <View style={styles.root}>
@@ -290,197 +302,19 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
         <View style={styles.contentArea}>
           <FlatList
-            data={posts}
-            keyExtractor={(item) => item.id}
-            refreshControl={
-              <RefreshControl
-                refreshing={linkLoading}
-                onRefresh={() => {
-                  refetchLink();
-                  refetchPosts();
-                }}
+            data={sections}
+            keyExtractor={(loc) => loc?.id ?? 'unknown'}
+            renderItem={({ item: location }) => (
+              <LocationSection
+                linkId={linkId}
+                location={location}
+                tileSize={tileSize}
+                onDeleteMedia={linkActions.deleteMedia}
+                onConfirm={() => location && handleConfirmLocation(location.id)}
+                onChange={() => location && handleChangeLocation(location.id)}
               />
-            }
-            contentContainerStyle={styles.container}
-            ListHeaderComponent={
-              <>
-                {/* Info Card */}
-                <Card>
-                  <CardSection>
-                    {/* Time info */}
-                    <Stack gap="xs" style={{ marginBottom: theme.spacing.xs }}>
-                      <Row align="center" gap="xs">
-                        <Feather
-                          name="calendar"
-                          size={theme.iconSizes.sm}
-                          color={theme.colors.gray}
-                        />
-                        <Text variant="bodySm" color="tertiary">
-                          {isActive
-                            ? `Started ${startFormatted.date} at ${startFormatted.time}`
-                            : `${startFormatted.date} — ${endFormatted.date}`}
-                        </Text>
-                      </Row>
-                      <Row align="center" gap="xs">
-                        <Feather
-                          name="clock"
-                          size={theme.iconSizes.sm}
-                          color={theme.colors.gray}
-                        />
-                        <Text variant="bodySm" color="tertiary">
-                          {isActive
-                            ? `Active for ${formatDuration(linkDetail.created_at, null)}`
-                            : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
-                        </Text>
-                      </Row>
-                      {linkDetail.locations.length > 0 && (
-                        <Row align="flex-start" gap="xs">
-                          <Feather
-                            name="map-pin"
-                            size={theme.iconSizes.sm}
-                            color={theme.colors.gray}
-                          />
-                          <View style={{ flex: 1 }}>
-                            {linkDetail.locations.map((location) => (
-                              <Text
-                                key={location.id}
-                                variant="bodySm"
-                                color="tertiary"
-                              >
-                                {location.name}
-                              </Text>
-                            ))}
-                          </View>
-                        </Row>
-                      )}
-                    </Stack>
-
-                    {/* Members row */}
-                    <Row align="center" justify="space-between">
-                      <AvatarStack
-                        avatarUris={memberAvatars}
-                        size={theme.avatarSizes.sm}
-                      />
-                      <Text variant="bodySm" color="tertiary">
-                        Created by {owner?.name}
-                      </Text>
-                    </Row>
-
-                    <Divider style={{ marginVertical: theme.spacing.sm }} />
-
-                    {/* Stats row */}
-                    <Row justify="space-evenly">
-                      <Stack align="center">
-                        <Text variant="displaySm" color="primary">
-                          {linkDetail.postCount}
-                        </Text>
-                        <Text variant="bodySm" color="tertiary">
-                          Post{linkDetail.postCount > 1 ? 's' : ''}
-                        </Text>
-                      </Stack>
-                      <View style={styles.statDivider} />
-                      <Stack align="center">
-                        <Text variant="displaySm" color="primary">
-                          {linkDetail.mediaCount}
-                        </Text>
-                        <Text variant="bodySm" color="tertiary">
-                          Item{linkDetail.mediaCount > 1 ? 's' : ''}
-                        </Text>
-                      </Stack>
-                    </Row>
-                  </CardSection>
-                </Card>
-
-                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
-
-                {/* All Items Section */}
-                <SectionHeader
-                  title="All Items"
-                  count={linkDetail.mediaCount}
-                  action={
-                    linkDetail.mediaCount > 6 ? (
-                      <Pressable onPress={handleSeeAllMedia}>
-                        <Row>
-                          <Text variant="labelMd" color="accent">
-                            See all
-                          </Text>
-                          <Feather
-                            name="chevron-right"
-                            size={theme.iconSizes.sm}
-                            color={theme.colors.primary}
-                          />
-                        </Row>
-                      </Pressable>
-                    ) : undefined
-                  }
-                />
-
-                {postsError ? (
-                  <DataFallbackScreen onAction={refetchPosts} />
-                ) : postsLoading ? (
-                  <Spinner style={{ paddingVertical: theme.spacing.xl }} />
-                ) : allMedia.length === 0 ? (
-                  <EmptyState
-                    icon="image"
-                    title="No media yet"
-                    message={
-                      isActive
-                        ? 'Media from all posts will appear here'
-                        : 'No media were added to this link'
-                    }
-                  />
-                ) : (
-                  <MediaGrid
-                    media={allMedia}
-                    onMediaPress={handleMediaPress}
-                    maxItems={6}
-                    scrollEnabled={false}
-                    onOverflowPress={handleSeeAllMedia}
-                  />
-                )}
-
-                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
-
-                {/* Post Feed Section */}
-                <SectionHeader title="Posts" count={linkDetail.postCount} />
-              </>
-            }
-            renderItem={({ item, index }) => (
-              <AnimatedListItem index={index}>
-                <PostCard
-                  post={item}
-                  onMediaPress={handleMediaPress}
-                  currentUserId={userId}
-                  onDeletePost={linkActions.deletePost}
-                />
-              </AnimatedListItem>
             )}
-            ListEmptyComponent={
-              postsError ? (
-                <DataFallbackScreen onAction={refetchPosts} />
-              ) : postsLoading ? (
-                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
-              ) : (
-                <EmptyState
-                  icon="camera"
-                  title="No posts yet"
-                  message={
-                    isActive
-                      ? 'Be the first to share!'
-                      : 'No media was shared in this link'
-                  }
-                />
-              )
-            }
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-            }}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              isFetchingNextPage ? (
-                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
-              ) : null
-            }
+            ListHeaderComponent={<LinkInfoCard link={linkDetail} />}
           />
 
           {/* Bottom Actions (for active links) */}
@@ -523,27 +357,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             ))}
           </DropdownMenu>
 
-          <EditLinkModal
-            visible={editModalVisible}
-            link={linkDetail}
-            images={imageMedia}
-            saving={linkActions.savingBanner}
-            onClose={() => setEditModalVisible(false)}
-            onSave={handleEditSave}
-          />
-
           <UploadProgressModal visible={uploading} progress={progress} />
         </View>
       </View>
-      <CameraModal
-        visible={!!cameraMode}
-        initialMode={cameraMode ?? 'photo'}
-        onCapture={(assets) => {
-          stageAssets(assets);
-          setCameraMode(null);
-        }}
-        onClose={() => setCameraMode(null)}
-      />
     </>
   );
 }
@@ -574,11 +390,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollView: {
     flex: 1,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: theme.colors.borderLight,
-    alignSelf: 'stretch',
   },
   section: {
     paddingHorizontal: theme.spacing.lg,

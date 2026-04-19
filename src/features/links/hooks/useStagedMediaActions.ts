@@ -1,8 +1,9 @@
 import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import * as Burnt from 'burnt';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
-import { useCallback, useState } from 'react';
+import { SetStateAction, useCallback, useState } from 'react';
 import {
   generateImageThumbnail,
   generateVideoThumbnail,
@@ -19,6 +20,12 @@ import {
   deleteLinkPostMedia,
 } from '../../../lib/supabase/queries/linkPostMedia';
 import { trackEvent } from '../../../lib/telemetry/analytics';
+import {
+  createLinkMedia,
+  deleteLinkMedia,
+} from '../../../lib/supabase/queries/linkMedia';
+import { extractMetadata } from '../../../lib/media/exif';
+import { assignMediaLocations } from '../../../lib/media/assignLocations';
 
 type UseStagedMediaActionsParams = {
   linkId: string;
@@ -39,11 +46,10 @@ type UploadProgress = {
   failed: number;
 };
 
-type UploadedAsset = {
-  path: string;
-  mime: string;
-  type: 'image' | 'video';
-  duration_seconds: number | null;
+type InsertedMedia = {
+  id: string;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export function useStagedMediaActions({
@@ -103,8 +109,12 @@ export function useStagedMediaActions({
   }, []);
 
   const addFromGallery = useCallback(async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
+    const [pickerPerm, libraryPerm] = await Promise.all([
+      ImagePicker.requestMediaLibraryPermissionsAsync(),
+      MediaLibrary.requestPermissionsAsync(),
+    ]);
+
+    if (!pickerPerm.granted || !libraryPerm.granted) {
       await dialog.error(
         'Permission Needed',
         'Please enable media library permissions to continue.',
@@ -115,8 +125,10 @@ export function useStagedMediaActions({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images', 'videos'],
       allowsMultipleSelection: true,
-      exif: false,
+      exif: true,
     });
+
+    console.log(JSON.stringify(result.assets?.[0]?.exif, null, 2));
 
     if (!result.canceled && result.assets.length > 0) {
       stageAssets(result.assets);
@@ -142,54 +154,61 @@ export function useStagedMediaActions({
     setUploading(true);
     setProgress({ total: stagedAssets.length, completed: 0, failed: 0 });
 
-    const insertedMediaIds = [];
-    const uploadedPaths = [];
+    const insertedMedia: InsertedMedia[] = [];
+    const uploadedPaths: string[] = [];
 
     try {
-      const post = await createLinkPost({ link_id: linkId, owner_id: userId });
-
       const uploadedResults = await Promise.allSettled(
-        stagedAssets.map(async (item): Promise<UploadedAsset> => {
+        stagedAssets.map(async (item): Promise<void> => {
           const mime = item.asset.mimeType ?? 'image/jpeg';
           const type = item.asset.type === 'video' ? 'video' : 'image';
           const duration_seconds =
             type === 'video' ? (item.asset.duration ?? null) : null;
 
-          let path = null;
+          let path: string | null = null;
 
           try {
             const uri =
               type === 'video'
                 ? item.asset.uri
                 : (await compressImage(item.asset.uri)).uri;
-            const uploadMime = type === 'video' ? mime : 'image/jpeg'; // images are compressed to JPEG
+            const uploadMime = type === 'video' ? mime : 'image/jpeg';
+
             path = await linksStorage.upload(
               linkId,
-              { type: 'post', postId: post.id },
+              { type: 'media' },
               uri,
               uploadMime,
             );
 
-            const row = await createLinkPostMedia({
-              post_id: post.id,
+            const { captured_at, latitude, longitude } = await extractMetadata(
+              item.asset,
+            );
+
+            const row = await createLinkMedia({
+              link_id: linkId,
+              owner_id: userId,
               path,
               mime,
               type,
               duration_seconds,
+              captured_at,
+              latitude,
+              longitude,
             });
-            if (row) insertedMediaIds.push(row.id);
 
+            if (row) {
+              insertedMedia.push({
+                id: row.id,
+                latitude,
+                longitude,
+              });
+            }
             uploadedPaths.push(path);
 
             setProgress((prev) =>
               prev ? { ...prev, completed: prev.completed + 1 } : prev,
             );
-            return {
-              path,
-              mime,
-              type,
-              duration_seconds,
-            };
           } catch (err) {
             if (path) {
               try {
@@ -199,7 +218,6 @@ export function useStagedMediaActions({
                   err: cleanupErr,
                   path,
                   linkId,
-                  postId: post.id,
                 });
               }
             }
@@ -216,28 +234,18 @@ export function useStagedMediaActions({
       setUploading(false);
       setProgress(null);
 
-      const successes = uploadedResults
-        .filter((res) => res.status === 'fulfilled')
-        .map((res) => res.value);
+      const successes = uploadedResults.filter((r) => r.status === 'fulfilled');
       const failures = uploadedResults.length - successes.length;
 
       if (successes.length === 0) {
-        try {
-          await deleteLinkPost(post.id);
-        } catch (err) {
-          logger.error('Cleanup failed: Error deleting link post', {
-            err,
-            uploadedResults,
-          });
-        }
-        throw new Error('All uploads failed, post was not created.');
+        throw new Error('All uploads failed.');
       }
 
       if (failures > 0) {
         Burnt.toast({
           title: `${failures} ${failures === 1 ? 'item' : 'items'} failed to upload`,
           preset: 'error',
-          haptic: 'error',
+          haptic: 'warning',
         });
       }
 
@@ -247,8 +255,31 @@ export function useStagedMediaActions({
         haptic: 'success',
       });
 
-      setPendingMediaIds(insertedMediaIds);
+      if (insertedMedia.length > 0) {
+        try {
+          const withCoords = insertedMedia.filter(
+            (m): m is InsertedMedia =>
+              m.latitude != null && m.longitude != null,
+          );
+          if (withCoords.length > 0) {
+            await assignMediaLocations(
+              linkId,
+              withCoords.map((m) => ({
+                mediaId: m.id,
+                latitude: m.latitude,
+                longitude: m.longitude,
+              })),
+            );
+          }
+        } catch (err) {
+          logger.error('Location assignment failed after upload', {
+            err,
+            linkId,
+          });
+        }
+      }
 
+      setPendingMediaIds(insertedMedia.map((m) => m.id));
       trackEvent('media_uploaded', {
         link_id: linkId,
         count: successes.length,
@@ -256,19 +287,16 @@ export function useStagedMediaActions({
       invalidate.onLinkChanged(linkId, partyId);
       setStagedAssets([]);
     } catch (err) {
-      const originalErr = err;
       setUploading(false);
       setProgress(null);
 
-      if (insertedMediaIds.length) {
+      if (insertedMedia.length) {
         try {
-          await Promise.all(
-            insertedMediaIds.map((id) => deleteLinkPostMedia(id)),
-          );
+          await Promise.all(insertedMedia.map((m) => deleteLinkMedia(m.id)));
         } catch (cleanupErr) {
-          logger.error('Cleanup failed: Error deleting link post media', {
+          logger.error('Cleanup failed: Error deleting link media rows', {
             err: cleanupErr,
-            insertedMediaIds,
+            insertedMedia,
             linkId,
           });
         }
@@ -282,12 +310,11 @@ export function useStagedMediaActions({
         link_id: linkId,
         count: stagedAssets.length,
       });
-      logger.error('Error uploading staged media', {
-        err: originalErr,
-        linkId,
-        stagedAssets,
-      });
-      await dialog.error('Failed to Upload Items', originalErr.message);
+      logger.error('Error uploading staged media', { err, linkId });
+      await dialog.error(
+        'Failed to Upload Items',
+        err instanceof Error ? err.message : String(err),
+      );
     }
   }, [stagedAssets, linkId, userId, invalidate]);
 
