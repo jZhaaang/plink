@@ -57,22 +57,6 @@ export default function LinkInfoCard({ link }: LinkInfoCardProps) {
                 : `Lasted ${formatDuration(link.created_at, link.end_time)}`}
             </Text>
           </Row>
-          {link.locations.length > 0 && (
-            <Row align="flex-start" gap="xs">
-              <Feather
-                name="map-pin"
-                size={theme.iconSizes.sm}
-                color={theme.colors.gray}
-              />
-              <View style={{ flex: 1 }}>
-                {link.locations.map((location) => (
-                  <Text key={location.id} variant="bodySm" color="tertiary">
-                    {location.name}
-                  </Text>
-                ))}
-              </View>
-            </Row>
-          )}
         </Stack>
 
         {/* Members row */}
@@ -89,10 +73,10 @@ export default function LinkInfoCard({ link }: LinkInfoCardProps) {
         <Row justify="space-evenly">
           <Stack align="center">
             <Text variant="displaySm" color="primary">
-              {link.postCount}
+              {link.locations.length}
             </Text>
             <Text variant="bodySm" color="tertiary">
-              Post{link.postCount > 1 ? 's' : ''}
+              Location{link.postCount !== 1 ? 's' : ''}
             </Text>
           </Stack>
           <View style={styles.statDivider} />
@@ -101,7 +85,7 @@ export default function LinkInfoCard({ link }: LinkInfoCardProps) {
               {link.mediaCount}
             </Text>
             <Text variant="bodySm" color="tertiary">
-              Item{link.mediaCount > 1 ? 's' : ''}
+              Item{link.mediaCount !== 1 ? 's' : ''}
             </Text>
           </Stack>
         </Row>
