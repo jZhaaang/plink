@@ -21,7 +21,7 @@ export function useThumbnailSubscription(
 
     const interval = setInterval(async () => {
       const { data } = await supabase
-        .from('link_post_media')
+        .from('link_media')
         .select('id, thumbnail_path')
         .in('id', [...remaining.current]);
 

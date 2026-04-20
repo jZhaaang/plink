@@ -48,7 +48,6 @@ export type LinkPostWithMedia = LinkPost & {
 
 export type LinkDetail = Link & {
   members: Profile[];
-  postCount: number;
   mediaCount: number;
   locations: LinkLocationRow[];
 };
