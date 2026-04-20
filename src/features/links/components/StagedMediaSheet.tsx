@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, View, useWindowDimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { StagedAsset } from '../hooks/useStagedMediaActions';
 import Animated, {
@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
+import { Row, Text } from '../../../components';
 
 interface Props {
   assets: StagedAsset[];
@@ -43,7 +44,6 @@ export default function StagedMediaSheet({
 
   const COLLAPSED = 88;
   const fitSnap = Math.min(contentHeight + 50, screenHeight * 0.6);
-  const isCollapsed = index === 0;
   const tileSize =
     (screenWidth - SHEET_PADDING * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
     GRID_COLUMNS;
@@ -51,28 +51,6 @@ export default function StagedMediaSheet({
   const remaining = assets.length - preview.length;
 
   const snapPoints = useMemo(() => [COLLAPSED, fitSnap], [fitSnap]);
-
-  const postStyle = useAnimatedStyle(() => {
-    const t = interpolate(
-      animatedIndex.value,
-      [0, 1, 2],
-      [0, 1, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      opacity: t,
-      transform: [
-        {
-          translateY: interpolate(
-            animatedIndex.value,
-            [0, 1],
-            [14, 0],
-            Extrapolation.CLAMP,
-          ),
-        },
-      ],
-    };
-  });
 
   const expandedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -117,236 +95,222 @@ export default function StagedMediaSheet({
       ref={sheetRef}
       index={index}
       onChange={setIndex}
+      backgroundStyle={styles.backgroundStyle}
       animatedIndex={animatedIndex}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={false}
     >
-      <View style={styles.sheetInner}>
+      <Animated.View
+        style={[{ flex: 1 }, expandedStyle]}
+        pointerEvents={index === 1 ? 'auto' : 'none'}
+      >
+        {/* Header */}
+        <Row style={styles.expandedHeader} justify="space-between">
+          <Text variant="headingMd" color="secondary">
+            {assets.length} item{assets.length === 1 ? '' : 's'} ready
+          </Text>
+          <Pressable onPress={onClearAll} hitSlop={8}>
+            <Text variant="bodyMd" color="placeholder">
+              Clear all
+            </Text>
+          </Pressable>
+        </Row>
+
         <BottomSheetScrollView
-          onContentSizeChange={(_, h) => setContentHeight(h)}
+          onContentSizeChange={(_: number, h: number) => setContentHeight(h)}
           contentContainerStyle={{
             paddingHorizontal: SHEET_PADDING,
-            paddingBottom: 64,
+            paddingBottom: SHEET_PADDING,
           }}
+          style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Expanded View */}
-          <Animated.View
-            style={[{ flex: 1 }, expandedStyle]}
-            pointerEvents={index === 1 ? 'auto' : 'none'}
-          >
-            {/* Header */}
-            <View style={styles.expandedHeader}>
-              <View style={styles.expandedHeaderRow}>
-                <Text style={styles.expandedTitle}>
-                  {assets.length} item{assets.length === 1 ? '' : 's'} ready
-                </Text>
-                <Pressable onPress={onClearAll} hitSlop={8}>
-                  <Text style={styles.clearAllText}>Clear all</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* Staged Assets */}
-            <View style={styles.gridContainer}>
-              <View style={styles.gridWrap}>
-                {assets.map((item) => (
-                  <View
-                    key={item.id}
-                    style={{ width: tileSize, height: tileSize }}
-                  >
-                    <Image
-                      source={{ uri: item.thumbnailUri ?? item.asset.uri }}
-                      cachePolicy="memory-disk"
-                      style={{
-                        width: tileSize,
-                        height: tileSize,
-                        borderRadius: 12,
-                      }}
-                      contentFit="cover"
-                      transition={150}
-                    />
-                    {item.thumbnailStatus === 'generating' && (
-                      <View style={styles.tileOverlay}>
-                        <View style={styles.tileOverlayIcon}>
-                          <Ionicons
-                            name="time-outline"
-                            size={theme.iconSizes.xs}
-                            color={theme.colors.white}
-                          />
-                        </View>
+          {/* Staged Assets */}
+          <View style={styles.gridContainer}>
+            <View style={styles.gridWrap}>
+              {assets.map((item) => (
+                <View
+                  key={item.id}
+                  style={{
+                    width: tileSize,
+                    height: tileSize,
+                  }}
+                >
+                  <Image
+                    source={{ uri: item.thumbnailUri ?? item.asset.uri }}
+                    cachePolicy="memory-disk"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: theme.radii.md,
+                    }}
+                    contentFit="cover"
+                    transition={150}
+                  />
+                  {item.thumbnailStatus === 'generating' && (
+                    <View style={styles.tileOverlay}>
+                      <View style={styles.tileOverlayIcon}>
+                        <Ionicons
+                          name="time-outline"
+                          size={theme.iconSizes.xs}
+                          color={theme.colors.white}
+                        />
                       </View>
-                    )}
-                    {item.asset.type === 'video' && (
-                      <View style={styles.tileOverlay}>
-                        <View style={styles.tileOverlayIcon}>
-                          <Feather
-                            name="play"
-                            size={theme.iconSizes.xs}
-                            color={theme.colors.white}
-                          />
-                        </View>
+                    </View>
+                  )}
+                  {item.asset.type === 'video' && (
+                    <View style={styles.tileOverlay}>
+                      <View style={styles.tileOverlayIcon}>
+                        <Feather
+                          name="play"
+                          size={theme.iconSizes.xs}
+                          color={theme.colors.white}
+                        />
                       </View>
-                    )}
-                    <Pressable
-                      onPress={() => onRemove(item.asset.uri)}
-                      hitSlop={8}
-                      style={styles.removeButton}
-                    >
-                      <Feather
-                        name="x"
-                        size={theme.iconSizes.xs}
-                        color={theme.colors.white}
-                      />
-                    </Pressable>
-                  </View>
-                ))}
-
-                <Pressable onPress={onAddFromGallery}>
-                  <View
-                    style={[
-                      styles.addTile,
-                      { width: tileSize, height: tileSize },
-                    ]}
+                    </View>
+                  )}
+                  <Pressable
+                    onPress={() => onRemove(item.asset.uri)}
+                    hitSlop={8}
+                    style={styles.removeButton}
                   >
                     <Feather
-                      name="plus"
-                      size={theme.iconSizes.lg}
-                      color={theme.colors.gray}
+                      name="x"
+                      size={theme.iconSizes.xs}
+                      color={theme.colors.white}
                     />
-                    <Text style={styles.addTileText}>Add</Text>
-                  </View>
-                </Pressable>
-              </View>
-            </View>
-          </Animated.View>
+                  </Pressable>
+                </View>
+              ))}
 
-          {/* Collapsed View */}
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                left: SHEET_PADDING,
-                right: SHEET_PADDING,
-                top: 8,
-              },
-              collapsedStyle,
-            ]}
-            pointerEvents={index === 0 ? 'auto' : 'none'}
-          >
-            <View style={styles.collapsedRow}>
-              <View style={styles.previewStack}>
-                {preview.map((item, i) => {
-                  const showRemaining =
-                    i === preview.length - 1 && remaining > 0;
-
-                  return (
-                    <View
-                      key={item.id}
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 8,
-                        marginLeft: i === 0 ? 0 : -6,
-                        zIndex: 10 - i,
-                        overflow: 'hidden',
-                        borderWidth: 1,
-                        borderColor: '#fff',
-                      }}
-                    >
-                      <Image
-                        source={{ uri: item.thumbnailUri ?? item.asset.uri }}
-                        style={{ width: '100%', height: '100%' }}
-                        contentFit="cover"
-                      />
-
-                      {showRemaining && (
-                        <View style={styles.remainingOverlay}>
-                          <Text style={styles.remainingText}>+{remaining}</Text>
-                        </View>
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
-
-              <Text style={styles.collapsedLabel}>
-                {assets.length} item{assets.length === 1 ? '' : 's'} ready
-              </Text>
-
-              <Pressable onPress={onUpload} disabled={uploading}>
+              <Pressable onPress={onAddFromGallery}>
                 <View
                   style={[
-                    styles.uploadMiniButton,
-                    uploading && { opacity: 0.5 },
+                    styles.addTile,
+                    { width: tileSize, height: tileSize },
                   ]}
                 >
-                  <Ionicons
-                    name="arrow-up"
-                    size={theme.iconSizes.sm}
-                    color="white"
+                  <Feather
+                    name="plus"
+                    size={theme.iconSizes.lg}
+                    color={theme.colors.gray}
                   />
+                  <Text
+                    variant="bodySm"
+                    color="placeholder"
+                    style={{ marginTop: theme.spacing.xs }}
+                  >
+                    Add
+                  </Text>
                 </View>
               </Pressable>
             </View>
-          </Animated.View>
-        </BottomSheetScrollView>
 
-        {/* Post Button */}
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              left: 16,
-              right: 16,
-              bottom: 20,
-            },
-            postStyle,
-          ]}
-          pointerEvents={isCollapsed ? 'none' : 'auto'}
-        >
+            {/* Post Button */}
+            <Pressable onPress={onUpload} disabled={uploading}>
+              <View
+                style={[
+                  styles.postButton,
+                  uploading && { opacity: theme.opacity.disabled },
+                ]}
+              >
+                <Ionicons name="arrow-up" size={18} color="white" />
+                <Text variant="headingSm" color="inverse">
+                  Post
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        </BottomSheetScrollView>
+      </Animated.View>
+
+      {/* Collapsed View */}
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            left: SHEET_PADDING,
+            right: SHEET_PADDING,
+            top: 8,
+          },
+          collapsedStyle,
+        ]}
+        pointerEvents={index === 0 ? 'auto' : 'none'}
+      >
+        <Row align="center" gap="md">
+          <Row>
+            {preview.map((item, i) => {
+              const showRemaining = i === preview.length - 1 && remaining > 0;
+
+              return (
+                <View
+                  key={item.id}
+                  style={{
+                    width: theme.iconSizes.xl,
+                    height: theme.iconSizes.xl,
+                    borderRadius: theme.radii.sm,
+                    marginLeft: i === 0 ? 0 : -theme.spacing.sm,
+                    zIndex: 10 - i,
+                    overflow: 'hidden',
+                    borderWidth: 1,
+                    borderColor: '#fff',
+                  }}
+                >
+                  <Image
+                    source={{ uri: item.thumbnailUri ?? item.asset.uri }}
+                    style={{ width: '100%', height: '100%' }}
+                    contentFit="cover"
+                  />
+
+                  {showRemaining && (
+                    <View style={styles.remainingOverlay}>
+                      <Text variant="labelSm" color="inverse">
+                        +{remaining}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </Row>
+
+          <Text variant="labelMd" color="secondary" style={{ flex: 1 }}>
+            {assets.length} item{assets.length === 1 ? '' : 's'} ready
+          </Text>
+
           <Pressable onPress={onUpload} disabled={uploading}>
-            <View style={[styles.postButton, uploading && { opacity: 0.5 }]}>
-              <Ionicons name="arrow-up" size={18} color="white" />
-              <Text style={styles.postButtonText}>Post</Text>
+            <View
+              style={[styles.uploadMiniButton, uploading && { opacity: 0.5 }]}
+            >
+              <Ionicons
+                name="arrow-up"
+                size={theme.iconSizes.sm}
+                color="white"
+              />
             </View>
           </Pressable>
-        </Animated.View>
-      </View>
+        </Row>
+      </Animated.View>
     </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  sheetInner: {
-    flex: 1,
+  backgroundStyle: {
+    backgroundColor: theme.colors.surface,
+    ...theme.shadows.lg,
   },
   expandedHeader: {
-    backgroundColor: 'rgba(255,255,255,0.96)',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.borderLight,
     zIndex: 10,
     paddingBottom: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  expandedHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: theme.spacing.xs,
-  },
-  expandedTitle: {
-    fontSize: theme.fontSizes.base,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textSecondary,
-  },
-  clearAllText: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textPlaceholder,
+    paddingHorizontal: theme.spacing.lg,
   },
   gridContainer: {
-    flex: 1,
+    marginTop: theme.spacing.md,
   },
   gridWrap: {
     flexDirection: 'row',
@@ -363,8 +327,8 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
   },
   tileOverlayIcon: {
-    height: 32,
-    width: 32,
+    height: theme.iconSizes.xl,
+    width: theme.iconSizes.xl,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.full,
@@ -372,14 +336,14 @@ const styles = StyleSheet.create((theme) => ({
   },
   removeButton: {
     position: 'absolute',
-    right: -8,
-    top: -8,
-    height: 24,
-    width: 24,
+    right: -theme.spacing.sm,
+    top: -theme.spacing.sm,
+    height: theme.iconSizes.lg,
+    width: theme.iconSizes.lg,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: theme.radii.full,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: theme.colors.darkGray,
   },
   addTile: {
     alignItems: 'center',
@@ -388,20 +352,6 @@ const styles = StyleSheet.create((theme) => ({
     borderStyle: 'dashed',
     borderColor: theme.colors.border,
     borderRadius: theme.radii.md,
-  },
-  addTileText: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSizes.xs,
-    color: theme.colors.textPlaceholder,
-  },
-  collapsedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
-  previewStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   remainingOverlay: {
     position: 'absolute',
@@ -413,19 +363,8 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  remainingText: {
-    fontSize: 11,
-    fontWeight: theme.fontWeights.semibold,
-    color: theme.colors.textInverse,
-  },
-  collapsedLabel: {
-    flex: 1,
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.medium,
-    color: theme.colors.textSecondary,
-  },
   uploadMiniButton: {
-    height: 40,
+    height: theme.iconSizes.xl,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radii.md,
     backgroundColor: theme.colors.primary,
@@ -438,15 +377,11 @@ const styles = StyleSheet.create((theme) => ({
     height: 48,
     borderRadius: theme.radii.full,
     backgroundColor: theme.colors.primary,
+    marginTop: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.sm,
-  },
-  postButtonText: {
-    color: theme.colors.textInverse,
-    fontSize: theme.fontSizes.sm,
-    fontWeight: theme.fontWeights.semibold,
   },
 }));
