@@ -4,7 +4,14 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
 import { LinkLocationRow, LinkMedia } from '../../../lib/models';
 import { useLocationMedia } from '../hooks/useLocationMedia';
-import { MediaTile, Row, Spinner, Stack, Text } from '../../../components';
+import {
+  MediaTile,
+  Row,
+  SectionHeader,
+  Spinner,
+  Stack,
+  Text,
+} from '../../../components';
 
 const PREVIEW_COUNT = 8;
 const COLUMNS = 4;
@@ -21,7 +28,8 @@ interface LocationSectionHeaderProps {
   mediaCount: number;
   hasMore: boolean;
   onConfirm: () => void;
-  onChange: () => void;
+  onEdit: () => void;
+  onRemove: () => void;
 }
 
 function LocationSectionHeader({
@@ -29,71 +37,124 @@ function LocationSectionHeader({
   mediaCount,
   hasMore,
   onConfirm,
-  onChange,
+  onEdit,
+  onRemove,
 }: LocationSectionHeaderProps) {
   const { theme } = useUnistyles();
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const isUnknown = !location;
   const needsConfirm = location?.source === 'exif';
 
   return (
     <View style={styles.container}>
-      <Row align="center" justify="space-between">
-        <Row align="center" gap="xs" style={{ flex: 1 }}>
+      <Row align="flex-start" justify="space-between" gap="sm">
+        <Row align="flex-start" gap="xs" style={{ flex: 1, minWidth: 0 }}>
           <Feather
             name="map-pin"
             size={theme.iconSizes.sm}
             color={needsConfirm ? theme.colors.warning : theme.colors.primary}
+            style={{ marginTop: 2 }}
           />
-          <Stack style={{ flex: 1 }}>
-            <Text variant="headingSm" color="primary" numberOfLines={1}>
-              {isUnknown ? 'No Location' : location.name}
-            </Text>
-            <Text variant="bodySm" color="tertiary">
-              {mediaCount}
-              {hasMore ? '+' : ''}{' '}
-              {mediaCount === 1 && !hasMore ? 'item' : 'items'}
-            </Text>
+          <Stack gap="xs" style={{ flexShrink: 1 }}>
+            <Row align="center" gap="xs" style={{ flexShrink: 1, minWidth: 0 }}>
+              <Text
+                variant="headingMd"
+                color="primary"
+                style={{ flexShrink: 1 }}
+              >
+                {isUnknown ? 'No Location' : location.name}
+              </Text>
+            </Row>
+            {!isUnknown && location.address && (
+              <Text variant="bodySm" color="tertiary">
+                {location.address}
+              </Text>
+            )}
           </Stack>
         </Row>
 
         {!isUnknown && (
-          <Row gap="xs">
-            {needsConfirm && (
-              <Pressable onPress={onConfirm} style={styles.changeButton}>
-                <Text variant="labelSm" color="success">
-                  Confirm
-                </Text>
-              </Pressable>
+          <View>
+            <Row align="center" gap="xs" style={{ flexShrink: 0 }}>
+              {needsConfirm ? (
+                <>
+                  <Pressable onPress={onConfirm} style={styles.confirmPill}>
+                    <Feather
+                      name="check"
+                      size={11}
+                      color={theme.colors.success}
+                    />
+                    <Text variant="bodySm" color="success">
+                      Confirm
+                    </Text>
+                  </Pressable>
+                  <Pressable onPress={onEdit} style={styles.editPill}>
+                    <Feather
+                      name="edit-2"
+                      size={11}
+                      color={theme.colors.primary}
+                    />
+                    <Text variant="bodySm" color="accent">
+                      Edit
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                <Pressable
+                  onPress={() => setMenuOpen((v) => !v)}
+                  style={styles.moreButton}
+                >
+                  <Feather
+                    name="more-horizontal"
+                    size={16}
+                    color={theme.colors.textTertiary}
+                  />
+                </Pressable>
+              )}
+            </Row>
+
+            {menuOpen && (
+              <View style={styles.dropdown}>
+                <Pressable
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    onEdit();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Feather
+                    name="edit-2"
+                    size={12}
+                    color={theme.colors.badgeText}
+                  />
+                  <Text variant="bodySm" color="primary">
+                    Edit location
+                  </Text>
+                </Pressable>
+                <View style={styles.dropdownDivider} />
+                <Pressable
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    onRemove();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Feather
+                    name="trash-2"
+                    size={13}
+                    color={theme.colors.error}
+                  />
+                  <Text variant="bodySm" color="error">
+                    Remove location
+                  </Text>
+                </Pressable>
+              </View>
             )}
-            <Pressable onPress={onChange} style={styles.changeButton}>
-              <Text variant="labelSm" color="accent">
-                Change
-              </Text>
-            </Pressable>
-          </Row>
+          </View>
         )}
       </Row>
-
-      {needsConfirm && (
-        <View style={styles.confirmRow}>
-          <Feather name="help-circle" size={12} color={theme.colors.warning} />
-          <Text
-            variant="bodySm"
-            color="tertiary"
-            style={{ marginLeft: theme.spacing.xs }}
-          >
-            Is this the right location?
-          </Text>
-        </View>
-      )}
-
-      {!needsConfirm && location?.address && (
-        <View style={styles.confirmRow}>
-          <Text variant="bodySm" color="tertiary">
-            {location.address}
-          </Text>
-        </View>
-      )}
     </View>
   );
 }
@@ -104,7 +165,8 @@ interface LocationSectionProps {
   tileSize: number;
   onDeleteMedia: (media: LinkMedia) => void;
   onConfirm: () => void;
-  onChange: () => void;
+  onEdit: () => void;
+  onRemove: () => void;
 }
 
 export default function LocationSection({
@@ -113,8 +175,10 @@ export default function LocationSection({
   tileSize,
   onDeleteMedia,
   onConfirm,
-  onChange,
+  onEdit,
+  onRemove,
 }: LocationSectionProps) {
+  const { theme } = useUnistyles();
   const [expanded, setExpanded] = useState(false);
 
   const { media, loading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -129,13 +193,14 @@ export default function LocationSection({
   const showLoadMore = expanded && hasNextPage;
 
   return (
-    <View>
+    <View style={{ marginBottom: theme.spacing.md }}>
       <LocationSectionHeader
         location={location}
         mediaCount={media.length}
         hasMore={!!hasNextPage}
         onConfirm={onConfirm}
-        onChange={onChange}
+        onEdit={onEdit}
+        onRemove={onRemove}
       />
 
       {loading ? (
@@ -193,20 +258,34 @@ export default function LocationSection({
 
 const styles = StyleSheet.create((theme) => ({
   container: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
     backgroundColor: theme.colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
-    marginTop: theme.spacing.xl,
+    borderBottomColor: theme.colors.border,
   },
   changeButton: {
     paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
   },
   confirmRow: {
-    marginTop: theme.spacing.xs,
     paddingLeft: theme.iconSizes.sm + theme.spacing.xs,
+  },
+  confirmPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
+    backgroundColor: `${theme.colors.success}20`,
+  },
+  editPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
+    backgroundColor: `${theme.colors.primary}20`,
   },
   row: {
     marginBottom: 2,
@@ -220,5 +299,31 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: theme.colors.borderLight,
+  },
+  moreButton: {
+    padding: theme.spacing.xs,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 24,
+    right: 0,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    minWidth: 160,
+    zIndex: 100,
+    ...theme.shadows.md,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
   },
 }));

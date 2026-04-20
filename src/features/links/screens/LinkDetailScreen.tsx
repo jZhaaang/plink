@@ -1,22 +1,13 @@
-import {
-  ComponentProps,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { ComponentProps, useCallback, useState } from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import {
   View,
-  Pressable,
-  RefreshControl,
   GestureResponderEvent,
   FlatList,
   useWindowDimensions,
-  SectionList,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
@@ -26,29 +17,19 @@ import {
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
 import {
-  EmptyState,
-  Divider,
-  SectionHeader,
   DropdownMenu,
   DropdownMenuItem,
-  Card,
-  CardSection,
   LoadingScreen,
   DataFallbackScreen,
-  AvatarStack,
-  AnimatedListItem,
-  MediaGrid,
   HeroBanner,
   UploadProgressModal,
-  Spinner,
   Text,
   Row,
-  Stack,
-  MediaTile,
+  SectionHeader,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
-import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
+import { formatDateTime } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
 import { LinkPostMedia } from '../../../lib/models';
@@ -265,7 +246,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }
   };
 
-  const handleChangeLocation = (locationId: string) => {};
+  const handleEditLocation = (locationId: string) => {};
 
   return (
     <>
@@ -305,16 +286,30 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             data={sections}
             keyExtractor={(loc) => loc?.id ?? 'unknown'}
             renderItem={({ item: location }) => (
-              <LocationSection
-                linkId={linkId}
-                location={location}
-                tileSize={tileSize}
-                onDeleteMedia={linkActions.deleteMedia}
-                onConfirm={() => location && handleConfirmLocation(location.id)}
-                onChange={() => location && handleChangeLocation(location.id)}
-              />
+              <View style={{ paddingHorizontal: theme.spacing.lg }}>
+                <LocationSection
+                  linkId={linkId}
+                  location={location}
+                  tileSize={tileSize}
+                  onDeleteMedia={linkActions.deleteMedia}
+                  onConfirm={() =>
+                    location && handleConfirmLocation(location.id)
+                  }
+                  onEdit={() => location && handleEditLocation(location.id)}
+                  onRemove={() => {}}
+                />
+              </View>
             )}
-            ListHeaderComponent={<LinkInfoCard link={linkDetail} />}
+            ListHeaderComponent={
+              <View style={{ paddingHorizontal: theme.spacing.lg }}>
+                <LinkInfoCard link={linkDetail} />
+
+                <SectionHeader
+                  title="Timeline"
+                  style={{ marginTop: theme.spacing.lg }}
+                />
+              </View>
+            }
           />
 
           {/* Bottom Actions (for active links) */}
@@ -383,6 +378,7 @@ const styles = StyleSheet.create((theme) => ({
   contentArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    marginTop: theme.spacing.lg,
   },
   container: {
     paddingVertical: theme.spacing.xl,
