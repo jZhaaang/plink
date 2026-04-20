@@ -76,7 +76,7 @@ export default function LinkInfoCard({ link }: LinkInfoCardProps) {
               {link.locations.length}
             </Text>
             <Text variant="bodySm" color="tertiary">
-              Location{link.postCount !== 1 ? 's' : ''}
+              Location{link.locations.length !== 1 ? 's' : ''}
             </Text>
           </Stack>
           <View style={styles.statDivider} />
