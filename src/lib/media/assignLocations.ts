@@ -113,8 +113,10 @@ export async function assignMediaLocations(
           latitude,
           longitude,
           name,
-          address: place?.address ?? null,
-          mapbox_id: place?.mapbox_id ?? null,
+          address: place?.address,
+          full_address: place?.fullAddress,
+          place_formatted: place?.placeFormatted,
+          mapbox_id: place?.mapbox_id,
           order_index: knownLocations.length,
           source: 'exif',
         });

@@ -2,6 +2,8 @@ export type MapboxPlace = {
   mapbox_id: string;
   name: string;
   address: string | null;
+  fullAddress: string | null;
+  placeFormatted: string | null;
   latitude: number;
   longitude: number;
 };
@@ -21,6 +23,7 @@ export type SearchBoxProperties = {
   mapbox_id: string;
   name: string;
   feature_type: string;
+  address?: string;
   full_address?: string;
   place_formatted?: string;
 };

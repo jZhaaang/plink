@@ -61,10 +61,9 @@ export async function reverseGeocode(
     return {
       mapbox_id: feature.properties.mapbox_id,
       name: feature.properties.name,
-      address:
-        feature.properties.full_address ??
-        feature.properties.place_formatted ??
-        null,
+      address: feature.properties.address,
+      fullAddress: feature.properties.full_address,
+      placeFormatted: feature.properties.place_formatted,
       latitude: lat,
       longitude: long,
     };

@@ -84,6 +84,7 @@ export type Database = {
           address: string | null;
           confirmed_at: string | null;
           created_at: string | null;
+          full_address: string | null;
           id: string;
           latitude: number;
           link_id: string;
@@ -91,12 +92,14 @@ export type Database = {
           mapbox_id: string | null;
           name: string;
           order_index: number;
+          place_formatted: string | null;
           source: string;
         };
         Insert: {
           address?: string | null;
           confirmed_at?: string | null;
           created_at?: string | null;
+          full_address?: string | null;
           id?: string;
           latitude: number;
           link_id: string;
@@ -104,12 +107,14 @@ export type Database = {
           mapbox_id?: string | null;
           name: string;
           order_index?: number;
+          place_formatted?: string | null;
           source?: string;
         };
         Update: {
           address?: string | null;
           confirmed_at?: string | null;
           created_at?: string | null;
+          full_address?: string | null;
           id?: string;
           latitude?: number;
           link_id?: string;
@@ -117,6 +122,7 @@ export type Database = {
           mapbox_id?: string | null;
           name?: string;
           order_index?: number;
+          place_formatted?: string | null;
           source?: string;
         };
         Relationships: [
