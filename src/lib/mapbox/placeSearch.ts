@@ -1,23 +1,8 @@
 import { supabase } from '../supabase/client';
+import { RetrievedPlace, SearchSuggestion } from './types';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const PROXY_BASE = `${SUPABASE_URL}/functions/v1/mapbox-proxy`;
-
-export type SearchSuggestion = {
-  mapbox_id: string;
-  name: string;
-  address: string | null;
-  place_formatted: string | null;
-  feature_type: string;
-};
-
-export type RetrievedPlace = {
-  mapbox_id: string;
-  name: string;
-  address: string | null;
-  longitude: number;
-  latitude: number;
-};
 
 async function getAuthHeader(): Promise<string | null> {
   const {
