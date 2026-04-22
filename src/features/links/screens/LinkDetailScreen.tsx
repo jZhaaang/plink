@@ -8,6 +8,7 @@ import {
   GestureResponderEvent,
   FlatList,
   useWindowDimensions,
+  Pressable,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
@@ -32,6 +33,7 @@ import StagedMediaSheet from '../components/StagedMediaSheet';
 import { formatDateTime } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
+import { Tabs, MaterialTabBar } from 'react-native-collapsible-tab-view';
 import { LinkLocationRow, LinkPostMedia } from '../../../lib/models';
 import {
   StackActions,
@@ -54,6 +56,7 @@ import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
 import EditLocationModal from '../components/EditLocationModal';
 import EditLocationSheet from '../components/EditLocationModal';
 import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -61,6 +64,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
   const rootNav = useNavigation<NativeStackNavigationProp<SignedInParamList>>();
+  const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
 
   const invalidate = useInvalidate();
@@ -247,39 +251,56 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   return (
     <>
-      <View style={styles.root}>
-        <StatusBar style="light" />
+      <StatusBar style="light" />
 
-        <HeroBanner
-          variant="default"
-          bannerUri={linkDetail.bannerUrl ?? null}
-          emptyHint="Add a photo to set a banner"
-          onBack={() => navigation.goBack()}
-          onMenuPress={handleMenuPress}
-        >
-          <Row align="center">
-            <View
-              style={[
-                styles.statusBadge,
-                isActive ? styles.statusBadgeActive : styles.statusBadgeEnded,
-              ]}
-            >
-              <Text variant="labelSm" color="inverse">
-                {isActive ? 'Active' : 'Ended'}
-              </Text>
-            </View>
-          </Row>
-          <Text variant="displaySm" color="inverse">
-            {linkDetail.name}
-          </Text>
-          <Text variant="bodyMd" color="inverseMuted">
-            {linkDetail.members.length}{' '}
-            {linkDetail.members.length === 1 ? 'member' : 'members'}
-          </Text>
-        </HeroBanner>
-
-        <View style={styles.contentArea}>
-          <FlatList
+      <Tabs.Container
+        minHeaderHeight={insets.top}
+        renderHeader={() => (
+          <HeroBanner
+            variant="default"
+            bannerUri={linkDetail.bannerUrl ?? null}
+            emptyHint="Add a photo to set a banner"
+            onBack={() => navigation.goBack()}
+            onMenuPress={handleMenuPress}
+          >
+            <Row align="center">
+              <View
+                style={[
+                  styles.statusBadge,
+                  isActive ? styles.statusBadgeActive : styles.statusBadgeEnded,
+                ]}
+              >
+                <Text variant="labelSm" color="inverse">
+                  {isActive ? 'Active' : 'Ended'}
+                </Text>
+              </View>
+            </Row>
+            <Text variant="displaySm" color="inverse">
+              {linkDetail.name}
+            </Text>
+            <Text variant="bodyMd" color="inverseMuted">
+              {linkDetail.members.length}{' '}
+              {linkDetail.members.length === 1 ? 'member' : 'members'}
+            </Text>
+          </HeroBanner>
+        )}
+        renderTabBar={(props) => (
+          <View style={{ backgroundColor: theme.colors.background }}>
+            <MaterialTabBar
+              {...props}
+              activeColor={theme.colors.tabActive}
+              inactiveColor={theme.colors.tabInactive}
+              tabStyle={{ backgroundColor: theme.colors.tabBackground }}
+              indicatorStyle={{ backgroundColor: theme.colors.tabActive }}
+              labelStyle={{ fontWeight: '600', fontSize: 13 }}
+            />
+          </View>
+        )}
+        containerStyle={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        {/* Timeline */}
+        <Tabs.Tab name="Overview">
+          <Tabs.FlatList
             data={sections}
             keyExtractor={(loc) => loc?.id ?? 'unknown'}
             renderItem={({ item: location }) => (
@@ -307,60 +328,96 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 }}
               >
                 <LinkInfoCard link={linkDetail} />
-
                 <SectionHeader
-                  title="Timeline"
+                  title="Location Timeline"
                   style={{ marginTop: theme.spacing.lg }}
+                  action={
+                    <Row gap="xs">
+                      <Pressable
+                        onPress={() => {}}
+                        style={[
+                          styles.timelineAction,
+                          { backgroundColor: theme.colors.surfacePressed },
+                        ]}
+                      >
+                        <Feather
+                          name="list"
+                          size={12}
+                          color={theme.colors.textSecondary}
+                        />
+                        <Text variant="labelSm" color="secondary">
+                          Reorder
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {}}
+                        style={[
+                          styles.timelineAction,
+                          { backgroundColor: `${theme.colors.primary}20` },
+                        ]}
+                      >
+                        <Feather
+                          name="plus"
+                          size={12}
+                          color={theme.colors.primary}
+                        />
+                        <Text variant="labelSm" color="accent">
+                          Add
+                        </Text>
+                      </Pressable>
+                    </Row>
+                  }
                 />
               </View>
             }
           />
+        </Tabs.Tab>
 
-          {/* Bottom Actions (for active links) */}
-          {isActive && isMember && (
-            <>
-              {hasAssets && (
-                <StagedMediaSheet
-                  assets={stagedAssets}
-                  onAddFromGallery={addFromGallery}
-                  onRemove={removeAsset}
-                  onClearAll={clearAll}
-                  onUpload={uploadAll}
-                  uploading={uploading}
-                />
-              )}
-            </>
-          )}
+        {/* Map */}
+        <Tabs.Tab name="Map">
+          <Tabs.ScrollView>
+            <Text variant="bodyMd" color="tertiary">
+              Map
+            </Text>
+          </Tabs.ScrollView>
+        </Tabs.Tab>
+      </Tabs.Container>
 
-          {isActive && !isMember && (
-            <JoinLinkBanner
-              onJoin={linkActions.joinLink}
-              memberCount={linkDetail.members.length}
-            />
-          )}
+      {isActive && isMember && hasAssets && (
+        <StagedMediaSheet
+          assets={stagedAssets}
+          onAddFromGallery={addFromGallery}
+          onRemove={removeAsset}
+          onClearAll={clearAll}
+          onUpload={uploadAll}
+          uploading={uploading}
+        />
+      )}
+      {isActive && !isMember && (
+        <JoinLinkBanner
+          onJoin={linkActions.joinLink}
+          memberCount={linkDetail.members.length}
+        />
+      )}
 
-          {/* Dropdown Menu */}
-          <DropdownMenu
-            visible={menuVisible}
-            onClose={() => setMenuVisible(false)}
-            anchor={menuAnchor}
-            items={menuItems}
-          />
+      <DropdownMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+        items={menuItems}
+      />
+      <UploadProgressModal visible={uploading} progress={progress} />
 
-          <UploadProgressModal visible={uploading} progress={progress} />
-        </View>
-
-        {editingLocation && (
-          <EditLocationModal
-            visible={!!editingLocation}
-            location={editingLocation}
-            onClose={() => setEditingLocation(null)}
-            onSave={(update) =>
-              locationActions.editLocation(editingLocation.id, update)
-            }
-          />
-        )}
-      </View>
+      {editingLocation && (
+        <EditLocationModal
+          visible={!!editingLocation}
+          location={editingLocation}
+          onClose={() => setEditingLocation(null)}
+          onSave={(update) =>
+            locationActions.editLocation(editingLocation.id, update)
+          }
+        />
+      )}
     </>
   );
 }
@@ -375,24 +432,14 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: 2,
     borderRadius: theme.radii.full,
   },
-  statusBadgeActive: {
-    backgroundColor: theme.colors.badgeActive,
-  },
-  statusBadgeEnded: {
-    backgroundColor: theme.colors.badgeInactive,
-  },
-  contentArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  container: {
-    paddingVertical: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  section: {
-    paddingHorizontal: theme.spacing.lg,
+  statusBadgeActive: { backgroundColor: theme.colors.badgeActive },
+  statusBadgeEnded: { backgroundColor: theme.colors.badgeInactive },
+  timelineAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
   },
 }));
