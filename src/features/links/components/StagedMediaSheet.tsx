@@ -12,6 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Row, Text } from '../../../components';
+import { TAB_BAR_HEIGHT } from '../../../navigation/CustomTabBar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   assets: StagedAsset[];
@@ -35,6 +37,7 @@ export default function StagedMediaSheet({
   uploading,
 }: Props) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
 
   const sheetRef = useRef<BottomSheet>(null);
@@ -100,6 +103,7 @@ export default function StagedMediaSheet({
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose={false}
+      bottomInset={TAB_BAR_HEIGHT + insets.bottom}
     >
       <Animated.View
         style={[{ flex: 1 }, expandedStyle]}
