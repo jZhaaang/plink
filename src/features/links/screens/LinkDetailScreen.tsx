@@ -290,10 +290,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   tileSize={tileSize}
                   onDeleteMedia={linkActions.deleteMedia}
                   onConfirm={() =>
-                    location && handleConfirmLocation(location.id)
+                    location && locationActions.confirmLocation(location.id)
                   }
                   onEdit={() => location && setEditingLocation(location)}
-                  onRemove={() => {}}
+                  onRemove={() =>
+                    location && locationActions.deleteLocation(location.id)
+                  }
                 />
               </View>
             )}

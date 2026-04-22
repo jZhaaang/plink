@@ -1,17 +1,11 @@
 import { useState } from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, GestureResponderEvent } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
 import { LinkLocationRow, LinkMedia } from '../../../lib/models';
 import { useLocationMedia } from '../hooks/useLocationMedia';
-import {
-  MediaTile,
-  Row,
-  SectionHeader,
-  Spinner,
-  Stack,
-  Text,
-} from '../../../components';
+import { MediaTile, Row, Spinner, Stack, Text } from '../../../components';
+import DropdownMenu from '../../../components/DropdownMenu';
 
 const PREVIEW_COUNT = 8;
 const COLUMNS = 4;
@@ -42,10 +36,22 @@ function LocationSectionHeader({
 }: LocationSectionHeaderProps) {
   const { theme } = useUnistyles();
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   const isUnknown = !location;
-  const needsConfirm = location?.source === 'exif';
+  const needsConfirm = !location?.confirmed_at;
+
+  const handleMenuPress = (event: GestureResponderEvent) => {
+    event.currentTarget.measureInWindow(
+      (x: number, y: number, width: number, height: number) => {
+        setMenuAnchor({ x: x + width, y: y + height });
+        setMenuVisible(true);
+      },
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -66,6 +72,11 @@ function LocationSectionHeader({
               >
                 {isUnknown ? 'No Location' : location.name}
               </Text>
+              <View style={styles.badge}>
+                <Text variant="labelSm" color="secondary">
+                  {mediaCount}
+                </Text>
+              </View>
             </Row>
             {!isUnknown && location.address && (
               <Text variant="bodySm" color="tertiary">
@@ -102,10 +113,7 @@ function LocationSectionHeader({
                   </Pressable>
                 </>
               ) : (
-                <Pressable
-                  onPress={() => setMenuOpen((v) => !v)}
-                  style={styles.moreButton}
-                >
+                <Pressable onPress={handleMenuPress} hitSlop={6}>
                   <Feather
                     name="more-horizontal"
                     size={16}
@@ -115,43 +123,24 @@ function LocationSectionHeader({
               )}
             </Row>
 
-            {menuOpen && (
-              <View style={styles.dropdown}>
-                <Pressable
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    onEdit();
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Feather
-                    name="edit-2"
-                    size={12}
-                    color={theme.colors.badgeText}
-                  />
-                  <Text variant="bodySm" color="primary">
-                    Edit location
-                  </Text>
-                </Pressable>
-                <View style={styles.dropdownDivider} />
-                <Pressable
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    onRemove();
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Feather
-                    name="trash-2"
-                    size={13}
-                    color={theme.colors.error}
-                  />
-                  <Text variant="bodySm" color="error">
-                    Remove location
-                  </Text>
-                </Pressable>
-              </View>
-            )}
+            <DropdownMenu
+              visible={menuVisible}
+              onClose={() => setMenuVisible(false)}
+              anchor={menuAnchor}
+              items={[
+                {
+                  icon: 'edit-2',
+                  label: 'Edit location',
+                  onPress: onEdit,
+                },
+                {
+                  icon: 'trash-2',
+                  label: 'Remove location',
+                  variant: 'danger',
+                  onPress: onRemove,
+                },
+              ]}
+            />
           </View>
         )}
       </Row>
@@ -184,7 +173,7 @@ export default function LocationSection({
   const { media, loading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useLocationMedia(linkId, location?.id ?? null);
 
-  if (!loading && media.length === 0) return null;
+  if (!location && !loading && media.length === 0) return null;
 
   const visibleMedia = expanded ? media : media.slice(0, PREVIEW_COUNT);
   const rows = chunk(visibleMedia, COLUMNS);
@@ -263,6 +252,11 @@ const styles = StyleSheet.create((theme) => ({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
+  badge: {
+    backgroundColor: theme.colors.surfacePressed,
+    borderRadius: theme.radii.full,
+    paddingHorizontal: theme.spacing.sm,
+  },
   changeButton: {
     paddingHorizontal: theme.spacing.sm,
   },
@@ -299,9 +293,6 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.spacing.md,
     borderTopWidth: 1,
     borderTopColor: theme.colors.borderLight,
-  },
-  moreButton: {
-    padding: theme.spacing.xs,
   },
   dropdown: {
     position: 'absolute',
