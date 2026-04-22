@@ -4,12 +4,13 @@ import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import { useDialog } from '../../../providers/DialogProvider';
 import {
   confirmLinkLocation,
+  createLinkLocation,
   deleteLinkLocation,
   updateLinkLocation,
   upsertLinkLocations,
 } from '../../../lib/supabase/queries/linkLocations';
 import { logger } from '../../../lib/telemetry/logger';
-import { LinkLocationUpdate } from '../../../lib/models';
+import { LinkLocationInsert, LinkLocationUpdate } from '../../../lib/models';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
 
 interface UseLinkLocationsActionsParams {
@@ -37,6 +38,24 @@ export function useLinkLocationsActions({
       } catch (err) {
         logger.error('Error confirming link location', { err });
         await dialog.error('Failed to Confirm Location', getErrorMessage(err));
+      }
+    },
+    [linkId, partyId, dialog, invalidate],
+  );
+
+  const addLocation = useCallback(
+    async (location: LinkLocationInsert) => {
+      try {
+        await createLinkLocation(location);
+        invalidate.linkLocations(linkId);
+        Burnt.toast({
+          title: 'Location added',
+          preset: 'done',
+          haptic: 'success',
+        });
+      } catch (err) {
+        logger.error('Error creating link location', { err });
+        await dialog.error('Failed to Add Location', getErrorMessage(err));
       }
     },
     [linkId, partyId, dialog, invalidate],
@@ -105,6 +124,7 @@ export function useLinkLocationsActions({
 
   return {
     confirmLocation,
+    addLocation,
     editLocation,
     editLocations,
     deleteLocation,

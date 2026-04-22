@@ -10,40 +10,36 @@ import {
   Text,
   TextField,
 } from '../../../components';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import * as Burnt from 'burnt';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import * as Location from 'expo-location';
 import { ModalHeader } from '../../../components';
-import {
-  LinkLocationInsert,
-  LinkLocationRow,
-  LinkLocationUpdate,
-} from '../../../lib/models';
+import { LinkLocationInsert, LinkLocationRow } from '../../../lib/models';
 import { SearchSuggestion } from '../../../lib/mapbox/types';
 import { randomUUID } from 'expo-crypto';
 import { retrievePlace, suggestPlaces } from '../../../lib/mapbox/placeSearch';
 
-interface EditLocationSheetProps {
+interface LocationPickerModalProps {
   visible: boolean;
-  location: LinkLocationRow;
+  location?: LinkLocationRow;
   onClose: () => void;
-  onSave: (update: LinkLocationUpdate) => Promise<void>;
+  onSave: (data: LinkLocationInsert) => Promise<void>;
 }
 
-export default function EditLocationModal({
+export default function LocationPickerModal({
   visible,
   location,
   onClose,
   onSave,
-}: EditLocationSheetProps) {
+}: LocationPickerModalProps) {
   const { theme } = useUnistyles();
-  const sheetRef = useRef<BottomSheetModal>(null);
 
-  const [currentLocation, setCurrentLocation] =
-    useState<LinkLocationInsert>(location);
-
-  const [query, setQuery] = useState(location.name);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [query, setQuery] = useState('');
   const [fetching, setFetching] = useState(false);
   const [searchPending, setSearchPending] = useState(false);
   const [results, setResults] = useState<SearchSuggestion[]>([]);
@@ -51,37 +47,61 @@ export default function EditLocationModal({
   const [sessionToken, setSessionToken] = useState('');
   const [searchHeight, setSearchHeight] = useState(0);
 
-  const subtitle = [currentLocation.address, currentLocation.place_formatted]
+  const title = location ? 'Edit Location' : 'Add Location';
+  const initialQuery = location?.name ?? '';
+
+  const locationSubtitle = [location?.address, location?.place_formatted]
     .filter(Boolean)
     .join(', ');
   const trimmed = query.trim();
   const showLoading = searchPending || fetching;
   const showEmpty =
     trimmed.length >= 3 &&
-    trimmed !== currentLocation.name &&
+    trimmed !== location?.name &&
     !showLoading &&
     results.length === 0;
-  const hasDropdown = trimmed.length >= 3 && trimmed !== currentLocation.name;
+  const hasDropdown = trimmed.length >= 3 && trimmed !== location?.name;
   const dropdownTop = searchHeight * 0.45;
   const hiddenTop = searchHeight - dropdownTop;
 
   useEffect(() => {
     if (visible) {
-      sheetRef.current?.present();
-      setCurrentLocation(location);
-      setQuery(location.name);
+      setQuery(initialQuery);
       setResults([]);
       setFetching(false);
       setSessionToken(randomUUID());
-    } else {
-      sheetRef.current?.dismiss();
+      (async () => {
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') return;
+
+          const last = await Location.getLastKnownPositionAsync();
+          if (last) {
+            setUserLocation({
+              latitude: last.coords.latitude,
+              longitude: last.coords.longitude,
+            });
+            return;
+          }
+
+          const current = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          setUserLocation({
+            latitude: current.coords.latitude,
+            longitude: current.coords.longitude,
+          });
+        } catch {
+          // silent fail
+        }
+      })();
     }
-  }, [visible, location.id, location.name]);
+  }, [visible, location?.id, location?.name]);
 
   useEffect(() => {
     if (!visible) return;
 
-    if (trimmed.length < 3 || trimmed === currentLocation.name) {
+    if (trimmed.length < 3 || trimmed === location?.name) {
       setResults([]);
       setFetching(false);
       setSearchPending(false);
@@ -93,10 +113,16 @@ export default function EditLocationModal({
     const timer = setTimeout(async () => {
       setFetching(true);
       try {
-        const suggestions = await suggestPlaces(trimmed, sessionToken, {
-          longitude: location.longitude,
-          latitude: location.latitude,
-        });
+        const suggestions = await suggestPlaces(
+          trimmed,
+          sessionToken,
+          location
+            ? {
+                longitude: location.longitude,
+                latitude: location.latitude,
+              }
+            : userLocation,
+        );
         setResults(suggestions);
       } catch {
         setResults([]);
@@ -107,55 +133,59 @@ export default function EditLocationModal({
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [query, sessionToken, visible, currentLocation.name]);
+  }, [query, sessionToken, visible, location?.name]);
 
   const handleClose = useCallback(() => {
     Keyboard.dismiss();
     onClose();
   }, [onClose]);
 
-  const handleSelect = useCallback(async (item: SearchSuggestion) => {
-    if (savingId) return;
-    setSavingId(item.mapbox_id);
-    Keyboard.dismiss();
+  const handleSelect = useCallback(
+    async (item: SearchSuggestion) => {
+      if (savingId) return;
+      setSavingId(item.mapbox_id);
+      Keyboard.dismiss();
 
-    try {
-      const place = await retrievePlace(item.mapbox_id, sessionToken);
-      if (!place) {
+      try {
+        const place = await retrievePlace(item.mapbox_id, sessionToken);
+        if (!place) {
+          setSavingId(null);
+          return;
+        }
+
+        const full_address = [place.address, item.place_formatted]
+          .filter(Boolean)
+          .join(', ');
+
+        await onSave({
+          name: place.name,
+          link_id: location?.link_id,
+          address: place.address,
+          place_formatted: item.place_formatted,
+          full_address,
+          mapbox_id: place.mapbox_id,
+          latitude: place.latitude,
+          longitude: place.longitude,
+          source: 'user',
+          confirmed_at: new Date().toISOString(),
+        });
+
+        Burnt.toast({
+          title: location ? 'Location edited' : 'Location added',
+          preset: 'done',
+          haptic: 'success',
+        });
+
+        setQuery('');
+        setResults([]);
+        setSessionToken(randomUUID());
+        onClose();
+      } finally {
         setSavingId(null);
-        return;
       }
-
-      const full_address = [place.address, item.place_formatted]
-        .filter(Boolean)
-        .join(', ');
-
-      await onSave({
-        name: place.name,
-        address: place.address,
-        place_formatted: item.place_formatted,
-        full_address,
-        mapbox_id: place.mapbox_id,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        source: 'user',
-        confirmed_at: new Date().toISOString(),
-      });
-
-      Burnt.toast({
-        title: 'Location updated',
-        preset: 'done',
-        haptic: 'success',
-      });
-
-      setQuery('');
-      setResults([]);
-      setSessionToken(randomUUID());
-      onClose();
-    } finally {
-      setSavingId(null);
-    }
-  }, []);
+    },
+    [savingId, sessionToken, location, onSave, onClose],
+  );
 
   return (
     <Modal
@@ -164,7 +194,7 @@ export default function EditLocationModal({
       animationType="fade"
       scrollEnabled={false}
     >
-      <ModalHeader title="Edit Location" onClose={handleClose} />
+      <ModalHeader title={title} onClose={handleClose} />
 
       <View style={styles.searchStack}>
         <View
@@ -243,7 +273,7 @@ export default function EditLocationModal({
                 nestedScrollEnabled
               >
                 {results.map((item, i) => {
-                  const isCurrent = item.mapbox_id === location.mapbox_id;
+                  const isCurrent = item.mapbox_id === location?.mapbox_id;
                   const itemSubtitle = [item.address, item.place_formatted]
                     .filter(Boolean)
                     .join(', ');
@@ -306,24 +336,26 @@ export default function EditLocationModal({
           </View>
         )}
       </View>
-      <Row align="center" gap="md" style={styles.currentCard}>
-        <View style={styles.mapIconWrap}>
-          <Feather name="map-pin" size={14} color={theme.colors.primary} />
-        </View>
-        <Stack flex={1}>
-          <Text variant="labelSm" color="tertiary">
-            Currently
-          </Text>
-          <Text variant="headingMd" color="primary" numberOfLines={1}>
-            {currentLocation.name}
-          </Text>
-          {subtitle ? (
-            <Text variant="bodySm" color="tertiary">
-              {subtitle}
+      {location && (
+        <Row align="center" gap="md" style={styles.currentCard}>
+          <View style={styles.mapIconWrap}>
+            <Feather name="map-pin" size={14} color={theme.colors.primary} />
+          </View>
+          <Stack flex={1}>
+            <Text variant="labelSm" color="tertiary">
+              Currently
             </Text>
-          ) : null}
-        </Stack>
-      </Row>
+            <Text variant="headingMd" color="primary" numberOfLines={1}>
+              {location.name}
+            </Text>
+            {locationSubtitle ? (
+              <Text variant="bodySm" color="tertiary">
+                {locationSubtitle}
+              </Text>
+            ) : null}
+          </Stack>
+        </Row>
+      )}
     </Modal>
   );
 }

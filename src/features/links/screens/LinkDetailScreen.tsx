@@ -53,10 +53,11 @@ import { logger } from '../../../lib/telemetry/logger';
 import LocationSection from '../components/LocationSection';
 import LinkInfoCard from '../components/LinkInfoCard';
 import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
-import EditLocationModal from '../components/EditLocationModal';
-import EditLocationSheet from '../components/EditLocationModal';
+import EditLocationModal from '../components/LocationPickerModal';
+import EditLocationSheet from '../components/LocationPickerModal';
 import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LocationPickerModal from '../components/LocationPickerModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -126,6 +127,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     y: number;
   } | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [addLocationVisible, setAddLocationVisible] = useState(false);
   const [editingLocation, setEditingLocation] =
     useState<LinkLocationRow | null>(null);
 
@@ -350,7 +352,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                         </Text>
                       </Pressable>
                       <Pressable
-                        onPress={() => {}}
+                        onPress={() => setAddLocationVisible(true)}
                         style={[
                           styles.timelineAction,
                           { backgroundColor: `${theme.colors.primary}20` },
@@ -408,16 +410,26 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       />
       <UploadProgressModal visible={uploading} progress={progress} />
 
-      {editingLocation && (
-        <EditLocationModal
-          visible={!!editingLocation}
-          location={editingLocation}
-          onClose={() => setEditingLocation(null)}
-          onSave={(update) =>
-            locationActions.editLocation(editingLocation.id, update)
-          }
-        />
-      )}
+      <LocationPickerModal
+        visible={!!editingLocation}
+        location={editingLocation}
+        onClose={() => setEditingLocation(null)}
+        onSave={(data) =>
+          locationActions.editLocation(editingLocation.id, data)
+        }
+      />
+
+      <LocationPickerModal
+        visible={addLocationVisible}
+        onClose={() => setAddLocationVisible(false)}
+        onSave={(data) =>
+          locationActions.addLocation({
+            ...data,
+            link_id: linkId,
+            order_index: locations.length,
+          })
+        }
+      />
     </>
   );
 }
