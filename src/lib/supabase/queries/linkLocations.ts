@@ -122,3 +122,14 @@ export async function upsertLinkLocations(
   );
   if (error) throw error;
 }
+
+export async function deleteLinkLocation(locationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('link_locations')
+    .delete()
+    .eq('id', locationId);
+
+  if (error) throw error;
+
+  return;
+}

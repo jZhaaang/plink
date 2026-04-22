@@ -32,7 +32,7 @@ import StagedMediaSheet from '../components/StagedMediaSheet';
 import { formatDateTime } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
-import { LinkPostMedia } from '../../../lib/models';
+import { LinkLocationRow, LinkPostMedia } from '../../../lib/models';
 import {
   StackActions,
   useFocusEffect,
@@ -50,6 +50,9 @@ import { confirmLinkLocation } from '../../../lib/supabase/queries/linkLocations
 import { logger } from '../../../lib/telemetry/logger';
 import LocationSection from '../components/LocationSection';
 import LinkInfoCard from '../components/LinkInfoCard';
+import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
+import EditLocationModal from '../components/EditLocationModal';
+import EditLocationSheet from '../components/EditLocationModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -89,6 +92,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     },
     onLeave: () => navigation.goBack(),
   });
+  const locationActions = useLinkLocationsActions({ linkId, partyId });
 
   const { uploadAction, clearUploadAction } = useActiveLinkContext();
 
@@ -117,6 +121,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     y: number;
   } | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingLocation, setEditingLocation] =
+    useState<LinkLocationRow | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -295,13 +301,18 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   onConfirm={() =>
                     location && handleConfirmLocation(location.id)
                   }
-                  onEdit={() => location && handleEditLocation(location.id)}
+                  onEdit={() => location && setEditingLocation(location)}
                   onRemove={() => {}}
                 />
               </View>
             )}
             ListHeaderComponent={
-              <View style={{ paddingHorizontal: theme.spacing.lg }}>
+              <View
+                style={{
+                  paddingHorizontal: theme.spacing.lg,
+                  paddingTop: theme.spacing.md,
+                }}
+              >
                 <LinkInfoCard link={linkDetail} />
 
                 <SectionHeader
@@ -354,6 +365,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
           <UploadProgressModal visible={uploading} progress={progress} />
         </View>
+
+        {editingLocation && (
+          <EditLocationModal
+            visible={!!editingLocation}
+            location={editingLocation}
+            onClose={() => setEditingLocation(null)}
+            onSave={(update) =>
+              locationActions.editLocation(editingLocation.id, update)
+            }
+          />
+        )}
       </View>
     </>
   );
@@ -378,7 +400,6 @@ const styles = StyleSheet.create((theme) => ({
   contentArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    marginTop: theme.spacing.lg,
   },
   container: {
     paddingVertical: theme.spacing.xl,
