@@ -19,6 +19,7 @@ import { LinkLocationInsert, LinkLocationRow } from '../../../lib/models';
 import { SearchSuggestion } from '../../../lib/mapbox/types';
 import { randomUUID } from 'expo-crypto';
 import { retrievePlace, suggestPlaces } from '../../../lib/mapbox/placeSearch';
+import { useLocationSearch } from '../hooks/useLocationSearch';
 
 interface LocationPickerModalProps {
   visible: boolean;
@@ -39,37 +40,41 @@ export default function LocationPickerModal({
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [query, setQuery] = useState('');
-  const [fetching, setFetching] = useState(false);
-  const [searchPending, setSearchPending] = useState(false);
-  const [results, setResults] = useState<SearchSuggestion[]>([]);
+  const {
+    query,
+    setQuery,
+    results,
+    loading,
+    shouldSearch,
+    retrieveSelected,
+    reset,
+  } = useLocationSearch({
+    initialQuery: location?.name ?? '',
+    proximity: location
+      ? { latitude: location.latitude, longitude: location.longitude }
+      : userLocation,
+    skipQuery: location?.name,
+  });
+
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [sessionToken, setSessionToken] = useState('');
   const [searchHeight, setSearchHeight] = useState(0);
 
   const title = location ? 'Edit Location' : 'Add Location';
-  const initialQuery = location?.name ?? '';
 
   const locationSubtitle = [location?.address, location?.place_formatted]
     .filter(Boolean)
     .join(', ');
   const trimmed = query.trim();
-  const showLoading = searchPending || fetching;
-  const showEmpty =
-    trimmed.length >= 3 &&
-    trimmed !== location?.name &&
-    !showLoading &&
-    results.length === 0;
-  const hasDropdown = trimmed.length >= 3 && trimmed !== location?.name;
+  const showLoading = loading;
+  const showEmpty = shouldSearch && !loading && results.length === 0;
+  const hasDropdown = shouldSearch;
   const dropdownTop = searchHeight * 0.45;
   const hiddenTop = searchHeight - dropdownTop;
 
   useEffect(() => {
     if (visible) {
-      setQuery(initialQuery);
-      setResults([]);
-      setFetching(false);
-      setSessionToken(randomUUID());
+      reset(location?.name ?? '');
+
       (async () => {
         try {
           const { status } = await Location.requestForegroundPermissionsAsync();
@@ -98,43 +103,6 @@ export default function LocationPickerModal({
     }
   }, [visible, location?.id, location?.name]);
 
-  useEffect(() => {
-    if (!visible) return;
-
-    if (trimmed.length < 3 || trimmed === location?.name) {
-      setResults([]);
-      setFetching(false);
-      setSearchPending(false);
-      return;
-    }
-
-    setSearchPending(true);
-
-    const timer = setTimeout(async () => {
-      setFetching(true);
-      try {
-        const suggestions = await suggestPlaces(
-          trimmed,
-          sessionToken,
-          location
-            ? {
-                longitude: location.longitude,
-                latitude: location.latitude,
-              }
-            : userLocation,
-        );
-        setResults(suggestions);
-      } catch {
-        setResults([]);
-      } finally {
-        setFetching(false);
-        setSearchPending(false);
-      }
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [query, sessionToken, visible, location?.name]);
-
   const handleClose = useCallback(() => {
     Keyboard.dismiss();
     onClose();
@@ -147,7 +115,7 @@ export default function LocationPickerModal({
       Keyboard.dismiss();
 
       try {
-        const place = await retrievePlace(item.mapbox_id, sessionToken);
+        const place = await retrieveSelected(item.mapbox_id);
         if (!place) {
           setSavingId(null);
           return;
@@ -176,15 +144,13 @@ export default function LocationPickerModal({
           haptic: 'success',
         });
 
-        setQuery('');
-        setResults([]);
-        setSessionToken(randomUUID());
+        reset();
         onClose();
       } finally {
         setSavingId(null);
       }
     },
-    [savingId, sessionToken, location, onSave, onClose],
+    [savingId, location, onSave, onClose],
   );
 
   return (
