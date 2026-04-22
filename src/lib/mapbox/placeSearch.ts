@@ -1,5 +1,5 @@
 import { supabase } from '../supabase/client';
-import { RetrievedPlace, SearchSuggestion } from './types';
+import { RetrievedPlace, SearchBoxProperties, SearchSuggestion } from './types';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const PROXY_BASE = `${SUPABASE_URL}/functions/v1/mapbox-proxy`;
@@ -43,7 +43,7 @@ export async function suggestPlaces(
 
   if (!res.ok) throw new Error('Search failed');
 
-  const data = await res.json();
+  const data = (await res.json()) as { suggestions?: SearchBoxProperties[] };
   return (data.suggestions ?? [])
     .filter((s) => s.feature_type !== 'brand')
     .map(
