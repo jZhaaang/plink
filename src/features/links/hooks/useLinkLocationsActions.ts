@@ -109,6 +109,7 @@ export function useLinkLocationsActions({
 
       try {
         await deleteLinkLocation(locationId);
+        invalidate.linkLocations(linkId);
         Burnt.toast({
           title: 'Location removed',
           preset: 'done',
