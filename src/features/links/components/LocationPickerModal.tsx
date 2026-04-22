@@ -10,15 +10,13 @@ import {
   Text,
   TextField,
 } from '../../../components';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 import * as Burnt from 'burnt';
 import * as Location from 'expo-location';
 import { ModalHeader } from '../../../components';
 import { LinkLocationInsert, LinkLocationRow } from '../../../lib/models';
 import { SearchSuggestion } from '../../../lib/mapbox/types';
-import { randomUUID } from 'expo-crypto';
-import { retrievePlace, suggestPlaces } from '../../../lib/mapbox/placeSearch';
 import { useLocationSearch } from '../hooks/useLocationSearch';
 
 interface LocationPickerModalProps {
@@ -40,6 +38,13 @@ export default function LocationPickerModal({
     latitude: number;
     longitude: number;
   } | null>(null);
+  const proximity = useMemo(
+    () =>
+      location
+        ? { latitude: location.latitude, longitude: location.longitude }
+        : userLocation,
+    [location?.latitude, location?.longitude, userLocation],
+  );
   const {
     query,
     setQuery,
@@ -50,9 +55,7 @@ export default function LocationPickerModal({
     reset,
   } = useLocationSearch({
     initialQuery: location?.name ?? '',
-    proximity: location
-      ? { latitude: location.latitude, longitude: location.longitude }
-      : userLocation,
+    proximity,
     skipQuery: location?.name,
   });
 
