@@ -82,6 +82,12 @@ export function useLinkLocationsActions({
 
   const deleteLocation = useCallback(
     async (locationId: string) => {
+      const confirmed = await dialog.confirmDanger(
+        'Delete Location?',
+        'This will delete the location section. Photos and videos will still exist.',
+      );
+      if (!confirmed) return;
+
       try {
         await deleteLinkLocation(locationId);
         Burnt.toast({
