@@ -7,10 +7,10 @@ interface DropdownMenuProps {
   visible: boolean;
   onClose: () => void;
   anchor: { x: number; y: number } | null;
-  children: React.ReactNode;
+  items: DropdownMenuItemProps[];
 }
 
-interface DropdownMenuItemProps {
+export interface DropdownMenuItemProps {
   icon: ComponentProps<typeof Feather>['name'];
   label: string;
   onPress: () => void;
@@ -77,15 +77,27 @@ export default function DropdownMenu({
   visible,
   onClose,
   anchor,
-  children,
+  items,
 }: DropdownMenuProps) {
   if (!anchor) return null;
+
+  const wrappedItems = items.map((item) => ({
+    ...item,
+    onPress: () => {
+      onClose();
+      item.onPress();
+    },
+  }));
 
   return (
     <Modal visible={visible} transparent onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.menu(anchor.y)}>
-          <Pressable onPress={(e) => e.stopPropagation()}>{children}</Pressable>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            {wrappedItems.map((item) => (
+              <DropdownMenuItem key={item.label} {...item} />
+            ))}
+          </Pressable>
         </View>
       </Pressable>
     </Modal>

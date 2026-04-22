@@ -53,6 +53,7 @@ import LinkInfoCard from '../components/LinkInfoCard';
 import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
 import EditLocationModal from '../components/EditLocationModal';
 import EditLocationSheet from '../components/EditLocationModal';
+import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -180,19 +181,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     );
   };
 
-  const menuItems: Array<{
-    icon: ComponentProps<typeof Feather>['name'];
-    label: string;
-    action: () => void;
-    variant?: 'danger';
-  }> = [];
+  const menuItems: DropdownMenuItemProps[] = [];
 
   if (isOwner) {
     menuItems.push({
       icon: 'edit-2',
       label: 'Edit Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         setEditModalVisible(true);
       },
     });
@@ -201,8 +196,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       menuItems.push({
         icon: 'check-circle',
         label: 'End Link',
-        action: () => {
-          setMenuVisible(false);
+        onPress: () => {
           linkActions.endLink();
         },
       });
@@ -211,8 +205,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'trash-2',
       label: 'Delete Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         linkActions.deleteLink();
       },
       variant: 'danger',
@@ -221,8 +214,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'log-out',
       label: 'Leave Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         linkActions.leaveLink();
       },
       variant: 'danger',
@@ -231,8 +223,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'log-in',
       label: 'Join Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         linkActions.joinLink();
       },
     });
@@ -351,17 +342,8 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
             visible={menuVisible}
             onClose={() => setMenuVisible(false)}
             anchor={menuAnchor}
-          >
-            {menuItems.map((item, index) => (
-              <DropdownMenuItem
-                key={index}
-                icon={item.icon}
-                label={item.label}
-                onPress={item.action}
-                variant={item.variant}
-              />
-            ))}
-          </DropdownMenu>
+            items={menuItems}
+          />
 
           <UploadProgressModal visible={uploading} progress={progress} />
         </View>
