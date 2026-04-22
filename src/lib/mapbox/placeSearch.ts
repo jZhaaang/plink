@@ -1,5 +1,5 @@
 import { supabase } from '../supabase/client';
-import { RetrievedPlace, SearchBoxProperties, SearchSuggestion } from './types';
+import { MapboxPlace, SearchBoxProperties, SearchSuggestion } from './types';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const PROXY_BASE = `${SUPABASE_URL}/functions/v1/mapbox-proxy`;
@@ -61,7 +61,7 @@ export async function suggestPlaces(
 export async function retrievePlace(
   mapboxId: string,
   sessionToken: string,
-): Promise<RetrievedPlace | null> {
+): Promise<MapboxPlace | null> {
   const auth = await getAuthHeader();
   if (!auth) return null;
 
@@ -84,8 +84,10 @@ export async function retrievePlace(
   return {
     mapbox_id: props.mapbox_id,
     name: props.name,
-    address: props.full_address ?? props.address ?? null,
+    address: props.address ?? null,
+    placeFormatted: props.place_formatted,
+    fullAddress: props.full_address ?? null,
     longitude,
     latitude,
-  } as RetrievedPlace;
+  } as MapboxPlace;
 }

@@ -16,14 +16,6 @@ export type SearchSuggestion = {
   feature_type: string;
 };
 
-export type RetrievedPlace = {
-  mapbox_id: string;
-  name: string;
-  address: string | null;
-  longitude: number;
-  latitude: number;
-};
-
 type MapboxFeature<P extends Record<string, unknown>> = {
   type: 'Feature';
   geometry: { type: 'Point'; coordinates: [number, number] };
