@@ -35,6 +35,7 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-undef': 'off',
+      'no-redeclare': 'off',
     },
     settings: { react: { version: 'detect' } },
   },
