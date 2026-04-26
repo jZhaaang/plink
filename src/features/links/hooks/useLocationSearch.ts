@@ -6,21 +6,16 @@ import { retrievePlace, suggestPlaces } from '../../../lib/mapbox/placeSearch';
 interface Options {
   initialQuery?: string;
   proximity?: { latitude: number; longitude: number } | null;
-  skipQuery?: string;
 }
 
-export function useLocationSearch({
-  initialQuery = '',
-  proximity,
-  skipQuery,
-}: Options) {
+export function useLocationSearch({ initialQuery = '', proximity }: Options) {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [sessionToken] = useState(() => randomUUID());
 
   const trimmed = query.trim();
-  const shouldSearch = trimmed.length >= 3 && trimmed !== skipQuery;
+  const shouldSearch = trimmed.length >= 3 && trimmed !== initialQuery;
 
   useEffect(() => {
     if (!shouldSearch) {

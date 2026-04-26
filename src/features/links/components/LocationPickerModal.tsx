@@ -8,8 +8,7 @@ import * as Burnt from 'burnt';
 import * as Location from 'expo-location';
 import { ModalHeader } from '../../../components';
 import { LinkLocationInsert, LinkLocationRow } from '../../../lib/models';
-import { SearchSuggestion } from '../../../lib/mapbox/types';
-import { useLocationSearch } from '../hooks/useLocationSearch';
+import { MapboxPlace } from '../../../lib/mapbox/types';
 import LocationSearchField from './LocationSearchField';
 
 interface LocationPickerModalProps {
@@ -38,19 +37,6 @@ export default function LocationPickerModal({
         : userLocation,
     [location?.latitude, location?.longitude, userLocation],
   );
-  const {
-    query,
-    setQuery,
-    results,
-    loading,
-    shouldSearch,
-    retrieveSelected,
-    reset,
-  } = useLocationSearch({
-    initialQuery: location?.name ?? '',
-    proximity,
-    skipQuery: location?.name,
-  });
 
   const title = location ? 'Edit Location' : 'Add Location';
 
@@ -60,8 +46,6 @@ export default function LocationPickerModal({
 
   useEffect(() => {
     if (visible) {
-      reset(location?.name ?? '');
-
       (async () => {
         try {
           const { status } = await Location.requestForegroundPermissionsAsync();
@@ -95,21 +79,16 @@ export default function LocationPickerModal({
     onClose();
   }, [onClose]);
 
-  const handleSelect = useCallback(
-    async (item: SearchSuggestion) => {
-      const place = await retrieveSelected(item.mapbox_id);
-      if (!place) return;
-
-      const full_address = [place.address, item.place_formatted]
-        .filter(Boolean)
-        .join(', ');
-
+  const handleSelectPlace = useCallback(
+    async (place: MapboxPlace) => {
       await onSave({
         name: place.name,
         link_id: location?.link_id,
         address: place.address,
-        place_formatted: item.place_formatted,
-        full_address,
+        place_formatted: place.placeFormatted,
+        full_address: [place.address, place.placeFormatted]
+          .filter(Boolean)
+          .join(', '),
         mapbox_id: place.mapbox_id,
         latitude: place.latitude,
         longitude: place.longitude,
@@ -122,11 +101,9 @@ export default function LocationPickerModal({
         preset: 'done',
         haptic: 'success',
       });
-
-      reset();
       onClose();
     },
-    [location, onSave, onClose, retrieveSelected, reset],
+    [location, onSave, onClose],
   );
 
   return (
@@ -139,12 +116,9 @@ export default function LocationPickerModal({
       <ModalHeader title={title} onClose={handleClose} />
 
       <LocationSearchField
-        query={query}
-        onQueryChange={setQuery}
-        results={results}
-        loading={loading}
-        shouldSearch={shouldSearch}
-        onSelect={handleSelect}
+        initialQuery={location?.name}
+        proximity={proximity}
+        onSelect={handleSelectPlace}
         currentMapboxId={location?.mapbox_id}
       />
 

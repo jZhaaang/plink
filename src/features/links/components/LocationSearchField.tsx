@@ -1,5 +1,5 @@
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { SearchSuggestion } from '../../../lib/mapbox/types';
+import { MapboxPlace, SearchSuggestion } from '../../../lib/mapbox/types';
 import { useCallback, useState } from 'react';
 import { Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -11,31 +11,30 @@ import {
   Text,
   TextField,
 } from '../../../components';
+import { useLocationSearch } from '../hooks/useLocationSearch';
 
 interface LocationSearchFieldProps {
-  query: string;
-  onQueryChange: (query: string) => void;
-  results: SearchSuggestion[];
-  loading: boolean;
-  shouldSearch: boolean;
-  onSelect: (item: SearchSuggestion) => Promise<void>;
-  onBack?: () => void;
+  initialQuery?: string;
+  proximity?: { latitude: number; longitude: number } | null;
   currentMapboxId?: string | null;
+  onSelect: (place: MapboxPlace) => Promise<void>;
+  onBack?: () => void;
 }
 
 export default function LocationSearchField({
-  query,
-  onQueryChange,
-  results,
-  loading,
-  shouldSearch,
+  initialQuery = '',
+  proximity,
+  currentMapboxId,
   onSelect,
   onBack,
-  currentMapboxId,
 }: LocationSearchFieldProps) {
   const { theme } = useUnistyles();
+
   const [savingId, setSavingId] = useState<string | null>(null);
   const [searchHeight, setSearchHeight] = useState(0);
+
+  const { query, setQuery, results, loading, shouldSearch, retrieveSelected } =
+    useLocationSearch({ initialQuery, proximity });
 
   const dropdownTop = searchHeight * 0.45;
   const hiddenTop = searchHeight - dropdownTop;
@@ -46,12 +45,14 @@ export default function LocationSearchField({
       setSavingId(item.mapbox_id);
       Keyboard.dismiss();
       try {
-        await onSelect(item);
+        const place = await retrieveSelected(item.mapbox_id);
+        if (!place) return;
+        await onSelect(place);
       } finally {
         setSavingId(null);
       }
     },
-    [savingId, onSelect],
+    [savingId, retrieveSelected, onSelect],
   );
 
   const trimmed = query.trim();
@@ -76,7 +77,7 @@ export default function LocationSearchField({
         >
           <TextField
             value={query}
-            onChangeText={onQueryChange}
+            onChangeText={setQuery}
             placeholder="Search for a place..."
             autoFocus
             selectTextOnFocus
@@ -91,7 +92,7 @@ export default function LocationSearchField({
             }
             right={
               query.length > 0 ? (
-                <Pressable onPress={() => onQueryChange('')} hitSlop={8}>
+                <Pressable onPress={() => setQuery('')} hitSlop={8}>
                   <View style={styles.clearButton}>
                     <Feather
                       name="x"
