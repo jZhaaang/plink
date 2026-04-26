@@ -27,6 +27,7 @@ import {
   Text,
   Row,
   SectionHeader,
+  Button,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -58,6 +59,7 @@ import EditLocationSheet from '../components/LocationPickerModal';
 import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocationPickerModal from '../components/LocationPickerModal';
+import ManageLocationsModal from '../components/ManageLocationsModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -127,7 +129,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     y: number;
   } | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [addLocationVisible, setAddLocationVisible] = useState(false);
+  const [manageLocationsVisible, setManageLocationsVisible] = useState(false);
   const [editingLocation, setEditingLocation] =
     useState<LinkLocationRow | null>(null);
 
@@ -336,23 +338,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   action={
                     <Row gap="xs">
                       <Pressable
-                        onPress={() => {}}
-                        style={[
-                          styles.timelineAction,
-                          { backgroundColor: theme.colors.surfacePressed },
-                        ]}
-                      >
-                        <Feather
-                          name="list"
-                          size={12}
-                          color={theme.colors.textSecondary}
-                        />
-                        <Text variant="labelSm" color="secondary">
-                          Reorder
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => setAddLocationVisible(true)}
+                        onPress={() => setManageLocationsVisible(true)}
                         style={[
                           styles.timelineAction,
                           { backgroundColor: `${theme.colors.primary}20` },
@@ -364,7 +350,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                           color={theme.colors.primary}
                         />
                         <Text variant="labelSm" color="accent">
-                          Add
+                          Manage
                         </Text>
                       </Pressable>
                     </Row>
@@ -386,15 +372,21 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       </Tabs.Container>
 
       {isActive && isMember && hasAssets && (
-        <StagedMediaSheet
-          assets={stagedAssets}
-          onAddFromGallery={addFromGallery}
-          onRemove={removeAsset}
-          onClearAll={clearAll}
-          onUpload={uploadAll}
-          uploading={uploading}
-        />
+        <View
+          style={[StyleSheet.absoluteFillObject, { zIndex: 50 }]}
+          pointerEvents="box-none"
+        >
+          <StagedMediaSheet
+            assets={stagedAssets}
+            onAddFromGallery={addFromGallery}
+            onRemove={removeAsset}
+            onClearAll={clearAll}
+            onUpload={uploadAll}
+            uploading={uploading}
+          />
+        </View>
       )}
+
       {isActive && !isMember && (
         <JoinLinkBanner
           onJoin={linkActions.joinLink}
@@ -419,16 +411,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         }
       />
 
-      <LocationPickerModal
-        visible={addLocationVisible}
-        onClose={() => setAddLocationVisible(false)}
-        onSave={(data) =>
-          locationActions.addLocation({
-            ...data,
-            link_id: linkId,
-            order_index: locations.length,
-          })
-        }
+      <ManageLocationsModal
+        visible={manageLocationsVisible}
+        locations={locations}
+        onClose={() => setManageLocationsVisible(false)}
+        onSave={async (locations) => locationActions.editLocations(locations)}
       />
     </>
   );
