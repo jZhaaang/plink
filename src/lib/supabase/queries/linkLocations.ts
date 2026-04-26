@@ -111,6 +111,7 @@ export async function upsertLinkLocations(
   if (locations.length === 0) return;
   const { error } = await supabase.from('link_locations').insert(
     locations.map((loc, i) => ({
+      ...(loc.id && { id: loc.id }),
       link_id: linkId,
       order_index: i,
       name: loc.name,
@@ -118,6 +119,8 @@ export async function upsertLinkLocations(
       latitude: loc.latitude,
       longitude: loc.longitude,
       mapbox_id: loc.mapbox_id,
+      source: loc.source,
+      confirmed_at: new Date().toISOString(),
     })),
   );
   if (error) throw error;
