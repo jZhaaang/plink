@@ -18,7 +18,6 @@ interface LocationSearchFieldProps {
   proximity?: { latitude: number; longitude: number } | null;
   currentMapboxId?: string | null;
   onSelect: (place: MapboxPlace) => Promise<void>;
-  onBack?: () => void;
 }
 
 export default function LocationSearchField({
@@ -26,7 +25,6 @@ export default function LocationSearchField({
   proximity,
   currentMapboxId,
   onSelect,
-  onBack,
 }: LocationSearchFieldProps) {
   const { theme } = useUnistyles();
 
@@ -61,15 +59,6 @@ export default function LocationSearchField({
 
   return (
     <View style={styles.container}>
-      {onBack && (
-        <Pressable onPress={onBack} style={styles.backRow}>
-          <Feather name="chevron-left" size={16} color={theme.colors.primary} />
-          <Text variant="labelSm" color="accent">
-            Back to list
-          </Text>
-        </Pressable>
-      )}
-
       <View style={styles.searchStack}>
         <View
           style={styles.searchFieldWrap}
