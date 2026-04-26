@@ -68,6 +68,7 @@ export default function LocationSearchField({
             value={query}
             onChangeText={setQuery}
             placeholder="Search for a place..."
+            autoFocus
             selectTextOnFocus
             returnKeyType="search"
             autoCorrect={false}
