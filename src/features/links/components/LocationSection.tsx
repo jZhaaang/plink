@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Pressable, GestureResponderEvent } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
@@ -6,8 +6,15 @@ import { LinkLocationRow, LinkMedia } from '../../../lib/models';
 import { useLocationMedia } from '../hooks/useLocationMedia';
 import { MediaTile, Row, Spinner, Stack, Text } from '../../../components';
 import DropdownMenu from '../../../components/DropdownMenu';
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 const PREVIEW_COUNT = 8;
+const TILE_GAP = 2;
 const COLUMNS = 4;
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -23,7 +30,7 @@ interface LocationSectionHeaderProps {
   hasMore: boolean;
   onConfirm: () => void;
   onEdit: () => void;
-  onRemove: () => void;
+  onDelete: () => void;
 }
 
 function LocationSectionHeader({
@@ -32,7 +39,7 @@ function LocationSectionHeader({
   hasMore,
   onConfirm,
   onEdit,
-  onRemove,
+  onDelete,
 }: LocationSectionHeaderProps) {
   const { theme } = useUnistyles();
 
@@ -137,7 +144,7 @@ function LocationSectionHeader({
                   icon: 'trash-2',
                   label: 'Remove location',
                   variant: 'danger',
-                  onPress: onRemove,
+                  onPress: onDelete,
                 },
               ]}
             />
@@ -148,26 +155,102 @@ function LocationSectionHeader({
   );
 }
 
+interface SelectableTileProps {
+  item: LinkMedia;
+  tileSize: number;
+  isSelecting: boolean;
+  isSelected: boolean;
+  onPress: () => void;
+  onLongPress: () => void;
+}
+
+function SelectableTile({
+  item,
+  tileSize,
+  isSelecting,
+  isSelected,
+  onPress,
+  onLongPress,
+}: SelectableTileProps) {
+  const { theme } = useUnistyles();
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withTiming(isSelected ? 0.9 : 1, { duration: 150 });
+  }, [isSelected]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    borderRadius: interpolate(scale.value, [0.9, 1], [8, 0]),
+  }));
+
+  return (
+    <View style={{ width: tileSize, height: tileSize }}>
+      <Animated.View
+        style={[
+          { width: tileSize, height: tileSize, overflow: 'hidden' },
+          animatedStyle,
+        ]}
+      >
+        <MediaTile
+          uri={item.thumbnailUrl ?? (item.type === 'video' ? null : item.url)}
+          width={tileSize}
+          height={tileSize}
+          borderRadius={0}
+          onPress={onPress}
+          onLongPress={onLongPress}
+        />
+      </Animated.View>
+
+      {isSelecting && (
+        <View style={styles.selectionIndicator}>
+          <View
+            style={[
+              styles.selectionCircle,
+              isSelected && {
+                backgroundColor: theme.colors.primary,
+                borderColor: theme.colors.primary,
+              },
+            ]}
+          >
+            {isSelected && <Feather name="check" size={14} color="white" />}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
 interface LocationSectionProps {
   linkId: string;
   location: LinkLocationRow | null;
-  tileSize: number;
+  onPressMedia: (media: LinkMedia) => void;
   onDeleteMedia: (media: LinkMedia) => void;
   onConfirm: () => void;
   onEdit: () => void;
-  onRemove: () => void;
+  onDelete: () => void;
+  isSelecting: boolean;
+  selectedMedia: Map<string, LinkMedia>;
+  onEnterSelectMode: (media: LinkMedia) => void;
+  onToggleSelect: (media: LinkMedia) => void;
 }
 
 export default function LocationSection({
   linkId,
   location,
-  tileSize,
+  onPressMedia,
   onDeleteMedia,
   onConfirm,
   onEdit,
-  onRemove,
+  onDelete,
+  isSelecting,
+  selectedMedia,
+  onEnterSelectMode,
+  onToggleSelect,
 }: LocationSectionProps) {
   const { theme } = useUnistyles();
+
+  const [containerWidth, setContainerWidth] = useState(0);
   const [expanded, setExpanded] = useState(false);
 
   const { media, loading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -175,6 +258,10 @@ export default function LocationSection({
 
   if (!location && !loading && media.length === 0) return null;
 
+  const tileSize =
+    containerWidth > 0
+      ? (containerWidth - TILE_GAP * (COLUMNS - 1)) / COLUMNS
+      : 0;
   const visibleMedia = expanded ? media : media.slice(0, PREVIEW_COUNT);
   const rows = chunk(visibleMedia, COLUMNS);
 
@@ -182,14 +269,17 @@ export default function LocationSection({
   const showLoadMore = expanded && hasNextPage;
 
   return (
-    <View style={{ marginBottom: theme.spacing.md }}>
+    <View
+      style={{ marginBottom: theme.spacing.md }}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
       <LocationSectionHeader
         location={location}
         mediaCount={media.length}
         hasMore={!!hasNextPage}
         onConfirm={onConfirm}
         onEdit={onEdit}
-        onRemove={onRemove}
+        onDelete={onDelete}
       />
 
       {loading ? (
@@ -198,17 +288,20 @@ export default function LocationSection({
         </View>
       ) : (
         rows.map((row, i) => (
-          <Row key={i} gap="xs" style={styles.row}>
+          <Row key={i} gap="xs" style={{ marginBottom: theme.spacing.xs }}>
             {row.map((item) => (
-              <MediaTile
+              <SelectableTile
                 key={item.id}
-                uri={
-                  item.thumbnailUrl ?? (item.type === 'video' ? null : item.url)
-                }
-                width={tileSize}
-                height={tileSize}
-                borderRadius={0}
-                onPress={() => {}}
+                item={item}
+                tileSize={tileSize}
+                isSelecting={isSelecting}
+                isSelected={selectedMedia.has(item.id)}
+                onPress={() => {
+                  if (isSelecting) onToggleSelect(item);
+                }}
+                onLongPress={() => {
+                  if (!isSelecting) onEnterSelectMode(item);
+                }}
               />
             ))}
           </Row>
@@ -252,6 +345,22 @@ const styles = StyleSheet.create((theme) => ({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
+  selectionIndicator: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    zIndex: 10,
+  },
+  selectionCircle: {
+    width: theme.iconSizes.md,
+    height: theme.iconSizes.md,
+    borderRadius: theme.radii.full,
+    borderWidth: 2,
+    borderColor: theme.colors.borderLight,
+    backgroundColor: `${theme.colors.black}50`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   badge: {
     backgroundColor: theme.colors.surfacePressed,
     borderRadius: theme.radii.full,
@@ -280,9 +389,6 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.radii.full,
     backgroundColor: `${theme.colors.primary}20`,
-  },
-  row: {
-    marginBottom: 2,
   },
   loadingRow: {
     alignItems: 'center',

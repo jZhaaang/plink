@@ -64,7 +64,7 @@ export async function createLinkMedia(
 
 export async function setLinkMediaLocation(
   mediaId: string,
-  locationId: string,
+  locationId: string | null,
 ): Promise<void> {
   const { data, error } = await supabase
     .from('link_media')

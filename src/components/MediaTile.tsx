@@ -10,6 +10,7 @@ interface MediaTileProps {
   height: number;
   borderRadius?: number;
   onPress?: () => void;
+  onLongPress?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   renderOverlay?: (isLoaded: boolean) => ReactNode;
 }
@@ -20,6 +21,7 @@ export default function MediaTile({
   height,
   borderRadius = 12,
   onPress,
+  onLongPress,
   containerStyle,
   renderOverlay,
 }: MediaTileProps) {
@@ -31,6 +33,7 @@ export default function MediaTile({
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
     >

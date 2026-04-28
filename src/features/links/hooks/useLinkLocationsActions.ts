@@ -10,8 +10,13 @@ import {
   upsertLinkLocations,
 } from '../../../lib/supabase/queries/linkLocations';
 import { logger } from '../../../lib/telemetry/logger';
-import { LinkLocationInsert, LinkLocationUpdate } from '../../../lib/models';
+import {
+  LinkLocationInsert,
+  LinkLocationUpdate,
+  LinkMedia,
+} from '../../../lib/models';
 import { getErrorMessage } from '../../../lib/utils/errorExtraction';
+import { setLinkMediaLocation } from '../../../lib/supabase/queries/linkMedia';
 
 interface UseLinkLocationsActionsParams {
   linkId: string;
@@ -99,6 +104,29 @@ export function useLinkLocationsActions({
     [linkId, partyId, dialog, invalidate],
   );
 
+  const setSelectedMediaLocation = useCallback(
+    async (selected: Map<string, LinkMedia>, locationId: string | null) => {
+      const items = Array.from(selected.values());
+      try {
+        await Promise.all(
+          items.map((m) => setLinkMediaLocation(m.id, locationId)),
+        );
+        invalidate.onLinkChanged(linkId, partyId);
+        Burnt.toast({
+          title: 'Location updated',
+          preset: 'done',
+          haptic: 'success',
+        });
+        return true;
+      } catch (err) {
+        logger.error('Error setting media location', { err });
+        await dialog.error('Failed to Update Location', getErrorMessage(err));
+        return false;
+      }
+    },
+    [linkId, partyId, dialog, invalidate],
+  );
+
   const deleteLocation = useCallback(
     async (locationId: string) => {
       const confirmed = await dialog.confirmDanger(
@@ -128,6 +156,7 @@ export function useLinkLocationsActions({
     addLocation,
     editLocation,
     editLocations,
+    setSelectedMediaLocation,
     deleteLocation,
   };
 }

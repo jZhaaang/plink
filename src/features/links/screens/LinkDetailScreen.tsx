@@ -1,4 +1,10 @@
-import { ComponentProps, useCallback, useState } from 'react';
+import {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -35,7 +41,7 @@ import { formatDateTime } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
 import { Tabs, MaterialTabBar } from 'react-native-collapsible-tab-view';
-import { LinkLocationRow, LinkPostMedia } from '../../../lib/models';
+import { LinkLocationRow, LinkMedia, LinkPostMedia } from '../../../lib/models';
 import {
   StackActions,
   useFocusEffect,
@@ -54,12 +60,18 @@ import { logger } from '../../../lib/telemetry/logger';
 import LocationSection from '../components/LocationSection';
 import LinkInfoCard from '../components/LinkInfoCard';
 import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
-import EditLocationModal from '../components/LocationPickerModal';
-import EditLocationSheet from '../components/LocationPickerModal';
 import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocationPickerModal from '../components/LocationPickerModal';
 import ManageLocationsModal from '../components/ManageLocationsModal';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import SelectionPill from '../components/SelectionPill';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import SetMediaLocationModal from '../components/SetMediaLocationModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -128,10 +140,17 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     x: number;
     y: number;
   } | null>(null);
+
+  const [selectedMedia, setSelectedMedia] = useState<Map<string, LinkMedia>>(
+    new Map(),
+  );
+  const pillOffset = useSharedValue(-100);
+  const [mediaLocationVisible, setMediaLocationVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [manageLocationsVisible, setManageLocationsVisible] = useState(false);
   const [editingLocation, setEditingLocation] =
     useState<LinkLocationRow | null>(null);
+  const isSelecting = selectedMedia.size > 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -146,29 +165,22 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }, [uploadAction, clearUploadAction]),
   );
 
-  const { width: screenWidth } = useWindowDimensions();
-  const TILE_GAP = 2;
-  const TILE_COLUMNS = 4;
-  const CONTAINER_PADDING = 32;
-  const tileSize =
-    (screenWidth - CONTAINER_PADDING - TILE_GAP * (TILE_COLUMNS - 1)) /
-    TILE_COLUMNS;
+  useEffect(() => {
+    pillOffset.value = withSpring(isSelecting ? 0 : -100, {
+      damping: 300,
+      stiffness: 300,
+    });
+  }, [isSelecting]);
 
   if (linkLoading) return <LoadingScreen label="Loading..." />;
   if (linkError || !linkDetail)
     return <DataFallbackScreen onAction={refetchLink} />;
 
-  const startFormatted = formatDateTime(linkDetail.created_at);
-  const endFormatted = formatDateTime(linkDetail.end_time);
   const isActive = linkDetail && !linkDetail.end_time;
   const isOwner = linkDetail.owner_id === userId;
   const isMember = linkDetail.members.some((m) => m.id === userId) ?? false;
-  const memberAvatars = linkDetail.members
-    .map((m) => m.avatarUrl)
-    .filter((url): url is string => !!url);
-  const owner = linkDetail.members.find((m) => m.id === linkDetail.owner_id);
 
-  const handleMediaPress = (item: LinkPostMedia) => {
+  const handleMediaPress = (media: LinkPostMedia) => {
     // const index = allMedia.findIndex((m) => m.id === item.id);
     // rootNav.navigate('MediaViewer', {
     //   linkId,
@@ -242,16 +254,43 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     setEditModalVisible(false);
   };
 
-  const handleConfirmLocation = async (locationId: string) => {
-    try {
-      await confirmLinkLocation(locationId);
-      invalidate.onLinkLocationsChanged(linkId);
-    } catch (err) {
-      logger.error('Failed to confirm location', { err });
-    }
-  };
+  const handleEnterSelectMode = useCallback((media: LinkMedia) => {
+    setSelectedMedia(new Map([[media.id, media]]));
+  }, []);
 
-  const handleEditLocation = (locationId: string) => {};
+  const handleToggleSelect = useCallback((media: LinkMedia) => {
+    setSelectedMedia((prev) => {
+      const next = new Map(prev);
+      if (next.has(media.id)) next.delete(media.id);
+      else next.set(media.id, media);
+      return next;
+    });
+  }, []);
+
+  const handleExitSelectMode = useCallback(() => {
+    setSelectedMedia(new Map());
+  }, []);
+
+  const handleDeleteSelected = useCallback(async () => {
+    const succeeded = await linkActions.deleteSelectedMedia(selectedMedia);
+    if (succeeded) handleExitSelectMode();
+  }, [selectedMedia, linkActions.deleteSelectedMedia, handleExitSelectMode]);
+
+  const handleSetLocation = useCallback(
+    async (locationId: string | null) => {
+      setMediaLocationVisible(false);
+      const succeeded = await locationActions.setSelectedMediaLocation(
+        selectedMedia,
+        locationId,
+      );
+      if (succeeded) handleExitSelectMode();
+    },
+    [selectedMedia, locationActions, handleExitSelectMode],
+  );
+
+  const pillStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: pillOffset.value }],
+  }));
 
   return (
     <>
@@ -312,15 +351,19 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 <LocationSection
                   linkId={linkId}
                   location={location}
-                  tileSize={tileSize}
+                  onPressMedia={() => {}}
                   onDeleteMedia={linkActions.deleteMedia}
                   onConfirm={() =>
                     location && locationActions.confirmLocation(location.id)
                   }
                   onEdit={() => location && setEditingLocation(location)}
-                  onRemove={() =>
+                  onDelete={() =>
                     location && locationActions.deleteLocation(location.id)
                   }
+                  isSelecting={isSelecting}
+                  selectedMedia={selectedMedia}
+                  onEnterSelectMode={handleEnterSelectMode}
+                  onToggleSelect={handleToggleSelect}
                 />
               </View>
             )}
@@ -387,6 +430,31 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         </View>
       )}
 
+      <View
+        style={[StyleSheet.absoluteFillObject, { zIndex: 100 }]}
+        pointerEvents="box-none"
+      >
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: insets.top + 8,
+              left: 16,
+              right: 16,
+            },
+            pillStyle,
+          ]}
+          pointerEvents={isSelecting ? 'auto' : 'none'}
+        >
+          <SelectionPill
+            selectedMedia={selectedMedia}
+            onSetLocation={() => setMediaLocationVisible(true)}
+            onDelete={handleDeleteSelected}
+            onCancel={handleExitSelectMode}
+          />
+        </Animated.View>
+      </View>
+
       {isActive && !isMember && (
         <JoinLinkBanner
           onJoin={linkActions.joinLink}
@@ -416,6 +484,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         locations={locations}
         onClose={() => setManageLocationsVisible(false)}
         onSave={async (locations) => locationActions.editLocations(locations)}
+      />
+
+      <SetMediaLocationModal
+        visible={mediaLocationVisible}
+        locations={locations}
+        onClose={() => setMediaLocationVisible(false)}
+        onSelect={handleSetLocation}
       />
     </>
   );

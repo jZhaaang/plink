@@ -206,10 +206,45 @@ export function useLinkDetailActions({
         });
       } catch (err) {
         logger.error('Error deleting media', { err });
-        await dialog.error('Failed to Item ', getErrorMessage(err));
+        await dialog.error('Failed to Delete Item ', getErrorMessage(err));
       }
     },
-    [linkId, dialog, invalidate],
+    [linkId, partyId, dialog, invalidate],
+  );
+
+  const deleteSelectedMedia = useCallback(
+    async (selected: Map<string, LinkMedia>) => {
+      const items = Array.from(selected.values());
+      const count = items.length;
+
+      const confirmed = await dialog.confirmDanger(
+        `Delete ${count} item${count !== 1 ? 's' : ''}?`,
+        'This cannot be undone.',
+      );
+      if (!confirmed) return false;
+
+      try {
+        const paths = items
+          .flatMap((m) => [m.path, m.thumbnail_path])
+          .filter(Boolean) as string[];
+
+        await linksStorage.remove(paths);
+        await Promise.all(items.map((m) => deleteLinkMedia(m.id)));
+
+        invalidate.onLinkChanged(linkId, partyId);
+        Burnt.toast({
+          title: `${count} item${count !== 1 ? 's' : ''} deleted`,
+          preset: 'done',
+          haptic: 'success',
+        });
+        return true;
+      } catch (err) {
+        logger.error('Error deleting selected media', { err });
+        await dialog.error('Delete Failed', getErrorMessage(err));
+        return false;
+      }
+    },
+    [linkId, partyId, dialog, invalidate],
   );
 
   return {
@@ -220,5 +255,6 @@ export function useLinkDetailActions({
     joinLink,
     leaveLink,
     deleteMedia,
+    deleteSelectedMedia,
   };
 }
