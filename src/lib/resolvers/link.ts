@@ -40,6 +40,8 @@ export async function resolveLink(link: LinkRow): Promise<Link> {
 export async function resolveLinkMedia(
   media: LinkMediaRowWithProfile[],
 ): Promise<LinkMedia[]> {
+  if (media.length === 0) return [];
+
   const allPaths: string[] = [];
   for (const m of media) {
     allPaths.push(m.path);
