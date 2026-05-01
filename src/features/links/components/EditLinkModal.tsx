@@ -10,14 +10,12 @@ import {
   TextField,
   Spinner,
 } from '../../../components';
-import LocationPicker, { StagedLocation } from './LocationPicker';
 import { cropLinkBannerFromUrl } from '../../../lib/media/cropper';
-import { LinkDetail, LinkMedia, LinkPostMedia } from '../../../lib/models';
+import { LinkDetail, LinkMedia } from '../../../lib/models';
 
 export type EditLinkChanges = {
   name: string;
   bannerUri: string | null;
-  locations: StagedLocation[];
 };
 
 interface EditLinkModalProps {
@@ -40,7 +38,6 @@ export default function EditLinkModal({
   const { theme } = useUnistyles();
 
   const [name, setName] = useState(link.name);
-  const [locations, setLocations] = useState<StagedLocation[]>(link.locations);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [stagedBannerUri, setStagedBannerUri] = useState<string | null>(null);
   const [cropping, setCropping] = useState(false);
@@ -50,7 +47,6 @@ export default function EditLinkModal({
   useEffect(() => {
     if (!visible) return;
     setName(link.name);
-    setLocations(link.locations);
     setStagedBannerUri(null);
     setCropping(false);
     // highlight the thumbnail that matches the current banner
@@ -83,7 +79,7 @@ export default function EditLinkModal({
 
   const handleSave = async () => {
     if (!name.trim() || isBusy) return;
-    await onSave({ name: name.trim(), bannerUri: stagedBannerUri, locations });
+    await onSave({ name: name.trim(), bannerUri: stagedBannerUri });
   };
 
   const handleClose = () => {
@@ -94,12 +90,7 @@ export default function EditLinkModal({
   const displayBannerUri = stagedBannerUri ?? link.bannerUrl ?? null;
   const nameChanged = name.trim() !== link.name;
   const bannerChanged = stagedBannerUri !== null;
-  const locationsChanged =
-    locations.length !== link.locations.length ||
-    locations.some(
-      (location, i) => location.mapbox_id !== link.locations[i]?.mapbox_id,
-    );
-  const hasChanges = nameChanged || bannerChanged || locationsChanged;
+  const hasChanges = nameChanged || bannerChanged;
 
   return (
     <Modal
@@ -199,12 +190,6 @@ export default function EditLinkModal({
           maxLength={30}
           returnKeyType="done"
         />
-      </View>
-
-      {/* Locations */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Locations</Text>
-        <LocationPicker locations={locations} onChange={setLocations} />
       </View>
 
       {/* Actions */}

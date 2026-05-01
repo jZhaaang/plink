@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -52,6 +52,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import SetMediaLocationModal from '../components/SetMediaLocationModal';
+import { useLinkMedia } from '../hooks/useLinkMedia';
+import EditLinkModal from '../components/EditLinkModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -69,6 +71,11 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     error: linkError,
     refetch: refetchLink,
   } = useLinkDetail(linkId);
+  const { allMedia } = useLinkMedia(linkId);
+  const bannerImages = useMemo(
+    () => allMedia.filter((m) => m.type === 'image'),
+    [allMedia],
+  );
 
   const { data: locations = [], isLoading: locationsLoading } =
     useLinkLocations(linkId);
@@ -98,7 +105,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const {
     stagedAssets,
-    stageAssets,
     addFromGallery,
     removeAsset,
     clearAll,
@@ -154,7 +160,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
 
   const isActive = linkDetail && !linkDetail.end_time;
   const isOwner = linkDetail?.owner_id === userId;
-  const isMember = linkDetail.members.some((m) => m.id === userId) ?? false;
+  const isMember = linkDetail?.members.some((m) => m.id === userId) ?? false;
 
   const handleMediaPress = (media: LinkMedia) => {
     rootNav.navigate('MediaViewer', {
@@ -261,6 +267,9 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const pillStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: pillOffset.value }],
   }));
+
+  if (linkLoading) return <Spinner />;
+  if (!linkDetail) return null;
 
   return (
     <>
@@ -478,6 +487,18 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         locations={locations}
         onClose={() => setMediaLocationVisible(false)}
         onSelect={handleSetLocation}
+      />
+
+      <EditLinkModal
+        visible={editModalVisible}
+        link={linkDetail}
+        images={bannerImages}
+        saving={linkActions.savingBanner}
+        onClose={() => setEditModalVisible(false)}
+        onSave={async (changes) => {
+          await linkActions.editLink(changes);
+          setEditModalVisible(false);
+        }}
       />
     </>
   );
