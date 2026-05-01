@@ -120,8 +120,6 @@ export function useStagedMediaActions({
       exif: true,
     });
 
-    console.log(JSON.stringify(result.assets?.[0]?.exif, null, 2));
-
     if (!result.canceled && result.assets.length > 0) {
       stageAssets(result.assets);
     }
