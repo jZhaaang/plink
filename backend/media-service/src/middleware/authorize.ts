@@ -167,7 +167,7 @@ function parseKey(key: string[]): ParsedKey | null {
   }
 
   // links/{linkId}/banner
-  if (key[0] === 'links' && key[1] && key[2] === 'banner') {
+  if (key[0] === 'links' && key[1] && key[2]?.startsWith('banner')) {
     return { resource: 'links', resourceId: key[1] };
   }
 
