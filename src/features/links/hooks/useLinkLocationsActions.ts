@@ -34,7 +34,7 @@ export function useLinkLocationsActions({
     async (locationId: string) => {
       try {
         await confirmLinkLocation(locationId);
-        invalidate.linkLocations(linkId);
+        invalidate.onLinkLocationsChanged(linkId);
         Burnt.toast({
           title: 'Location confirmed',
           preset: 'done',
@@ -52,7 +52,7 @@ export function useLinkLocationsActions({
     async (location: LinkLocationInsert) => {
       try {
         await createLinkLocation(location);
-        invalidate.linkLocations(linkId);
+        invalidate.onLinkLocationsChanged(linkId);
         Burnt.toast({
           title: 'Location added',
           preset: 'done',
@@ -72,7 +72,7 @@ export function useLinkLocationsActions({
 
       try {
         await updateLinkLocation(locationId, location);
-        invalidate.linkLocations(linkId);
+        invalidate.onLinkLocationsChanged(linkId);
         Burnt.toast({
           title: 'Location updated',
           preset: 'done',
@@ -90,7 +90,7 @@ export function useLinkLocationsActions({
     async (locations: LinkLocationUpdate[]) => {
       try {
         await upsertLinkLocations(linkId, locations);
-        invalidate.linkLocations(linkId);
+        invalidate.onLinkLocationsChanged(linkId);
         Burnt.toast({
           title: 'Locations edited',
           preset: 'done',
@@ -137,7 +137,7 @@ export function useLinkLocationsActions({
 
       try {
         await deleteLinkLocation(locationId);
-        invalidate.linkLocations(linkId);
+        invalidate.onLinkLocationsChanged(linkId);
         Burnt.toast({
           title: 'Location removed',
           preset: 'done',

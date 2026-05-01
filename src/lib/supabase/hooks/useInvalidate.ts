@@ -49,6 +49,12 @@ export function useInvalidate() {
       });
     },
 
+    linkMedia: (linkId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.links.media(linkId),
+      });
+    },
+
     linkLocations: (linkId: string) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.links.locations(linkId),
@@ -101,6 +107,7 @@ export function useInvalidate() {
 
     onLinkChanged: (linkId: string, partyId: string) => {
       base.linkDetail(linkId);
+      base.linkMedia(linkId);
       base.linkLocations(linkId);
       base.allLinkLocationMedia(linkId);
       base.partyDetail(partyId);
@@ -113,6 +120,7 @@ export function useInvalidate() {
 
     onLinkLocationsChanged: (linkId: string) => {
       base.linkLocations(linkId);
+      base.linkDetail(linkId);
     },
 
     onLinkDeleted: (linkId: string, partyId: string) => {
