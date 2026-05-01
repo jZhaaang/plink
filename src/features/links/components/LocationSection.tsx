@@ -261,7 +261,7 @@ export default function LocationSection({
   const { media, loading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useLocationMedia(linkId, location?.id ?? null);
 
-  if (!location && (loading || media.length === 0)) return null;
+  if (!location && !loading && media.length === 0) return null;
 
   const tileSize =
     containerWidth > 0
@@ -270,7 +270,7 @@ export default function LocationSection({
   const visibleMedia = expanded ? media : media.slice(0, PREVIEW_COUNT);
   const rows = chunk(visibleMedia, COLUMNS);
 
-  const showExpandButton = !expanded && media.length >= PREVIEW_COUNT;
+  const showExpandButton = !expanded && media.length > PREVIEW_COUNT;
   const showLoadMore = expanded && hasNextPage;
 
   return (
