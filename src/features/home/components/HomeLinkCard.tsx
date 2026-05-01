@@ -100,7 +100,7 @@ export default function HomeLinkCard({ link, onPress, onMediaPress }: Props) {
         >
           <Row align="center" gap="xs">
             <Text variant="bodySm" color="tertiary">
-              {link.media.length} {link.media.length === 1 ? 'item' : 'items'}
+              {link.mediaCount} {link.mediaCount === 1 ? 'item' : 'items'}
             </Text>
           </Row>
           {locationLabel && (

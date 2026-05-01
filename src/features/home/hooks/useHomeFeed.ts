@@ -9,11 +9,7 @@ import {
   getRecentLinksByUserId,
   getActiveLinksByUserId,
 } from '../../../lib/supabase/queries/links';
-import {
-  resolveLink,
-  resolveLinkMedia,
-  resolveLinkPostMediaItems,
-} from '../../../lib/resolvers/link';
+import { resolveLink, resolveLinkMedia } from '../../../lib/resolvers/link';
 import { resolveParty } from '../../../lib/resolvers/party';
 import type {
   ActiveFeedLink,
@@ -70,7 +66,7 @@ export function useHomeFeed(userId: string) {
           const linkDetail: LinkDetail = {
             ...resolvedLink,
             members: resolvedMembers,
-            mediaCount: resolvedMedia.length,
+            mediaCount: link.link_media.length,
             locations,
           };
 
