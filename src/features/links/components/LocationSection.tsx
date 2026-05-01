@@ -4,7 +4,14 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Feather } from '@expo/vector-icons';
 import { LinkLocationRow, LinkMedia } from '../../../lib/models';
 import { useLocationMedia } from '../hooks/useLocationMedia';
-import { MediaTile, Row, Spinner, Stack, Text } from '../../../components';
+import {
+  EmptyState,
+  MediaTile,
+  Row,
+  Spinner,
+  Stack,
+  Text,
+} from '../../../components';
 import DropdownMenu from '../../../components/DropdownMenu';
 import Animated, {
   interpolate,
@@ -254,7 +261,7 @@ export default function LocationSection({
   const { media, loading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useLocationMedia(linkId, location?.id ?? null);
 
-  if (!location && !loading && media.length === 0) return null;
+  if (!location && (loading || media.length === 0)) return null;
 
   const tileSize =
     containerWidth > 0
@@ -284,6 +291,12 @@ export default function LocationSection({
         <View style={styles.loadingRow}>
           <Spinner />
         </View>
+      ) : media.length === 0 ? (
+        <EmptyState
+          icon="image"
+          title="No media here yet"
+          style={{ paddingVertical: theme.spacing.xl }}
+        />
       ) : (
         rows.map((row, i) => (
           <Row key={i} gap="xs" style={{ marginBottom: theme.spacing.xs }}>

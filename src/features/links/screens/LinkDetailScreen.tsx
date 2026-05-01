@@ -18,6 +18,8 @@ import {
   Text,
   Row,
   SectionHeader,
+  EmptyState,
+  Spinner,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
@@ -312,7 +314,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
         {/* Timeline */}
         <Tabs.Tab name="Overview">
           <Tabs.FlatList
-            data={sections}
+            data={locationsLoading ? [] : sections}
             keyExtractor={(loc) => loc?.id ?? 'unknown'}
             renderItem={({ item: location }) => (
               <View style={{ paddingHorizontal: theme.spacing.lg }}>
@@ -367,6 +369,24 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                   }
                 />
               </View>
+            }
+            ListFooterComponent={
+              locationsLoading ? (
+                <View
+                  style={{
+                    paddingVertical: theme.spacing.xl,
+                    alignItems: 'center',
+                  }}
+                >
+                  <Spinner />
+                </View>
+              ) : locations.length === 0 ? (
+                <EmptyState
+                  icon="map-pin"
+                  title="No locations yet"
+                  message="Tap Manage to add places to your timeline."
+                />
+              ) : null
             }
           />
         </Tabs.Tab>
