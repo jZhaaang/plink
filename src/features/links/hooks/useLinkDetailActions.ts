@@ -19,9 +19,8 @@ import { trackEvent } from '../../../lib/telemetry/analytics';
 import { logger } from '../../../lib/telemetry/logger';
 import { LinkDetail, LinkMedia } from '../../../lib/models';
 import { deleteBulk } from '../../../lib/media-service/client';
-import { StagedLocation } from '../components/LocationPicker';
-import { upsertLinkLocations } from '../../../lib/supabase/queries/linkLocations';
 import { deleteLinkMedia } from '../../../lib/supabase/queries/linkMedia';
+import { invalidateUrlCache } from '../../../lib/media-service/core';
 
 type UseLinkDetailActionsParams = {
   linkId: string;
@@ -62,25 +61,11 @@ export function useLinkDetailActions({
   }, [linkId, partyId, dialog, invalidate]);
 
   const editLink = useCallback(
-    async ({
-      name,
-      bannerUri,
-      locations,
-    }: {
-      name: string;
-      bannerUri: string | null;
-      locations: StagedLocation[];
-    }) => {
+    async ({ name, bannerUri }: { name: string; bannerUri: string | null }) => {
       setSavingBanner(!!bannerUri);
       try {
         const nameChanged = name !== linkDetail?.name;
         const bannerChanged = !!bannerUri;
-        const locationsChanged =
-          locations.length !== linkDetail?.locations.length ||
-          locations.some(
-            (location, i) =>
-              location.mapbox_id !== linkDetail?.locations[i]?.mapbox_id,
-          );
 
         await Promise.all([
           nameChanged ? updateLinkById(linkId, { name }) : Promise.resolve(),
@@ -93,11 +78,9 @@ export function useLinkDetailActions({
                   compressed.uri,
                   'image/jpeg',
                 );
+                invalidateUrlCache(bannerPath);
                 await updateLinkById(linkId, { banner_path: bannerPath });
               })()
-            : Promise.resolve(),
-          locationsChanged
-            ? upsertLinkLocations(linkId, locations)
             : Promise.resolve(),
         ]);
         trackEvent('link_updated', { link_id: linkId });
