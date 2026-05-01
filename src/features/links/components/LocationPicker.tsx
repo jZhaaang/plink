@@ -8,14 +8,11 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import {
-  suggestPlaces,
-  retrievePlace,
-  SearchSuggestion,
-} from '../../../lib/mapbox/placeSearch';
+import { suggestPlaces, retrievePlace } from '../../../lib/mapbox/placeSearch';
 import * as Location from 'expo-location';
 import { randomUUID } from 'expo-crypto';
 import { Row, Stack } from '../../../components';
+import { SearchSuggestion } from '../../../lib/mapbox/types';
 
 export type StagedLocation = {
   name: string;

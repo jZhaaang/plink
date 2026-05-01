@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Feather } from '@expo/vector-icons';
 import { SignedInParamList } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
-import { LinkPostMedia } from '../../../lib/models';
+import { LinkMedia } from '../../../lib/models';
 import {
   DataFallbackScreen,
   EmptyState,
@@ -13,7 +13,7 @@ import {
   Spinner,
 } from '../../../components';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { useLinkPosts } from '../hooks/useLinkPosts';
+import { useLinkMedia } from '../hooks/useLinkMedia';
 
 type Props = NativeStackScreenProps<SignedInParamList, 'AllMedia'>;
 
@@ -31,13 +31,12 @@ export default function AllMediaScreen({ route, navigation }: Props) {
     loading,
     error,
     refetch,
-  } = useLinkPosts(linkId);
+  } = useLinkMedia(linkId);
 
-  const handleMediaPress = (item: LinkPostMedia) => {
-    const index = allMedia.findIndex((m) => m.id === item.id);
+  const handleMediaPress = (item: LinkMedia) => {
     navigation.navigate('MediaViewer', {
       linkId,
-      initialIndex: index === -1 ? 0 : index,
+      initialMediaId: item.id,
     });
   };
 

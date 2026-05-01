@@ -3,7 +3,7 @@ import { LinkRow, LinkInsert, LinkUpdate } from '../../models';
 
 export const LINK_DETAIL_SELECT = `*,
   link_members (user_id, profiles(*)),
-  link_posts (id, link_post_media(id)),
+  link_media (id),
   link_locations (*)` as const;
 
 export async function getLinksByUserId(userId: string): Promise<LinkRow[]> {
@@ -130,7 +130,7 @@ export async function getRecentLinksByUserId(
   const { data, error } = await supabase
     .from('links')
     .select(
-      `*, link_members (user_id, profiles (*)), link_posts (link_post_media (*)), link_locations (*), parties!inner (*)`,
+      `*, link_members (user_id, profiles (*)), link_media (*, profiles(*)), link_locations (*), parties!inner (*)`,
     )
     .in('id', linkIds)
     .not('end_time', 'is', null)

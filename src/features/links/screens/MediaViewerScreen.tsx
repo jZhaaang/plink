@@ -5,14 +5,12 @@ import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
 import { View, useWindowDimensions, StatusBar, Pressable } from 'react-native';
 import {
   GestureViewer,
-  useGestureViewerController,
   useGestureViewerEvent,
   useGestureViewerState,
 } from 'react-native-gesture-image-viewer';
 import { SignedInParamList } from '../../../navigation/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native-gesture-handler';
-import { useLinkPosts } from '../hooks/useLinkPosts';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
@@ -20,7 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
-import { LinkPostWithMedia } from '../../../lib/models';
+import { LinkMedia } from '../../../lib/models';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import * as Burnt from 'burnt';
@@ -28,6 +26,7 @@ import { File, Paths } from 'expo-file-system';
 import { logger } from '../../../lib/telemetry/logger';
 import { MediaViewerTopBar } from '../components/MediaViewerTopBar';
 import { MediaViewerBottomBar } from '../components/MediaViewerBottomBar';
+import { useLinkMedia } from '../hooks/useLinkMedia';
 
 type Props = NativeStackScreenProps<SignedInParamList, 'MediaViewer'>;
 
@@ -133,13 +132,12 @@ function VideoItem({
 }
 
 export default function MediaViewerScreen({ route, navigation }: Props) {
-  const { linkId, initialIndex } = route.params;
+  const { linkId, initialMediaId } = route.params;
   const insets = useSafeAreaInsets();
 
-  const { posts, allMedia, fetchNextPage, hasNextPage } = useLinkPosts(linkId);
+  const { allMedia, fetchNextPage, hasNextPage } = useLinkMedia(linkId);
   const { width, height } = useWindowDimensions();
   const { currentIndex, totalCount } = useGestureViewerState();
-  const controller = useGestureViewerController();
 
   const overlayOpacity = useSharedValue(1);
   const overlayVisibleRef = useRef(true);
@@ -175,16 +173,12 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
     }
   }, [currentIndex, allMedia.length, hasNextPage, fetchNextPage]);
 
-  const postMap = useMemo(() => {
-    const map = new Map<string, LinkPostWithMedia>();
-    for (const post of posts) map.set(post.id, post);
-    return map;
-  }, [posts]);
+  const currentMedia = allMedia[currentIndex] ?? null;
 
-  const currentMedia = allMedia[currentIndex];
-  const currentPost = currentMedia
-    ? (postMap.get(currentMedia.post_id) ?? null)
-    : null;
+  const initialIndex = useMemo(() => {
+    const idx = allMedia.findIndex((m) => m.id === initialMediaId);
+    return idx === -1 ? 0 : idx;
+  }, [allMedia, initialMediaId]);
 
   const mediaItems = useMemo(
     () => allMedia.map((item, index) => ({ ...item, index })),
@@ -266,16 +260,8 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
     }
   };
 
-  const handleMediaSelect = useCallback(
-    (mediaId: string) => {
-      const index = allMedia.findIndex((m) => m.id === mediaId);
-      if (index !== -1) controller.goToIndex(index);
-    },
-    [allMedia, controller],
-  );
-
   const renderItem = useCallback(
-    (item) => {
+    (item: LinkMedia & { index: number }) => {
       const isActive = item.index === currentIndex;
       if (item.type === 'video') {
         return (
@@ -311,6 +297,10 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
     ],
   );
 
+  if (allMedia.length === 0) {
+    return <View style={{ flex: 1, backgroundColor: 'black' }} />;
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: 'black' }}>
       <StatusBar barStyle="light-content" />
@@ -341,13 +331,11 @@ export default function MediaViewerScreen({ route, navigation }: Props) {
               onShare={handleShare}
             />
             <MediaViewerBottomBar
-              post={currentPost}
-              currentMediaId={currentMedia.id}
+              media={currentMedia}
               isVideo={currentMedia.type === 'video'}
               player={currentPlayer}
               animatedStyle={overlayAnimatedStyle}
               pointerEvents={overlayPointerEvents}
-              onMediaSelect={handleMediaSelect}
             />
           </View>
         )}

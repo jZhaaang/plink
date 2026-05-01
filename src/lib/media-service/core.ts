@@ -57,6 +57,10 @@ type CachedUrl = { url: string; expiresAt: number };
 const urlCache = new Map<string, CachedUrl>();
 const CACHE_BUFFER = 60_000;
 
+export function invalidateUrlCache(path: string) {
+  urlCache.delete(path);
+}
+
 export async function getUrls(paths: string[]): Promise<Map<string, string>> {
   if (paths.length === 0) return new Map();
 

@@ -25,8 +25,6 @@ type EventName =
   | 'link_deleted'
   | 'link_joined'
   | 'link_left'
-  | 'link_post_created'
-  | 'link_post_deleted'
   | 'media_uploaded'
   | 'media_deleted'
   | 'media_upload_failed';

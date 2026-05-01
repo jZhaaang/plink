@@ -112,7 +112,7 @@ const accessCheckers: Record<string, AccessChecker> = {
     if (action === 'delete') {
       // allow post owner to delete
       const { data } = await supabase
-        .from('link_posts')
+        .from('link_media')
         .select('id')
         .eq('id', resourceId)
         .eq('owner_id', userId)
@@ -167,13 +167,14 @@ function parseKey(key: string[]): ParsedKey | null {
   }
 
   // links/{linkId}/banner
-  if (key[0] === 'links' && key[1] && key[2] === 'banner') {
+  if (key[0] === 'links' && key[1] && key[2]?.startsWith('banner')) {
     return { resource: 'links', resourceId: key[1] };
   }
 
-  // links/{linkId}/posts/{postId}/{mediaId}.ext
-  if (key[0] === 'links' && key[1] && key[2] === 'posts' && key[3]) {
-    return { resource: 'link-media', resourceId: key[3], parentId: key[1] };
+  // links/{linkId}/media/{mediaId}.ext
+  if (key[0] === 'links' && key[1] && key[2] === 'media' && key[3]) {
+    const mediaId = key[3].replace(/\.[^.]+$/, '');
+    return { resource: 'link-media', resourceId: mediaId, parentId: key[1] };
   }
 
   return null;

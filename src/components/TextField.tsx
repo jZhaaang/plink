@@ -14,6 +14,7 @@ interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   right?: React.ReactNode;
   containerStyle?: ViewStyle;
   inputStyle?: TextStyle;
+  InputComponent?: React.ComponentType<TextInputProps>;
 }
 
 export default function TextField({
@@ -22,16 +23,19 @@ export default function TextField({
   right,
   containerStyle,
   inputStyle,
+  InputComponent,
   ...rest
 }: TextFieldProps) {
   const { theme } = useUnistyles();
+
+  const Input = InputComponent ?? TextInput;
 
   return (
     <View>
       {header && <Text style={styles.header}>{header}</Text>}
       <View style={[styles.container, containerStyle]}>
         {left}
-        <TextInput
+        <Input
           {...rest}
           placeholderTextColor={theme.colors.textPlaceholder}
           style={[styles.input, inputStyle]}

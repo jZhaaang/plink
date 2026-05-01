@@ -82,7 +82,9 @@ export type Database = {
       link_locations: {
         Row: {
           address: string | null;
+          confirmed_at: string | null;
           created_at: string | null;
+          full_address: string | null;
           id: string;
           latitude: number;
           link_id: string;
@@ -90,10 +92,14 @@ export type Database = {
           mapbox_id: string | null;
           name: string;
           order_index: number;
+          place_formatted: string | null;
+          source: string;
         };
         Insert: {
           address?: string | null;
+          confirmed_at?: string | null;
           created_at?: string | null;
+          full_address?: string | null;
           id?: string;
           latitude: number;
           link_id: string;
@@ -101,10 +107,14 @@ export type Database = {
           mapbox_id?: string | null;
           name: string;
           order_index?: number;
+          place_formatted?: string | null;
+          source?: string;
         };
         Update: {
           address?: string | null;
+          confirmed_at?: string | null;
           created_at?: string | null;
+          full_address?: string | null;
           id?: string;
           latitude?: number;
           link_id?: string;
@@ -112,6 +122,8 @@ export type Database = {
           mapbox_id?: string | null;
           name?: string;
           order_index?: number;
+          place_formatted?: string | null;
+          source?: string;
         };
         Relationships: [
           {
@@ -119,6 +131,76 @@ export type Database = {
             columns: ['link_id'];
             isOneToOne: false;
             referencedRelation: 'links';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      link_media: {
+        Row: {
+          captured_at: string | null;
+          created_at: string;
+          duration_seconds: number | null;
+          id: string;
+          latitude: number | null;
+          link_id: string;
+          location_id: string | null;
+          longitude: number | null;
+          mime: string;
+          owner_id: string;
+          path: string;
+          thumbnail_path: string | null;
+          type: Database['public']['Enums']['media_type'];
+        };
+        Insert: {
+          captured_at?: string | null;
+          created_at?: string;
+          duration_seconds?: number | null;
+          id?: string;
+          latitude?: number | null;
+          link_id: string;
+          location_id?: string | null;
+          longitude?: number | null;
+          mime: string;
+          owner_id: string;
+          path: string;
+          thumbnail_path?: string | null;
+          type: Database['public']['Enums']['media_type'];
+        };
+        Update: {
+          captured_at?: string | null;
+          created_at?: string;
+          duration_seconds?: number | null;
+          id?: string;
+          latitude?: number | null;
+          link_id?: string;
+          location_id?: string | null;
+          longitude?: number | null;
+          mime?: string;
+          owner_id?: string;
+          path?: string;
+          thumbnail_path?: string | null;
+          type?: Database['public']['Enums']['media_type'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'link_media_link_id_fkey';
+            columns: ['link_id'];
+            isOneToOne: false;
+            referencedRelation: 'links';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'link_media_location_id_fkey';
+            columns: ['location_id'];
+            isOneToOne: false;
+            referencedRelation: 'link_locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'link_media_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];

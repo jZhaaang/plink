@@ -49,6 +49,30 @@ export function useInvalidate() {
       });
     },
 
+    linkMedia: (linkId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.links.media(linkId),
+      });
+    },
+
+    linkLocations: (linkId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.links.locations(linkId),
+      });
+    },
+
+    linkLocationMedia: (linkId: string, locationId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.links.locationMedia(linkId, locationId),
+      });
+    },
+
+    allLinkLocationMedia: (linkId: string) => {
+      queryClient.invalidateQueries({
+        queryKey: ['links', 'locationMedia', linkId],
+      });
+    },
+
     activeLink: () => {
       if (userId) {
         queryClient.invalidateQueries({
@@ -83,12 +107,20 @@ export function useInvalidate() {
 
     onLinkChanged: (linkId: string, partyId: string) => {
       base.linkDetail(linkId);
+      base.linkMedia(linkId);
+      base.linkLocations(linkId);
+      base.allLinkLocationMedia(linkId);
       base.partyDetail(partyId);
       base.pastLinks(partyId);
       base.homeFeed();
       base.homeActiveLinks();
       base.activeLink();
       base.activity();
+    },
+
+    onLinkLocationsChanged: (linkId: string) => {
+      base.linkLocations(linkId);
+      base.linkDetail(linkId);
     },
 
     onLinkDeleted: (linkId: string, partyId: string) => {

@@ -21,6 +21,7 @@ interface ModalComponentProps {
   backdropStyle?: ViewStyle;
   disableBackdropDismiss?: boolean;
   scrollEnabled?: boolean;
+  onShow?: () => void;
 }
 
 export default function Modal({
@@ -32,6 +33,7 @@ export default function Modal({
   backdropStyle,
   disableBackdropDismiss = false,
   scrollEnabled = true,
+  onShow,
   ...rest
 }: ModalComponentProps) {
   return (
@@ -41,6 +43,7 @@ export default function Modal({
       animationType={animationType}
       statusBarTranslucent
       onRequestClose={onClose}
+      onShow={onShow}
       {...rest}
     >
       <View style={[styles.backdrop, backdropStyle]}>

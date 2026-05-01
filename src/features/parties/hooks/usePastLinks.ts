@@ -23,11 +23,6 @@ export function usePastLinks(partyId: string) {
 
         const linkDetails: LinkDetail[] = await Promise.all(
           rawLinks.map(async (link) => {
-            const postCount = link.link_posts.length;
-            const mediaCount = link.link_posts.reduce(
-              (sum, p) => sum + p.link_post_media.length,
-              0,
-            );
             const locations = [...link.link_locations].sort(
               (a, b) => a.order_index - b.order_index,
             );
@@ -49,8 +44,7 @@ export function usePastLinks(partyId: string) {
             const linkDetail: LinkDetail = {
               ...resolvedLink,
               members: resolvedMembers,
-              postCount,
-              mediaCount,
+              mediaCount: link.link_media.length,
               locations,
             };
 

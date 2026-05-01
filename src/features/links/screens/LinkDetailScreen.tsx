@@ -1,15 +1,9 @@
-import { ComponentProps, useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import {
-  View,
-  Pressable,
-  RefreshControl,
-  GestureResponderEvent,
-  FlatList,
-} from 'react-native';
+import { View, GestureResponderEvent, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
   PartyStackParamList,
@@ -17,34 +11,22 @@ import {
 } from '../../../navigation/types';
 import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
-import PostCard from '../components/PostCard';
 import {
-  EmptyState,
-  Divider,
-  SectionHeader,
   DropdownMenu,
-  DropdownMenuItem,
-  Card,
-  CardSection,
-  LoadingScreen,
-  DataFallbackScreen,
-  AvatarStack,
-  AnimatedListItem,
-  MediaGrid,
   HeroBanner,
   UploadProgressModal,
-  Spinner,
   Text,
   Row,
-  Stack,
+  SectionHeader,
+  EmptyState,
+  Spinner,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
-import { formatDateTime, formatDuration } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
-import { LinkPostMedia } from '../../../lib/models';
-import CameraModal from '../components/CameraModal';
+import { Tabs, MaterialTabBar } from 'react-native-collapsible-tab-view';
+import { LinkLocationRow, LinkMedia } from '../../../lib/models';
 import {
   StackActions,
   useFocusEffect,
@@ -54,8 +36,23 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
-import { useLinkPosts } from '../hooks/useLinkPosts';
-import EditLinkModal, { EditLinkChanges } from '../components/EditLinkModal';
+import { useLinkLocations } from '../hooks/useLinkLocations';
+import LocationSection from '../components/LocationSection';
+import LinkInfoCard from '../components/LinkInfoCard';
+import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
+import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LocationPickerModal from '../components/LocationPickerModal';
+import ManageLocationsModal from '../components/ManageLocationsModal';
+import SelectionPill from '../components/SelectionPill';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import SetMediaLocationModal from '../components/SetMediaLocationModal';
+import { useLinkMedia } from '../hooks/useLinkMedia';
+import EditLinkModal from '../components/EditLinkModal';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'LinkDetail'>;
 
@@ -63,6 +60,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const { linkId, partyId } = route.params;
   const { userId } = useAuth();
   const rootNav = useNavigation<NativeStackNavigationProp<SignedInParamList>>();
+  const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
 
   const {
@@ -71,23 +69,19 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     error: linkError,
     refetch: refetchLink,
   } = useLinkDetail(linkId);
+  const { allMedia } = useLinkMedia(linkId);
+  const bannerImages = useMemo(
+    () => allMedia.filter((m) => m.type === 'image'),
+    [allMedia],
+  );
 
-  const {
-    posts,
-    allMedia,
-    loading: postsLoading,
-    error: postsError,
-    refetch: refetchPosts,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useLinkPosts(linkId);
-
+  const { data: locations = [], isLoading: locationsLoading } =
+    useLinkLocations(linkId);
+  const sections = [...locations, null];
   const linkActions = useLinkDetailActions({
     linkId,
     partyId,
     linkDetail,
-    posts,
     onDelete: () => {
       const state = navigation.getState();
       const isStackRoot = state.index === 0;
@@ -103,12 +97,12 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     },
     onLeave: () => navigation.goBack(),
   });
+  const locationActions = useLinkLocationsActions({ linkId, partyId });
 
   const { uploadAction, clearUploadAction } = useActiveLinkContext();
 
   const {
     stagedAssets,
-    stageAssets,
     addFromGallery,
     removeAsset,
     clearAll,
@@ -125,18 +119,22 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   });
   useThumbnailSubscription(linkId, pendingMediaIds, clearPendingMediaIds);
 
-  const [cameraMode, setCameraMode] = useState<'photo' | 'video' | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{
     x: number;
     y: number;
   } | null>(null);
-  const [editModalVisible, setEditModalVisible] = useState(false);
 
-  const imageMedia = useMemo(
-    () => allMedia.filter((media) => media.type === 'image'),
-    [allMedia],
+  const [selectedMedia, setSelectedMedia] = useState<Map<string, LinkMedia>>(
+    new Map(),
   );
+  const pillOffset = useSharedValue(-100);
+  const [mediaLocationVisible, setMediaLocationVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [manageLocationsVisible, setManageLocationsVisible] = useState(false);
+  const [editingLocation, setEditingLocation] =
+    useState<LinkLocationRow | null>(null);
+  const isSelecting = selectedMedia.size > 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -144,12 +142,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       clearUploadAction();
 
       switch (uploadAction) {
-        case 'camera-photo':
-          setCameraMode('photo');
-          break;
-        case 'camera-video':
-          setCameraMode('video');
-          break;
         case 'gallery':
           addFromGallery();
           break;
@@ -157,30 +149,22 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     }, [uploadAction, clearUploadAction]),
   );
 
-  if (linkLoading) return <LoadingScreen label="Loading..." />;
-  if (linkError || !linkDetail)
-    return <DataFallbackScreen onAction={refetchLink} />;
+  useEffect(() => {
+    pillOffset.value = withSpring(isSelecting ? 0 : -100, {
+      damping: 300,
+      stiffness: 300,
+    });
+  }, [isSelecting]);
 
-  const startFormatted = formatDateTime(linkDetail.created_at);
-  const endFormatted = formatDateTime(linkDetail.end_time);
   const isActive = linkDetail && !linkDetail.end_time;
-  const isOwner = linkDetail.owner_id === userId;
-  const isMember = linkDetail.members.some((m) => m.id === userId) ?? false;
-  const memberAvatars = linkDetail.members
-    .map((m) => m.avatarUrl)
-    .filter((url): url is string => !!url);
-  const owner = linkDetail.members.find((m) => m.id === linkDetail.owner_id);
+  const isOwner = linkDetail?.owner_id === userId;
+  const isMember = linkDetail?.members.some((m) => m.id === userId) ?? false;
 
-  const handleMediaPress = (item: LinkPostMedia) => {
-    const index = allMedia.findIndex((m) => m.id === item.id);
+  const handleMediaPress = (media: LinkMedia) => {
     rootNav.navigate('MediaViewer', {
       linkId,
-      initialIndex: index === -1 ? 0 : index,
+      initialMediaId: media.id,
     });
-  };
-
-  const handleSeeAllMedia = () => {
-    rootNav.navigate('AllMedia', { linkId });
   };
 
   const handleMenuPress = (event: GestureResponderEvent) => {
@@ -192,19 +176,13 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     );
   };
 
-  const menuItems: Array<{
-    icon: ComponentProps<typeof Feather>['name'];
-    label: string;
-    action: () => void;
-    variant?: 'danger';
-  }> = [];
+  const menuItems: DropdownMenuItemProps[] = [];
 
   if (isOwner) {
     menuItems.push({
       icon: 'edit-2',
       label: 'Edit Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         setEditModalVisible(true);
       },
     });
@@ -213,8 +191,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       menuItems.push({
         icon: 'check-circle',
         label: 'End Link',
-        action: () => {
-          setMenuVisible(false);
+        onPress: () => {
           linkActions.endLink();
         },
       });
@@ -223,8 +200,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'trash-2',
       label: 'Delete Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         linkActions.deleteLink();
       },
       variant: 'danger',
@@ -233,8 +209,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'log-out',
       label: 'Leave Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         linkActions.leaveLink();
       },
       variant: 'danger',
@@ -243,306 +218,281 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'log-in',
       label: 'Join Link',
-      action: () => {
-        setMenuVisible(false);
+      onPress: () => {
         linkActions.joinLink();
       },
     });
   }
 
-  const handleEditSave = async (changes: EditLinkChanges) => {
-    await linkActions.editLink(changes);
-    setEditModalVisible(false);
-  };
+  const handleEnterSelectMode = useCallback((media: LinkMedia) => {
+    setSelectedMedia(new Map([[media.id, media]]));
+  }, []);
+
+  const handleToggleSelect = useCallback((media: LinkMedia) => {
+    setSelectedMedia((prev) => {
+      const next = new Map(prev);
+      if (next.has(media.id)) next.delete(media.id);
+      else next.set(media.id, media);
+      return next;
+    });
+  }, []);
+
+  const handleExitSelectMode = useCallback(() => {
+    setSelectedMedia(new Map());
+  }, []);
+
+  const handleDeleteSelected = useCallback(async () => {
+    const succeeded = await linkActions.deleteSelectedMedia(selectedMedia);
+    if (succeeded) handleExitSelectMode();
+  }, [selectedMedia, linkActions.deleteSelectedMedia, handleExitSelectMode]);
+
+  const handleSetLocation = useCallback(
+    async (locationId: string | null) => {
+      setMediaLocationVisible(false);
+      const succeeded = await locationActions.setSelectedMediaLocation(
+        selectedMedia,
+        locationId,
+      );
+      if (succeeded) handleExitSelectMode();
+    },
+    [selectedMedia, locationActions, handleExitSelectMode],
+  );
+
+  const pillStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: pillOffset.value }],
+  }));
+
+  if (linkLoading) return <Spinner />;
+  if (!linkDetail) return null;
 
   return (
     <>
-      <View style={styles.root}>
-        <StatusBar style="light" />
+      <StatusBar style="light" />
 
-        <HeroBanner
-          variant="default"
-          bannerUri={linkDetail.bannerUrl ?? null}
-          emptyHint="Add a photo to set a banner"
-          onBack={() => navigation.goBack()}
-          onMenuPress={handleMenuPress}
-        >
-          <Row align="center">
-            <View
-              style={[
-                styles.statusBadge,
-                isActive ? styles.statusBadgeActive : styles.statusBadgeEnded,
-              ]}
-            >
-              <Text variant="labelSm" color="inverse">
-                {isActive ? 'Active' : 'Ended'}
-              </Text>
-            </View>
-          </Row>
-          <Text variant="displaySm" color="inverse">
-            {linkDetail.name}
-          </Text>
-          <Text variant="bodyMd" color="inverseMuted">
-            {linkDetail.members.length}{' '}
-            {linkDetail.members.length === 1 ? 'member' : 'members'}
-          </Text>
-        </HeroBanner>
-
-        <View style={styles.contentArea}>
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item.id}
-            refreshControl={
-              <RefreshControl
-                refreshing={linkLoading}
-                onRefresh={() => {
-                  refetchLink();
-                  refetchPosts();
-                }}
-              />
-            }
-            contentContainerStyle={styles.container}
-            ListHeaderComponent={
-              <>
-                {/* Info Card */}
-                <Card>
-                  <CardSection>
-                    {/* Time info */}
-                    <Stack gap="xs" style={{ marginBottom: theme.spacing.xs }}>
-                      <Row align="center" gap="xs">
-                        <Feather
-                          name="calendar"
-                          size={theme.iconSizes.sm}
-                          color={theme.colors.gray}
-                        />
-                        <Text variant="bodySm" color="tertiary">
-                          {isActive
-                            ? `Started ${startFormatted.date} at ${startFormatted.time}`
-                            : `${startFormatted.date} — ${endFormatted.date}`}
-                        </Text>
-                      </Row>
-                      <Row align="center" gap="xs">
-                        <Feather
-                          name="clock"
-                          size={theme.iconSizes.sm}
-                          color={theme.colors.gray}
-                        />
-                        <Text variant="bodySm" color="tertiary">
-                          {isActive
-                            ? `Active for ${formatDuration(linkDetail.created_at, null)}`
-                            : `Lasted ${formatDuration(linkDetail.created_at, linkDetail.end_time)}`}
-                        </Text>
-                      </Row>
-                      {linkDetail.locations.length > 0 && (
-                        <Row align="flex-start" gap="xs">
-                          <Feather
-                            name="map-pin"
-                            size={theme.iconSizes.sm}
-                            color={theme.colors.gray}
-                          />
-                          <View style={{ flex: 1 }}>
-                            {linkDetail.locations.map((location) => (
-                              <Text
-                                key={location.id}
-                                variant="bodySm"
-                                color="tertiary"
-                              >
-                                {location.name}
-                              </Text>
-                            ))}
-                          </View>
-                        </Row>
-                      )}
-                    </Stack>
-
-                    {/* Members row */}
-                    <Row align="center" justify="space-between">
-                      <AvatarStack
-                        avatarUris={memberAvatars}
-                        size={theme.avatarSizes.sm}
-                      />
-                      <Text variant="bodySm" color="tertiary">
-                        Created by {owner?.name}
-                      </Text>
-                    </Row>
-
-                    <Divider style={{ marginVertical: theme.spacing.sm }} />
-
-                    {/* Stats row */}
-                    <Row justify="space-evenly">
-                      <Stack align="center">
-                        <Text variant="displaySm" color="primary">
-                          {linkDetail.postCount}
-                        </Text>
-                        <Text variant="bodySm" color="tertiary">
-                          Post{linkDetail.postCount > 1 ? 's' : ''}
-                        </Text>
-                      </Stack>
-                      <View style={styles.statDivider} />
-                      <Stack align="center">
-                        <Text variant="displaySm" color="primary">
-                          {linkDetail.mediaCount}
-                        </Text>
-                        <Text variant="bodySm" color="tertiary">
-                          Item{linkDetail.mediaCount > 1 ? 's' : ''}
-                        </Text>
-                      </Stack>
-                    </Row>
-                  </CardSection>
-                </Card>
-
-                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
-
-                {/* All Items Section */}
-                <SectionHeader
-                  title="All Items"
-                  count={linkDetail.mediaCount}
-                  action={
-                    linkDetail.mediaCount > 6 ? (
-                      <Pressable onPress={handleSeeAllMedia}>
-                        <Row>
-                          <Text variant="labelMd" color="accent">
-                            See all
-                          </Text>
-                          <Feather
-                            name="chevron-right"
-                            size={theme.iconSizes.sm}
-                            color={theme.colors.primary}
-                          />
-                        </Row>
-                      </Pressable>
-                    ) : undefined
+      <Tabs.Container
+        minHeaderHeight={insets.top}
+        renderHeader={() => (
+          <HeroBanner
+            variant="default"
+            bannerUri={linkDetail.bannerUrl ?? null}
+            emptyHint="Add a photo to set a banner"
+            onBack={() => navigation.goBack()}
+            onMenuPress={handleMenuPress}
+          >
+            <Row align="center">
+              <View
+                style={[
+                  styles.statusBadge,
+                  isActive ? styles.statusBadgeActive : styles.statusBadgeEnded,
+                ]}
+              >
+                <Text variant="labelSm" color="inverse">
+                  {isActive ? 'Active' : 'Ended'}
+                </Text>
+              </View>
+            </Row>
+            <Text variant="displaySm" color="inverse">
+              {linkDetail.name}
+            </Text>
+            <Text variant="bodyMd" color="inverseMuted">
+              {linkDetail.members.length}{' '}
+              {linkDetail.members.length === 1 ? 'member' : 'members'}
+            </Text>
+          </HeroBanner>
+        )}
+        renderTabBar={(props) => (
+          <View style={{ backgroundColor: theme.colors.background }}>
+            <MaterialTabBar
+              {...props}
+              activeColor={theme.colors.tabActive}
+              inactiveColor={theme.colors.tabInactive}
+              tabStyle={{ backgroundColor: theme.colors.tabBackground }}
+              indicatorStyle={{ backgroundColor: theme.colors.tabActive }}
+              labelStyle={{ fontWeight: '600', fontSize: 13 }}
+            />
+          </View>
+        )}
+        containerStyle={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        {/* Timeline */}
+        <Tabs.Tab name="Overview">
+          <Tabs.FlatList
+            data={locationsLoading ? [] : sections}
+            keyExtractor={(loc) => loc?.id ?? 'unknown'}
+            renderItem={({ item: location }) => (
+              <View style={{ paddingHorizontal: theme.spacing.lg }}>
+                <LocationSection
+                  linkId={linkId}
+                  location={location}
+                  onPressMedia={handleMediaPress}
+                  onConfirm={() =>
+                    location && locationActions.confirmLocation(location.id)
                   }
+                  onEdit={() => location && setEditingLocation(location)}
+                  onDelete={() =>
+                    location && locationActions.deleteLocation(location.id)
+                  }
+                  isSelecting={isSelecting}
+                  selectedMedia={selectedMedia}
+                  onEnterSelectMode={handleEnterSelectMode}
+                  onToggleSelect={handleToggleSelect}
                 />
-
-                {postsError ? (
-                  <DataFallbackScreen onAction={refetchPosts} />
-                ) : postsLoading ? (
-                  <Spinner style={{ paddingVertical: theme.spacing.xl }} />
-                ) : allMedia.length === 0 ? (
-                  <EmptyState
-                    icon="image"
-                    title="No media yet"
-                    message={
-                      isActive
-                        ? 'Media from all posts will appear here'
-                        : 'No media were added to this link'
-                    }
-                  />
-                ) : (
-                  <MediaGrid
-                    media={allMedia}
-                    onMediaPress={handleMediaPress}
-                    maxItems={6}
-                    scrollEnabled={false}
-                    onOverflowPress={handleSeeAllMedia}
-                  />
-                )}
-
-                <Divider style={{ marginVertical: theme.spacing['2xl'] }} />
-
-                {/* Post Feed Section */}
-                <SectionHeader title="Posts" count={linkDetail.postCount} />
-              </>
-            }
-            renderItem={({ item, index }) => (
-              <AnimatedListItem index={index}>
-                <PostCard
-                  post={item}
-                  onMediaPress={handleMediaPress}
-                  currentUserId={userId}
-                  onDeletePost={linkActions.deletePost}
-                />
-              </AnimatedListItem>
+              </View>
             )}
-            ListEmptyComponent={
-              postsError ? (
-                <DataFallbackScreen onAction={refetchPosts} />
-              ) : postsLoading ? (
-                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
-              ) : (
-                <EmptyState
-                  icon="camera"
-                  title="No posts yet"
-                  message={
-                    isActive
-                      ? 'Be the first to share!'
-                      : 'No media was shared in this link'
+            ListHeaderComponent={
+              <View
+                style={{
+                  paddingHorizontal: theme.spacing.lg,
+                  paddingTop: theme.spacing.md,
+                }}
+              >
+                <LinkInfoCard link={linkDetail} />
+                <SectionHeader
+                  title="Location Timeline"
+                  style={{ marginTop: theme.spacing.lg }}
+                  action={
+                    <Row gap="xs">
+                      <Pressable
+                        onPress={() => setManageLocationsVisible(true)}
+                        style={[
+                          styles.timelineAction,
+                          { backgroundColor: `${theme.colors.primary}20` },
+                        ]}
+                      >
+                        <Feather
+                          name="plus"
+                          size={12}
+                          color={theme.colors.primary}
+                        />
+                        <Text variant="labelSm" color="accent">
+                          Manage
+                        </Text>
+                      </Pressable>
+                    </Row>
                   }
                 />
-              )
+              </View>
             }
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-            }}
-            onEndReachedThreshold={0.5}
             ListFooterComponent={
-              isFetchingNextPage ? (
-                <Spinner style={{ paddingVertical: theme.spacing.xl }} />
+              locationsLoading ? (
+                <View
+                  style={{
+                    paddingVertical: theme.spacing.xl,
+                    alignItems: 'center',
+                  }}
+                >
+                  <Spinner />
+                </View>
+              ) : locations.length === 0 ? (
+                <EmptyState
+                  icon="map-pin"
+                  title="No locations yet"
+                  message="Tap Manage to add places to your timeline."
+                />
               ) : null
             }
           />
+        </Tabs.Tab>
 
-          {/* Bottom Actions (for active links) */}
-          {isActive && isMember && (
-            <>
-              {hasAssets && (
-                <StagedMediaSheet
-                  assets={stagedAssets}
-                  onAddFromGallery={addFromGallery}
-                  onRemove={removeAsset}
-                  onClearAll={clearAll}
-                  onUpload={uploadAll}
-                  uploading={uploading}
-                />
-              )}
-            </>
-          )}
+        {/* Map */}
+        <Tabs.Tab name="Map">
+          <Tabs.ScrollView>
+            <Text variant="bodyMd" color="tertiary">
+              Map
+            </Text>
+          </Tabs.ScrollView>
+        </Tabs.Tab>
+      </Tabs.Container>
 
-          {isActive && !isMember && (
-            <JoinLinkBanner
-              onJoin={linkActions.joinLink}
-              memberCount={linkDetail.members.length}
-            />
-          )}
-
-          {/* Dropdown Menu */}
-          <DropdownMenu
-            visible={menuVisible}
-            onClose={() => setMenuVisible(false)}
-            anchor={menuAnchor}
-          >
-            {menuItems.map((item, index) => (
-              <DropdownMenuItem
-                key={index}
-                icon={item.icon}
-                label={item.label}
-                onPress={item.action}
-                variant={item.variant}
-              />
-            ))}
-          </DropdownMenu>
-
-          <EditLinkModal
-            visible={editModalVisible}
-            link={linkDetail}
-            images={imageMedia}
-            saving={linkActions.savingBanner}
-            onClose={() => setEditModalVisible(false)}
-            onSave={handleEditSave}
+      {isActive && isMember && hasAssets && (
+        <View
+          style={[StyleSheet.absoluteFillObject, { zIndex: 50 }]}
+          pointerEvents="box-none"
+        >
+          <StagedMediaSheet
+            assets={stagedAssets}
+            onAddFromGallery={addFromGallery}
+            onRemove={removeAsset}
+            onClearAll={clearAll}
+            onUpload={uploadAll}
+            uploading={uploading}
           />
-
-          <UploadProgressModal visible={uploading} progress={progress} />
         </View>
+      )}
+
+      <View
+        style={[StyleSheet.absoluteFillObject, { zIndex: 100 }]}
+        pointerEvents="box-none"
+      >
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: insets.top + 8,
+              left: 16,
+              right: 16,
+            },
+            pillStyle,
+          ]}
+          pointerEvents={isSelecting ? 'auto' : 'none'}
+        >
+          <SelectionPill
+            selectedMedia={selectedMedia}
+            onSetLocation={() => setMediaLocationVisible(true)}
+            onDelete={handleDeleteSelected}
+            onCancel={handleExitSelectMode}
+          />
+        </Animated.View>
       </View>
-      <CameraModal
-        visible={!!cameraMode}
-        initialMode={cameraMode ?? 'photo'}
-        onCapture={(assets) => {
-          stageAssets(assets);
-          setCameraMode(null);
+
+      {isActive && !isMember && (
+        <JoinLinkBanner
+          onJoin={linkActions.joinLink}
+          memberCount={linkDetail.members.length}
+        />
+      )}
+
+      <DropdownMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+        items={menuItems}
+      />
+      <UploadProgressModal visible={uploading} progress={progress} />
+
+      <LocationPickerModal
+        visible={!!editingLocation}
+        location={editingLocation}
+        onClose={() => setEditingLocation(null)}
+        onSave={(data) =>
+          locationActions.editLocation(editingLocation.id, data)
+        }
+      />
+
+      <ManageLocationsModal
+        visible={manageLocationsVisible}
+        locations={locations}
+        onClose={() => setManageLocationsVisible(false)}
+        onSave={async (locations) => locationActions.editLocations(locations)}
+      />
+
+      <SetMediaLocationModal
+        visible={mediaLocationVisible}
+        locations={locations}
+        onClose={() => setMediaLocationVisible(false)}
+        onSelect={handleSetLocation}
+      />
+
+      <EditLinkModal
+        visible={editModalVisible}
+        link={linkDetail}
+        images={bannerImages}
+        saving={linkActions.savingBanner}
+        onClose={() => setEditModalVisible(false)}
+        onSave={async (changes) => {
+          await linkActions.editLink(changes);
+          setEditModalVisible(false);
         }}
-        onClose={() => setCameraMode(null)}
       />
     </>
   );
@@ -558,29 +508,14 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: 2,
     borderRadius: theme.radii.full,
   },
-  statusBadgeActive: {
-    backgroundColor: theme.colors.badgeActive,
-  },
-  statusBadgeEnded: {
-    backgroundColor: theme.colors.badgeInactive,
-  },
-  contentArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  container: {
-    paddingVertical: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: theme.colors.borderLight,
-    alignSelf: 'stretch',
-  },
-  section: {
-    paddingHorizontal: theme.spacing.lg,
+  statusBadgeActive: { backgroundColor: theme.colors.badgeActive },
+  statusBadgeEnded: { backgroundColor: theme.colors.badgeInactive },
+  timelineAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.full,
   },
 }));

@@ -9,7 +9,7 @@ import {
 import { LinkDetail } from '../lib/models';
 import { useActiveLink } from '../features/links/hooks/useActiveLink';
 
-type UploadAction = 'camera-photo' | 'camera-video' | 'gallery' | null;
+type UploadAction = 'gallery' | null;
 
 type ActiveLinkContextValue = {
   activeLink: LinkDetail | null;

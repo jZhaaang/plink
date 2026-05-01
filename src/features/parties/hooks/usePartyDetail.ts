@@ -26,11 +26,6 @@ export function usePartyDetail(partyId: string) {
           ),
           rawActiveLink
             ? (async (): Promise<LinkDetail> => {
-                const postCount = rawActiveLink.link_posts.length;
-                const mediaCount = rawActiveLink.link_posts.reduce(
-                  (sum, p) => sum + p.link_post_media.length,
-                  0,
-                );
                 const locations = [...rawActiveLink.link_locations].sort(
                   (a, b) => a.order_index - b.order_index,
                 );
@@ -55,8 +50,7 @@ export function usePartyDetail(partyId: string) {
                 const linkDetail: LinkDetail = {
                   ...resolvedLink,
                   members: resolvedMembers,
-                  postCount,
-                  mediaCount,
+                  mediaCount: rawActiveLink.link_media.length,
                   locations,
                 };
 

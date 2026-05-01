@@ -18,7 +18,15 @@ export async function generateImageThumbnail(uri: string): Promise<string> {
 }
 
 export async function generateVideoThumbnail(uri: string): Promise<string> {
-  const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(uri);
+  let thumbnailUri: string;
 
-  return await generateImageThumbnail(thumbnailUri);
+  try {
+    const result = await VideoThumbnails.getThumbnailAsync(uri, { time: 1000 });
+    thumbnailUri = result.uri;
+  } catch {
+    const result = await VideoThumbnails.getThumbnailAsync(uri, { time: 0 });
+    thumbnailUri = result.uri;
+  }
+
+  return generateImageThumbnail(thumbnailUri);
 }

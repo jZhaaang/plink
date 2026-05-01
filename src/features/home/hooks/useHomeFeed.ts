@@ -9,10 +9,7 @@ import {
   getRecentLinksByUserId,
   getActiveLinksByUserId,
 } from '../../../lib/supabase/queries/links';
-import {
-  resolveLink,
-  resolveLinkPostMediaItems,
-} from '../../../lib/resolvers/link';
+import { resolveLink, resolveLinkMedia } from '../../../lib/resolvers/link';
 import { resolveParty } from '../../../lib/resolvers/party';
 import type {
   ActiveFeedLink,
@@ -23,6 +20,7 @@ import { resolveProfile } from '../../../lib/resolvers/profile';
 import { useMemo } from 'react';
 
 const PAGE_SIZE = 3;
+const MEDIA_PREVIEW_LIMIT = 6;
 
 export function useHomeFeed(userId: string) {
   const queryClient = useQueryClient();
@@ -46,30 +44,19 @@ export function useHomeFeed(userId: string) {
 
       const resolved: HomeFeedLink[] = await Promise.all(
         rawLinks.map(async (link) => {
-          const postCount = link.link_posts.length;
-          const mediaCount = link.link_posts.reduce(
-            (sum, p) => sum + p.link_post_media.length,
-            0,
-          );
           const locations = [...link.link_locations].sort(
             (a, b) => a.order_index - b.order_index,
           );
 
-          const [resolvedLink, resolvedParty, resolvedMembers] =
+          const [resolvedLink, resolvedParty, resolvedMedia, resolvedMembers] =
             await Promise.all([
               resolveLink(link),
               resolveParty(link.parties),
+              resolveLinkMedia(link.link_media.slice(0, MEDIA_PREVIEW_LIMIT)),
               Promise.all(
                 link.link_members.map((lm) => resolveProfile(lm.profiles)),
               ),
             ]);
-
-          const allRawMedia = link.link_posts.flatMap((p) => p.link_post_media);
-          const mediaMap = await resolveLinkPostMediaItems(
-            link.id,
-            allRawMedia,
-          );
-          const allMedia = Array.from(mediaMap.values());
 
           if (resolvedParty.avatarUrl) Image.prefetch(resolvedParty.avatarUrl);
           resolvedMembers.forEach((m) => {
@@ -79,8 +66,7 @@ export function useHomeFeed(userId: string) {
           const linkDetail: LinkDetail = {
             ...resolvedLink,
             members: resolvedMembers,
-            postCount,
-            mediaCount,
+            mediaCount: link.link_media.length,
             locations,
           };
 
@@ -89,9 +75,7 @@ export function useHomeFeed(userId: string) {
           return {
             ...linkDetail,
             party: resolvedParty,
-            media: allMedia,
-            postCount,
-            mediaCount,
+            media: resolvedMedia,
           };
         }),
       );
@@ -116,11 +100,6 @@ export function useHomeFeed(userId: string) {
 
       const resolved: ActiveFeedLink[] = await Promise.all(
         rawLinks.map(async (link) => {
-          const postCount = link.link_posts.length;
-          const mediaCount = link.link_posts.reduce(
-            (sum, p) => sum + p.link_post_media.length,
-            0,
-          );
           const locations = [...link.link_locations].sort(
             (a, b) => a.order_index - b.order_index,
           );
@@ -142,8 +121,7 @@ export function useHomeFeed(userId: string) {
           const linkDetail: LinkDetail = {
             ...resolvedLink,
             members: resolvedMembers,
-            postCount,
-            mediaCount,
+            mediaCount: link.link_media.length,
             locations,
           };
 

@@ -16,11 +16,7 @@ export function useActiveLink() {
       if (!userId) return null;
       const rawLink = await getActiveLinkDetailByUserId(userId);
       if (!rawLink) return null;
-      const postCount = rawLink.link_posts.length;
-      const mediaCount = rawLink.link_posts.reduce(
-        (sum, p) => sum + p.link_post_media.length,
-        0,
-      );
+      const mediaCount = rawLink.link_media.length;
       const locations = [...rawLink.link_locations].sort(
         (a, b) => a.order_index - b.order_index,
       );
@@ -35,7 +31,6 @@ export function useActiveLink() {
       const linkDetail: LinkDetail = {
         ...resolvedLink,
         members: resolvedMembers,
-        postCount,
         mediaCount,
         locations,
       };

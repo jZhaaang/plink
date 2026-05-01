@@ -1,23 +1,8 @@
 import { supabase } from '../supabase/client';
+import { MapboxPlace, SearchBoxProperties, SearchSuggestion } from './types';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const PROXY_BASE = `${SUPABASE_URL}/functions/v1/mapbox-proxy`;
-
-export type SearchSuggestion = {
-  mapbox_id: string;
-  name: string;
-  address: string | null;
-  place_formatted: string | null;
-  feature_type: string;
-};
-
-export type RetrievedPlace = {
-  mapbox_id: string;
-  name: string;
-  address: string | null;
-  longitude: number;
-  latitude: number;
-};
 
 async function getAuthHeader(): Promise<string | null> {
   const {
@@ -58,7 +43,7 @@ export async function suggestPlaces(
 
   if (!res.ok) throw new Error('Search failed');
 
-  const data = await res.json();
+  const data = (await res.json()) as { suggestions?: SearchBoxProperties[] };
   return (data.suggestions ?? [])
     .filter((s) => s.feature_type !== 'brand')
     .map(
@@ -76,7 +61,7 @@ export async function suggestPlaces(
 export async function retrievePlace(
   mapboxId: string,
   sessionToken: string,
-): Promise<RetrievedPlace | null> {
+): Promise<MapboxPlace | null> {
   const auth = await getAuthHeader();
   if (!auth) return null;
 
@@ -99,8 +84,10 @@ export async function retrievePlace(
   return {
     mapbox_id: props.mapbox_id,
     name: props.name,
-    address: props.full_address ?? props.address ?? null,
+    address: props.address ?? null,
+    placeFormatted: props.place_formatted,
+    fullAddress: props.full_address ?? null,
     longitude,
     latitude,
-  } as RetrievedPlace;
+  } as MapboxPlace;
 }

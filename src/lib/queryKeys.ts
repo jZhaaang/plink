@@ -11,7 +11,10 @@ export const queryKeys = {
   links: {
     active: (userId: string) => ['links', 'active', userId] as const,
     detail: (linkId: string) => ['links', 'detail', linkId] as const,
-    posts: (linkId: string) => ['links', 'posts', linkId] as const,
+    locations: (linkId: string) => ['links', 'locations', linkId] as const,
+    locationMedia: (linkId: string, locationId: string) =>
+      ['links', 'locationMedia', linkId, locationId] as const,
+    media: (linkId: string) => ['links', 'media', linkId] as const,
   },
   activity: {
     feed: (userId: string) => ['activity', 'feed', userId] as const,
