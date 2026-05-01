@@ -10,7 +10,7 @@ export async function updateThumbnailPath(
   thumbPath: string,
 ) {
   const { error } = await supabase
-    .from('link_post_media')
+    .from('link_media')
     .update({ thumbnail_path: thumbPath })
     .eq('path', storagePath);
 

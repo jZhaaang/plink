@@ -19,8 +19,8 @@ export async function handler(event: S3Event) {
 
     if (key.includes('_thumb') || key.includes('/banner.')) continue;
 
-    // links/{linkId}/posts/{postId}/{uuid}.ext
-    const match = key.match(/^links\/([^/]+)\/posts\/([^/]+)\//);
+    // links/{linkId}/media/{mediaId}.ext
+    const match = key.match(/^links\/([^/]+)\/media\//);
     if (!match) continue;
 
     const linkId = match[1];
