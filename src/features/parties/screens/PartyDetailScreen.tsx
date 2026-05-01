@@ -54,6 +54,7 @@ import * as Burnt from 'burnt';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { deletePartyMember } from '../../../lib/supabase/queries/partyMembers';
 import { usePastLinks } from '../hooks/usePastLinks';
+import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
 
 type Props = NativeStackScreenProps<PartyStackParamList, 'PartyDetail'>;
 
@@ -253,18 +254,13 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     );
   };
 
-  const menuItems: Array<{
-    icon: ComponentProps<typeof Feather>['name'];
-    label: string;
-    action: () => void;
-    variant?: 'danger';
-  }> = [];
+  const menuItems: DropdownMenuItemProps[] = [];
 
   if (isOwner) {
     menuItems.push({
       icon: 'user-plus',
       label: 'Invite Member',
-      action: () => {
+      onPress: () => {
         setMenuVisible(false);
         setInviteModalVisible(true);
       },
@@ -272,7 +268,7 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'edit-2',
       label: 'Edit Party',
-      action: () => {
+      onPress: () => {
         setMenuVisible(false);
         setEditModalVisible(true);
       },
@@ -280,14 +276,14 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
     menuItems.push({
       icon: 'trash-2',
       label: 'Delete Party',
-      action: handleDeleteParty,
+      onPress: handleDeleteParty,
       variant: 'danger',
     });
   } else {
     menuItems.push({
       icon: 'log-out',
       label: 'Leave Party',
-      action: handleLeaveParty,
+      onPress: handleLeaveParty,
       variant: 'danger',
     });
   }
@@ -471,17 +467,8 @@ export default function PartyDetailScreen({ route, navigation }: Props) {
             visible={menuVisible}
             onClose={() => setMenuVisible(false)}
             anchor={menuAnchor}
-          >
-            {menuItems.map((item, index) => (
-              <DropdownMenuItem
-                key={index}
-                icon={item.icon}
-                label={item.label}
-                onPress={item.action}
-                variant={item.variant}
-              />
-            ))}
-          </DropdownMenu>
+            items={menuItems}
+          />
 
           {/* Edit Party Modal */}
           {isOwner && (
