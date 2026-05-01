@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react';
+import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   View,
@@ -32,7 +32,6 @@ import {
   SectionHeader,
   EmptyState,
   DropdownMenu,
-  DropdownMenuItem,
   Divider,
   LoadingScreen,
   DataFallbackScreen,

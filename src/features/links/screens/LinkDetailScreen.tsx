@@ -37,7 +37,6 @@ import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
 import { useLinkLocations } from '../hooks/useLinkLocations';
-import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
 import LocationSection from '../components/LocationSection';
 import LinkInfoCard from '../components/LinkInfoCard';
 import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
@@ -64,7 +63,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { theme } = useUnistyles();
 
-  const invalidate = useInvalidate();
   const {
     linkDetail,
     loading: linkLoading,
@@ -167,10 +165,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       linkId,
       initialMediaId: media.id,
     });
-  };
-
-  const handleSeeAllMedia = () => {
-    rootNav.navigate('AllMedia', { linkId });
   };
 
   const handleMenuPress = (event: GestureResponderEvent) => {

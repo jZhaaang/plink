@@ -114,10 +114,6 @@ export function useLinkDetailActions({
       await deleteBulk(`links/${linkId}`);
       await deleteLink(linkId);
       trackEvent('link_deleted', { link_id: linkId });
-      trackEvent('link_post_deleted', {
-        link_id: linkId,
-        media_count: linkDetail?.mediaCount ?? 0,
-      });
       trackEvent('media_deleted', {
         link_id: linkId,
       });
