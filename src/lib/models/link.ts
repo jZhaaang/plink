@@ -24,27 +24,7 @@ export type LinkMemberRow = Tables<'link_members'>;
 export type LinkMemberInsert = TablesInsert<'link_members'>;
 export type LinkMemberUpdate = TablesUpdate<'link_members'>;
 
-export type LinkPostRow = Tables<'link_posts'>;
-export type LinkPostInsert = TablesInsert<'link_posts'>;
-export type LinkPostUpdate = TablesUpdate<'link_posts'>;
-
-export type LinkPostMediaRow = Tables<'link_post_media'>;
-export type LinkPostMedia = LinkPostMediaRow & {
-  url: string;
-  thumbnailUrl: string | null;
-};
-export type LinkPostMediaInsert = TablesInsert<'link_post_media'>;
-export type LinkPostMediaUpdate = TablesUpdate<'link_post_media'>;
-
 export type Link = LinkRow & { bannerUrl?: string };
-
-export type LinkPost = LinkPostRow & {
-  owner: Profile;
-};
-
-export type LinkPostWithMedia = LinkPost & {
-  media: LinkPostMedia[];
-};
 
 export type LinkDetail = Link & {
   members: Profile[];
@@ -54,7 +34,7 @@ export type LinkDetail = Link & {
 
 export type HomeFeedLink = LinkDetail & {
   party: Party;
-  media: LinkPostMedia[];
+  media: LinkMedia[];
 };
 
 export type ActiveFeedLink = LinkDetail & {

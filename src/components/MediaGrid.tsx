@@ -5,7 +5,7 @@ import {
   LayoutChangeEvent,
   FlatListProps,
 } from 'react-native';
-import { LinkPostMedia } from '../lib/models';
+import { LinkMedia } from '../lib/models';
 import { Feather } from '@expo/vector-icons';
 import MediaTile from './MediaTile';
 import { StyleSheet } from 'react-native-unistyles';
@@ -13,14 +13,14 @@ import { useState } from 'react';
 import React from 'react';
 
 interface Props extends Omit<
-  FlatListProps<LinkPostMedia>,
+  FlatListProps<LinkMedia>,
   'data' | 'renderItem' | 'numColumns' | 'keyExtractor'
 > {
-  media: LinkPostMedia[];
+  media: LinkMedia[];
   columns?: number;
   maxItems?: number;
   scrollEnabled?: boolean;
-  onMediaPress?: (item: LinkPostMedia) => void;
+  onMediaPress?: (item: LinkMedia) => void;
   onOverflowPress?: () => void;
 }
 
@@ -56,7 +56,7 @@ export default function MediaGrid({
   const overflowCount = hasOverflow ? media.length - maxItems : 0;
   const displayedMedia = hasOverflow ? media.slice(0, maxItems) : media;
 
-  const renderTile = (item: LinkPostMedia, index: number) => {
+  const renderTile = (item: LinkMedia, index: number) => {
     const isLastItem = hasOverflow && index === displayedMedia.length - 1;
     return (
       <MediaTile

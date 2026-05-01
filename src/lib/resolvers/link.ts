@@ -1,10 +1,7 @@
 import {
   Link,
   LinkMedia,
-  LinkMediaRow,
   LinkMediaRowWithProfile,
-  LinkPostMedia,
-  LinkPostMediaRow,
   LinkRow,
   Profile,
 } from '../models';
@@ -92,53 +89,6 @@ export async function resolveLinkMedia(
 
     const { profiles: _, ...row } = m;
     resolved.push({ ...row, owner, url, thumbnailUrl });
-  }
-
-  return resolved;
-}
-
-export async function resolveLinkPostMediaItems(
-  linkId: string,
-  mediaItems: LinkPostMediaRow[],
-): Promise<Map<string, LinkPostMedia>> {
-  const allPaths: string[] = [];
-  for (const media of mediaItems) {
-    allPaths.push(media.path);
-    if (media.thumbnail_path) {
-      allPaths.push(media.thumbnail_path);
-    }
-  }
-
-  let urlMap = null;
-  try {
-    urlMap = await linksStorage.getLinkMediaUrls(linkId, allPaths);
-  } catch (err) {
-    logger.error('Error resolving link post media items', { err });
-    return new Map();
-  }
-
-  const resolved = new Map<string, LinkPostMedia>();
-  for (const media of mediaItems) {
-    const url = urlMap.get(media.path);
-    if (!url) {
-      logger.warn('Missing resolved media URL for link media', {
-        mediaId: media.id,
-        mediaPath: media.path,
-      });
-      continue;
-    }
-
-    const thumbnailUrl = media.thumbnail_path
-      ? (urlMap.get(media.thumbnail_path) ?? null)
-      : null;
-    if (!thumbnailUrl && !!media.thumbnail_path) {
-      logger.warn('Missing resolved media URL for link media thumbnail', {
-        mediaId: media.id,
-        mediaPath: media.path,
-      });
-    }
-
-    resolved.set(media.id, { ...media, url, thumbnailUrl });
   }
 
   return resolved;

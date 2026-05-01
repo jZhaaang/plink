@@ -3,22 +3,14 @@ import * as MediaLibrary from 'expo-media-library';
 import * as Burnt from 'burnt';
 import { useDialog } from '../../../providers/DialogProvider';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
-import { SetStateAction, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   generateImageThumbnail,
   generateVideoThumbnail,
 } from '../../../lib/media/thumbnail';
 import { logger } from '../../../lib/telemetry/logger';
-import {
-  createLinkPost,
-  deleteLinkPost,
-} from '../../../lib/supabase/queries/linkPosts';
 import { compressImage } from '../../../lib/media/compress';
 import { links as linksStorage } from '../../../lib/media-service/links';
-import {
-  createLinkPostMedia,
-  deleteLinkPostMedia,
-} from '../../../lib/supabase/queries/linkPostMedia';
 import { trackEvent } from '../../../lib/telemetry/analytics';
 import {
   createLinkMedia,

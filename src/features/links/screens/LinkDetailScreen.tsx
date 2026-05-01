@@ -1,21 +1,9 @@
-import {
-  ComponentProps,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
-import {
-  View,
-  GestureResponderEvent,
-  FlatList,
-  useWindowDimensions,
-  Pressable,
-} from 'react-native';
+import { View, GestureResponderEvent, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
   PartyStackParamList,
@@ -25,23 +13,18 @@ import { useLinkDetail } from '../hooks/useLinkDetail';
 import { useLinkDetailActions } from '../hooks/useLinkDetailActions';
 import {
   DropdownMenu,
-  DropdownMenuItem,
-  LoadingScreen,
-  DataFallbackScreen,
   HeroBanner,
   UploadProgressModal,
   Text,
   Row,
   SectionHeader,
-  Button,
 } from '../../../components';
 import { useStagedMediaActions } from '../hooks/useStagedMediaActions';
 import StagedMediaSheet from '../components/StagedMediaSheet';
-import { formatDateTime } from '../../../lib/utils/formatTime';
 import { useActiveLinkContext } from '../../../providers/ActiveLinkProvider';
 import { StatusBar } from 'expo-status-bar';
 import { Tabs, MaterialTabBar } from 'react-native-collapsible-tab-view';
-import { LinkLocationRow, LinkMedia, LinkPostMedia } from '../../../lib/models';
+import { LinkLocationRow, LinkMedia } from '../../../lib/models';
 import {
   StackActions,
   useFocusEffect,
@@ -51,12 +34,8 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useThumbnailSubscription } from '../hooks/useThumbnailSubscription';
 import JoinLinkBanner from '../components/JoinLinkBanner';
-import { useLinkPosts } from '../hooks/useLinkPosts';
-import EditLinkModal, { EditLinkChanges } from '../components/EditLinkModal';
 import { useLinkLocations } from '../hooks/useLinkLocations';
 import { useInvalidate } from '../../../lib/supabase/hooks/useInvalidate';
-import { confirmLinkLocation } from '../../../lib/supabase/queries/linkLocations';
-import { logger } from '../../../lib/telemetry/logger';
 import LocationSection from '../components/LocationSection';
 import LinkInfoCard from '../components/LinkInfoCard';
 import { useLinkLocationsActions } from '../hooks/useLinkLocationsActions';
@@ -64,7 +43,6 @@ import { DropdownMenuItemProps } from '../../../components/DropdownMenu';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LocationPickerModal from '../components/LocationPickerModal';
 import ManageLocationsModal from '../components/ManageLocationsModal';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import SelectionPill from '../components/SelectionPill';
 import Animated, {
   useAnimatedStyle,
@@ -172,20 +150,15 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
     });
   }, [isSelecting]);
 
-  if (linkLoading) return <LoadingScreen label="Loading..." />;
-  if (linkError || !linkDetail)
-    return <DataFallbackScreen onAction={refetchLink} />;
-
   const isActive = linkDetail && !linkDetail.end_time;
-  const isOwner = linkDetail.owner_id === userId;
+  const isOwner = linkDetail?.owner_id === userId;
   const isMember = linkDetail.members.some((m) => m.id === userId) ?? false;
 
-  const handleMediaPress = (media: LinkPostMedia) => {
-    // const index = allMedia.findIndex((m) => m.id === item.id);
-    // rootNav.navigate('MediaViewer', {
-    //   linkId,
-    //   initialIndex: index === -1 ? 0 : index,
-    // });
+  const handleMediaPress = (media: LinkMedia) => {
+    rootNav.navigate('MediaViewer', {
+      linkId,
+      initialMediaId: media.id,
+    });
   };
 
   const handleSeeAllMedia = () => {
@@ -248,11 +221,6 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
       },
     });
   }
-
-  const handleEditSave = async (changes: EditLinkChanges) => {
-    await linkActions.editLink(changes);
-    setEditModalVisible(false);
-  };
 
   const handleEnterSelectMode = useCallback((media: LinkMedia) => {
     setSelectedMedia(new Map([[media.id, media]]));
@@ -351,8 +319,7 @@ export default function LinkDetailScreen({ route, navigation }: Props) {
                 <LocationSection
                   linkId={linkId}
                   location={location}
-                  onPressMedia={() => {}}
-                  onDeleteMedia={linkActions.deleteMedia}
+                  onPressMedia={handleMediaPress}
                   onConfirm={() =>
                     location && locationActions.confirmLocation(location.id)
                   }

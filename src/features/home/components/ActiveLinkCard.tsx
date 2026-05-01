@@ -13,7 +13,6 @@ import {
   Text,
 } from '../../../components';
 import { primaryLocationLabel } from '../../../lib/utils/location';
-import { addNativeProfileToHermesProfile } from '@sentry/react-native/dist/js/profiling/integration';
 
 interface Props {
   peek?: boolean;
@@ -75,10 +74,10 @@ export default function ActiveLinkCard({
 
           {locationLabel && (
             <Row
-              align="flex-start"
+              align="center"
               justify="flex-end"
               gap="xs"
-              style={{ marginLeft: theme.spacing.sm }}
+              style={styles.locationWrap}
             >
               <MaterialIcons
                 name="place"
@@ -89,7 +88,7 @@ export default function ActiveLinkCard({
                 variant="bodySm"
                 color="tertiary"
                 style={styles.locationText}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {locationLabel}
               </Text>

@@ -225,7 +225,6 @@ interface LocationSectionProps {
   linkId: string;
   location: LinkLocationRow | null;
   onPressMedia: (media: LinkMedia) => void;
-  onDeleteMedia: (media: LinkMedia) => void;
   onConfirm: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -239,7 +238,6 @@ export default function LocationSection({
   linkId,
   location,
   onPressMedia,
-  onDeleteMedia,
   onConfirm,
   onEdit,
   onDelete,
@@ -298,6 +296,7 @@ export default function LocationSection({
                 isSelected={selectedMedia.has(item.id)}
                 onPress={() => {
                   if (isSelecting) onToggleSelect(item);
+                  else onPressMedia(item);
                 }}
                 onLongPress={() => {
                   if (!isSelecting) onEnterSelectMode(item);

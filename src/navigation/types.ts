@@ -9,7 +9,7 @@ export type AuthStackParamList = {
 export type SignedInParamList = {
   App: NavigatorScreenParams<TabsParamList>;
   CompleteProfile: undefined;
-  MediaViewer: { linkId: string; initialIndex: number };
+  MediaViewer: { linkId: string; initialMediaId: string };
   AllMedia: { linkId: string };
 };
 
